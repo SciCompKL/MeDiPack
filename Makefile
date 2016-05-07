@@ -15,7 +15,7 @@ $(GEN_DIR)/tampiFunctions.hpp: $(TEMPL_DIR)/tampiFunctions_hpp.gsl $(DEF_DIR)/mp
 
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl
-	gsl -script:$< $(filter-out $<,$^) > $@
+	gsl -script:$< -a $(filter-out $<,$^) $@
 
 clean:
 	rm -fr $(GEN_DIR)/*

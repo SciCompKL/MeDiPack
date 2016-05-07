@@ -1,4 +1,5 @@
 .ignorecase = 0
+.output "$(switches.arg1)"
 namespace medi {
 .for functions.function as curFunction
 . for curFunction.send
