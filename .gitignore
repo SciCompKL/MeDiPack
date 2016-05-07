@@ -1,0 +1,9 @@
+.idea
+generated
+CMakeLists.txt
+MeDiPack.config
+MeDiPack.creator
+MeDiPack.creator.user
+MeDiPack.files
+MeDiPack.includes
+mpi31-report.pdf
