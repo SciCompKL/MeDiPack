@@ -1,82 +1,87 @@
 .ignorecase = 0
+.template 0
+for functions.function as curFunction
+ #generate the names for the datatypes
+ for curFunction.send
+   send.typeName = "$(send.type:upper)"
+ endfor
+ for curFunction.recv
+   recv.typeName = "$(recv.type:upper)"
+ endfor
+
+# build the definitions for the templates
+ curFunction.tplDef = ""
+ curFunction.tplArg = ""
+ for curFunction.type
+   comma = last()?? "" ? ", "
+   type.tplName = "$(type.name:upper)"
+   curFunction.tplDef += "typename $(type.tplName)$(comma)"
+   curFunction.tplArg += "$(type.tplName)::ModifiedNested$(comma)"
+ endfor
+
+#build the argument lists
+ curFunction.argDef = ""
+ curFunction.argArg = ""
+ for curFunction. as item
+   comma = last()?? "" ? ", "
+   constMod = defined(item.const) ?? "const " ? ""
+   if(name(item) <> "type")  # exclude the types because they are handled as templates
+     if(name(item) =  "recv" | name(item) =  "send")
+       curFunction.argDef += "$(constMod)typename $(item.typeName)::Type* $(item.name)$(comma)"  #append '::Type' to the typename
+       curFunction.argArg += "$(item.name)Mod$(comma)"    # append 'Mod' to the bufferNames
+     else
+       curFunction.argDef += "$(constMod)$(item.type) $(item.name)$(comma)"
+       curFunction.argArg += "$(item.name)$(comma)"
+     endif
+   endif
+ endfor
+
+#build the argument list for the regular call
+ curFunction.argReg = ""
+ for curFunction. as item
+   comma = last()?? "" ? ", "
+   constMod = defined(item.const) ?? "const " ? ""
+   if(name(item) = "type")
+     curFunction.argReg += "$(item.tplName)::Tool::MPIType$(comma)"    # get the regular mpi type
+   else
+     curFunction.argReg += "$(item.name)$(comma)"
+   endif
+ endfor
+
+ # define the ad type that is used in this function
+ curFunction.adType = "$(curFunction->type.tplName)::Tool"
+endfor
+
+
+.endtemplate
 .output "$(switches.arg1)"
 namespace medi {
 .for functions.function as curFunction
+  template<$(curFunction.tplDef)>
+  TAMPI_$(curFunction.name)($(curFunction.argDef)) {
+    if(!$(curFunction.adType)::IS_ActiveType) {
+      MPI_$(curFunction.name)($(curFunction.argReg));
+    } else {
+      $(curFunction.adType)::Handle h = $(curFunction.adType)::startAssembly();
 . for curFunction.send
-.   send.typeName = "$(send.type:upper)"
+      $(send.typeName)::ModifiedType* $(send.name)Mod = $(send.typeName)::prepareSendBuffer($(send.name), $(send.count), h);
 . endfor
 . for curFunction.recv
-.   recv.typeName = "$(recv.type:upper)"
-. endfor
-.
-.-// write templates
-template<\
-. for curFunction.type
-.   comma = last()?? "" ? ","
-.   type.tplName = "$(type.name:upper)"
-typename $(type.tplName)$(comma) \
-. endfor
->
-.
-TAMPI_$(curFunction.name)(
-. for curFunction. as item
-.   comma = last()?? "" ? ","
-.   constMod = defined(item.const) ?? "const " ? ""
-.   if(name(item) <> "type")
-.     if(name(item) =  "recv" | name(item) =  "send")
-        $(constMod)$(item.typeName)::Type $(item.name)$(comma)
-.     else
-        $(constMod)$(item.type) $(item.name)$(comma)
-.     endif
-.   endif
-. endfor
-  ) {
-. curFunction.adType = "$(curFunction->type.tplName)::Tool"
-  if(!$(curFunction.adType)::IS_ActiveType) {
-    MPI_$(curFunction.name)(\
-.   for curFunction. as item
-.     comma = last()?? "" ? ","
-.     if(name(item) <> "type")
-$(item.name)$(comma)\
-.     else
-$(item.tplName)::MPIType$(comma)\
-.     endif
-.   endfor
-);
-  } else {
-    $(curFunction.adType)::Handle h = $(curFunction.adType)::startAssembly();
-.   for curFunction.send
-      $(send.typeName)::ModifiedType* $(send.name)Mod = $(send.typeName)::prepareSendBuffer($(send.name), $(send.count), h);
-.   endfor
-.   for curFunction.recv
       $(recv.typeName)::ModifiedType* $(recv.name)Mod = $(recv.typeName)::prepareRecvBuffer($(recv.name), $(recv.count), h);
-.   endfor
+. endfor
 
-    TAMPI_$(curFunction.name)<\
-.   for curFunction.type
-.     comma = last()?? "" ? ","
-.     type.tplName = "$(type.name:upper)"
-$(type.tplName)::ModifiedNested$(comma) \
-.   endfor
->(\
-.   for curFunction. as item
-.     comma = last()?? "" ? ","
-.     if(name(item) <> "type")
-$(item.name)$(comma)\
-.     endif
-.   endfor
-);
-    $(curFunction.adType)::addToolAction(h);
+      TAMPI_$(curFunction.name)<$(curFunction.tplArg)>($(curFunction.argArg));
+      $(curFunction.adType)::addToolAction(h);
 
-.   for curFunction.send
+. for curFunction.send
       $(send.typeName)::handleSendBuffer($(send.name), $(send.name)Mod, $(send.count), h);
-.   endfor
-.   for curFunction.recv
+. endfor
+. for curFunction.recv
       $(recv.typeName)::handleRecvBuffer($(recv.name), $(recv.name)Mod, $(recv.count), h);
-.   endfor
+. endfor
 
-    $(curFunction.adType)::stopAssembly(h);
+      $(curFunction.adType)::stopAssembly(h);
+    }
   }
-}
 .endfor
 }
