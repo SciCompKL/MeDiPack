@@ -4,7 +4,47 @@ namespace medi {
 
   template<typename DATATYPE >
   void TAMPI_Reduce_b(Handle* h) {
+    TAMPI_Op op = h->op;
+    int root = h->root;
+    MPI_Comm comm = h->comm;
 
+    typename DATATYPE::AdjointType* sendAdjoints = NULL;
+    /*typename DATATYPE::PassiveType*/double* sendPrimals = NULL;
+    int sendBuffSize = 0;
+    if(root == getRank(comm)) {
+      sendBuffSize = allocateReverseBuffer(sendAdjoints, sendPrimals, h->recvCount, op.requiresPrimalSend);
+
+      DATATYPE::getAdjoints(h->recvIndices, h->recvCount, sendAdjoints);
+      op.preAdjointOperation(sendAdjoints, h->recvPrimals, h->recvCount);
+
+      if(op.requiresPrimalSend) {
+        copyPrimals(sendPrimals, h->recvPrimals, h->recvCount);
+      }
+    }
+
+    typename DATATYPE::AdjointType* recvAdjoints = NULL;
+    /*typename DATATYPE::PassiveType*/double* recvPrimals = NULL;
+    int recvBuffSize = allocateReverseBuffer(recvAdjoints, recvPrimals, h->sendCount, op.requiresPrimalSend);
+
+    if(root == getRank(comm)) {
+      MPI_Bcast(sendAdjoints, sendBuffSize, MPI_BYTE, root, comm);
+      deleteReverseBuffer(recvAdjoints, recvPrimals, op.requiresPrimalSend);
+      recvAdjoints = sendAdjoints;
+      recvPrimals = sendPrimals;
+      sendAdjoints = NULL;
+      sendPrimals = NULL;
+    } else {
+      MPI_Bcast(recvAdjoints, recvBuffSize, MPI_BYTE, root, comm);
+    }
+
+    op.postAdjointOperation(recvAdjoints, h->sendPrimals, recvPrimals, h->sendCount);
+
+    DATATYPE::updateAdjoints(h->sendIndices, h->sendCount, recvAdjoints);
+
+    deleteReverseBuffer(recvAdjoints, recvPrimals, op.requiresPrimalSend);
+    if(root == getRank(comm)) {
+      deleteReverseBuffer(sendAdjoints, sendPrimals, op.requiresPrimalSend);
+    }
   }
 
   template<typename DATATYPE>
@@ -30,6 +70,9 @@ namespace medi {
 
       if(NULL != h) {
         h->func = TAMPI_Reduce_b<DATATYPE>;
+        h->op = op;
+        h->root = root;
+        h->comm = comm;
       }
 
       TAMPI_Reduce<typename DATATYPE::ModifiedNested >(sendbufMod,recvbufMod,count, *op.modifiedOp,root,comm);
@@ -40,7 +83,7 @@ namespace medi {
         DATATYPE::handleRecvBuffer(recvbuf, recvbufMod, count, h);
 
         if(NULL != h && op.requiresPrimal) {
-          DATATYPE::getValues(sendbuf, count, h->recvPrimals);
+          DATATYPE::getValues(recvbuf, count, h->recvPrimals);
         }
       }
 

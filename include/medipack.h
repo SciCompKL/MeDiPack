@@ -9,25 +9,48 @@
 namespace medi {
   struct Handle;
   typedef void (*ReverseFunction)(Handle* h);
+  typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
+  typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
+
+  void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
+  void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
 
   struct TAMPI_Op {
-    const bool requiresPrimal;
+    /*const*/ bool requiresPrimal;
+    /*const*/ bool requiresPrimalSend;
 
-    const MPI_Op primalFunction;
+    /*const*/ MPI_Op primalFunction;
     const TAMPI_Op* modifiedOp;
 
-    TAMPI_Op(const bool requiresPrimal, MPI_Op primalFunction, const TAMPI_Op* modifiedOp) :
-      requiresPrimal(requiresPrimal),
-      primalFunction(primalFunction),
-      modifiedOp(modifiedOp) {}
-  };
+    /*const*/ PreAdjointOperation preAdjointOperation;
+    /*const*/ PostAdjointOperation postAdjointOperation;
 
+    TAMPI_Op() :
+      requiresPrimal(false),
+      requiresPrimalSend(false),
+      primalFunction(MPI_SUM),
+      modifiedOp(NULL),
+      preAdjointOperation(noPreAdjointOperation),
+      postAdjointOperation(noPostAdjointOperation) {}
+
+    TAMPI_Op(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, const TAMPI_Op* modifiedOp, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) :
+      requiresPrimal(requiresPrimal),
+      requiresPrimalSend(requiresPrimalSend),
+      primalFunction(primalFunction),
+      modifiedOp(modifiedOp),
+      preAdjointOperation(preAdjointOperation),
+      postAdjointOperation(postAdjointOperation) {}
+  };
 
   struct Handle {
     ReverseFunction func;
     int sendCount;
     int* sendIndices;
     double* sendPrimals;
+
+    TAMPI_Op op;
+    int root;
+    MPI_Comm comm;
 
     int recvCount;
     int* recvIndices;
@@ -48,6 +71,50 @@ namespace medi {
     return rank;
   }
 
+  template<typename AT, typename PT>
+  inline int allocateReverseBuffer(AT* &adjoints, PT* &primals, int count, bool allocatePrimals) {
+    int bufferSize = 0;
+    if(allocatePrimals) {
+      // create both buffers as a single array and set the pointers accordingly
+      bufferSize = (sizeof(AT) + sizeof(PT)) * count;
+      char* buffer = new char[bufferSize];
+      adjoints = reinterpret_cast<AT*>(buffer);
+      primals = reinterpret_cast<PT*>(buffer + sizeof(AT) * count);
+    } else {
+      // only create the adjoint buffer
+      bufferSize = sizeof(AT) * count;
+      adjoints = new AT[count];
+      primals = NULL;
+    }
+
+    return bufferSize;
+  }
+
+  template<typename AT, typename PT>
+  inline void deleteReverseBuffer(AT* &adjoints, PT* &primals, bool allocatePrimals) {
+    if(NULL != adjoints) {
+      if(allocatePrimals) {
+        // create both buffers as a single array and set the pointers accordingly
+        char* buffer = reinterpret_cast<char*>(adjoints);
+        delete [] buffer;
+        adjoints = NULL;
+        primals = NULL;
+      } else {
+        // only create the adjoint buffer
+        delete [] adjoints;
+        adjoints = NULL;
+        primals = NULL;
+      }
+    }
+  }
+
+  template<typename T>
+  inline void copyPrimals(T* res, const T* values, int count) {
+    for(int pos = 0; pos < count; ++pos) {
+      res[pos] = values[pos];
+    }
+  }
+
   struct EmptyDataType {
       typedef void Type;
   };
@@ -55,6 +122,7 @@ namespace medi {
   template<typename T>
   struct PassiveTool {
       typedef T Type;
+      typedef T AdjointType;
       typedef T ModifiedType;
       typedef T PassiveType;
 
@@ -80,6 +148,7 @@ namespace medi {
   struct PassiveDataType {
       typedef PassiveTool<T> Tool;
       typedef typename Tool::Type Type;
+      typedef typename Tool::AdjointType AdjointType;
       typedef typename Tool::PassiveType PassiveType;
 
       typedef typename Tool::ModifiedType ModifiedType;
@@ -90,6 +159,8 @@ namespace medi {
       static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(h); return NULL; }
       static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(h); }
       static inline void getValues(const Type* buf, int count, double* &primals) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(primals); }
+      static inline void getAdjoints(const int* indices, int count, AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
+      static inline void updateAdjoints(const int* indices, int count, const AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
   };
 
   template<typename T> MPI_Datatype PassiveTool<T>::MPIType;
@@ -107,6 +178,7 @@ namespace medi {
 
     static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, Handle* h) {
       if(ADTool::isActive()) {
+        h->sendCount = count;
         h->sendIndices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
           h->sendIndices[pos] = ADTool::getIndex(buf[pos]);
@@ -146,6 +218,7 @@ namespace medi {
       }
 
       if(ADTool::isActive()) {
+        h->recvCount = count;
         h->recvIndices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
           h->recvIndices[pos] = ADTool::getIndex(buf[pos]);
@@ -160,26 +233,16 @@ namespace medi {
       }
     }
 
-    static inline AdjointType* getAdjoints(const int* indices, int count) {
-      AdjointType* adjoints = new AdjointType[count];
+    static inline void getAdjoints(const int* indices, int count, AdjointType* adjoints) {
       for(int pos = 0; pos < count; ++pos) {
         adjoints[pos] = ADTool::getAdjoint(indices[pos]);
       }
-
-      return adjoints;
     }
 
     static inline void updateAdjoints(const int* indices, int count, const AdjointType* adjoints) {
       for(int pos = 0; pos < count; ++pos) {
         ADTool::updateAdjoint(indices[pos], adjoints[pos]);
       }
-
-      return adjoints;
-    }
-
-    static inline void freeAdjoints(AdjointType* &adjoints) {
-      delete [] adjoints;
-      adjoints = NULL;
     }
   };
 }

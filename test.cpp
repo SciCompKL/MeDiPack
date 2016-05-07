@@ -49,42 +49,50 @@ int main(int nargs, char** args) {
 
   MPI_Op codiAddOpMod;
   MPI_Op_create((MPI_User_function*)codiMpiAdd<Number>, true, &codiAddOpMod);
-  medi::TAMPI_Op codiAddTOpMod(false, codiAddOpMod, NULL);
+  medi::TAMPI_Op codiAddTOpMod(false, false, codiAddOpMod, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
   MPI_Op codiAddOp;
   MPI_Op_create((MPI_User_function*)codiValueAdd<Number>, true, &codiAddOp);
-  medi::TAMPI_Op codiAddTOp(false, codiAddOp,&codiAddTOpMod);
+  medi::TAMPI_Op codiAddTOp(false, false, codiAddOp,&codiAddTOpMod, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
 
   MPI_Op codiMulOpMod;
   MPI_Op_create((MPI_User_function*)codiMpiMul<Number>, true, &codiMulOpMod);
-  medi::TAMPI_Op codiMulTOpMod(true, codiMulOpMod, NULL);
+  medi::TAMPI_Op codiMulTOpMod(true, false, codiMulOpMod, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
   MPI_Op codiMulOp;
   MPI_Op_create((MPI_User_function*)codiValueMul<Number>, true, &codiMulOp);
-  medi::TAMPI_Op codiMulTOp(true, codiMulOp,&codiMulTOpMod);
+  medi::TAMPI_Op codiMulTOp(true, false, codiMulOp,&codiMulTOpMod, (medi::PreAdjointOperation)codiPreAdjMul<double, double>, (medi::PostAdjointOperation)codiPostAdjMul<double, double>);
 
   MPI_Op codiMaxOpMod;
   MPI_Op_create((MPI_User_function*)codiMpiMax<Number>, true, &codiMaxOpMod);
-  medi::TAMPI_Op codiMaxTOpMod(true, codiMaxOpMod, NULL);
+  medi::TAMPI_Op codiMaxTOpMod(true, true, codiMaxOpMod, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
   MPI_Op codiMaxOp;
   MPI_Op_create((MPI_User_function*)codiValueMax<Number>, true, &codiMaxOp);
-  medi::TAMPI_Op codiMaxTOp(true, codiMaxOp,&codiMaxTOpMod);
+  medi::TAMPI_Op codiMaxTOp(true, true, codiMaxOp,&codiMaxTOpMod, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
 
   MPI_Op codiMinOpMod;
   MPI_Op_create((MPI_User_function*)codiMpiMin<Number>, true, &codiMinOpMod);
-  medi::TAMPI_Op codiMinTOpMod(true, codiMinOpMod, NULL);
+  medi::TAMPI_Op codiMinTOpMod(true, true, codiMinOpMod, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
   MPI_Op codiMinOp;
   MPI_Op_create((MPI_User_function*)codiValueMin<Number>, true, &codiMinOp);
-  medi::TAMPI_Op codiMinTOp(true, codiMinOp,&codiMinTOpMod);
+  medi::TAMPI_Op codiMinTOp(true, true, codiMinOp,&codiMinTOpMod, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
 
 
   // Reduce all of the local sums into the global sum
   Number* global_sum = new Number[n];
-  medi::TAMPI_Reduce<CoDiDataType>(nums, global_sum, n, codiMaxTOp, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Reduce<CoDiDataType>(nums, global_sum, n, codiMinTOp, 0, MPI_COMM_WORLD);
 
   // Print the result
   if (world_rank == 0) {
     for(int i = 0; i < n; ++i) {
       std::cout << i << ": " << global_sum[i].getValue() << " " << global_sum[i].getGradientData() << std::endl;
+
+      global_sum[i].setGradient((double) (i + 1));
     }
+  }
+
+  tape.evaluate();
+
+  for(int i = 0; i < n; ++i) {
+    std::cout << world_rank << " " << i << ": " << nums[i].getGradient() << " " << nums[i].getGradientData() << std::endl;
   }
 
   MPI_Finalize();

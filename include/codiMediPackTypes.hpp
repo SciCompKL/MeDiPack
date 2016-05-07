@@ -78,6 +78,32 @@ void codiValueMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   }
 }
 
+template <typename AT, typename PT>
+void codiPreAdjMul(AT* adjoints, PT* primals, int count) {
+  for(int i = 0; i < count; ++i) {
+    adjoints[i] *= primals[i];
+  }
+}
+
+template <typename AT, typename PT>
+void codiPostAdjMul(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
+  CODI_UNUSED(rootPrimals);
+
+  for(int i = 0; i < count; ++i) {
+    if(0.0 != primals[i]) {
+      adjoints[i] /= primals[i];
+    }
+  }
+}
+
+template <typename AT, typename PT>
+void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
+  for(int i = 0; i < count; ++i) {
+    if(rootPrimals[i] != primals[i]) {
+      adjoints[i] = 0.0; // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+    }
+  }
+}
 
 struct CoDiPackTool {
   typedef codi::RealReverse Type;
@@ -136,7 +162,8 @@ struct CoDiPackTool {
   }
 
   static inline void updateAdjoint(const int index, const AdjointType& adjoint) {
-    return Type::getGlobalTape().gradient(index) += adjoint;
+    int indexCopy = index;
+    Type::getGlobalTape().gradient(indexCopy) += adjoint;
   }
 
   static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) {
