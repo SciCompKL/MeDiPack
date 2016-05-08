@@ -1,5 +1,10 @@
 .ignorecase = 0
 .template 0
+
+function modifyTypeName(type)
+  return string.replace(type, "MPI_|TAMPI_")
+endfunction
+
 for functions.function as curFunction
  #generate the names for the datatypes
  for curFunction.send
@@ -12,76 +17,251 @@ for functions.function as curFunction
 # build the definitions for the templates
  curFunction.tplDef = ""
  curFunction.tplArg = ""
+ curFunction.tplEmpty = ""
  for curFunction.type
-   comma = last()?? "" ? ", "
    type.tplName = "$(type.name:upper)"
-   curFunction.tplDef += "typename $(type.tplName)$(comma)"
-   curFunction.tplArg += "$(type.tplName)::ModifiedNested$(comma)"
+   curFunction.tplDef += "typename $(type.tplName)"
+   curFunction.tplArg += "typename $(type.tplName)::ModifiedNested"
+   curFunction.tplEmpty += "EmptyDataType"
+
+   comma = last()?? "" ? ", "
+   curFunction.tplDef += comma
+   curFunction.tplArg += comma
+   curFunction.tplEmpty += comma
+ endfor
+
+# build the TAMPI names for all arguments
+ for curFunction. as item
+   item.taType = modifyTypeName(item.type)
  endfor
 
 #build the argument lists
  curFunction.argDef = ""
  curFunction.argArg = ""
+ curFunction.argEmpty = ""
  for curFunction. as item
-   comma = last()?? "" ? ", "
    constMod = defined(item.const) ?? "const " ? ""
+   curFunction.argDef +=   constMod # prepend the const modifier
+   curFunction.argEmpty +=   constMod # prepend the const modifier
    if(name(item) <> "type")  # exclude the types because they are handled as templates
      if(name(item) =  "recv" | name(item) =  "send")
-       curFunction.argDef += "$(constMod)typename $(item.typeName)::Type* $(item.name)$(comma)"  #append '::Type' to the typename
-       curFunction.argArg += "$(item.name)Mod$(comma)"    # append 'Mod' to the bufferNames
+       curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
+       curFunction.argArg += "$(item.name)Mod"    # append 'Mod' to the bufferNames
+       curFunction.argEmpty += "typename EmptyDataType::Type* $(item.name)"
+     elsif(name(item) = "operator")
+       curFunction.argDef += "$(item.taType) $(item.name)"
+       curFunction.argArg += "*$(item.name).modifiedOp"
+       curFunction.argEmpty += "$(item.taType) $(item.name)"
      else
-       curFunction.argDef += "$(constMod)$(item.type) $(item.name)$(comma)"
-       curFunction.argArg += "$(item.name)$(comma)"
+       curFunction.argDef += "$(item.taType) $(item.name)"
+       curFunction.argArg += "$(item.name)"
+       curFunction.argEmpty += "$(item.taType) $(item.name)"
      endif
+     comma = last()?? "" ? ", "
+     curFunction.argDef += comma
+     curFunction.argArg += comma
+     curFunction.argEmpty += comma
    endif
  endfor
 
 #build the argument list for the regular call
  curFunction.argReg = ""
  for curFunction. as item
-   comma = last()?? "" ? ", "
-   constMod = defined(item.const) ?? "const " ? ""
    if(name(item) = "type")
-     curFunction.argReg += "$(item.tplName)::Tool::MPIType$(comma)"    # get the regular mpi type
+     curFunction.argReg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
+   elsif(name(item) = "operator")
+     curFunction.argReg += "$(item.name).primalFunction"    # get the regular mpi type
    else
-     curFunction.argReg += "$(item.name)$(comma)"
+     curFunction.argReg += "$(item.name)"
    endif
+   curFunction.argReg += last()?? "" ? ", "  # append the seperator if neede
  endfor
 
  # define the ad type that is used in this function
  curFunction.adType = "$(curFunction->type.tplName)::Tool"
 endfor
 
+function startRoot(buffer)
+  if(defined(my.buffer.root))  # check if this buffer is only required on the root process
+>      if($(my.buffer.root) == getRank(comm)) {
+  endif
+endfunction
+
+function endRoot(buffer)
+  if(defined(my.buffer.root))
+>      }
+  endif
+endfunction
+
+# define function for buffer prepare
+function createBufferPrepare(buffer, type)
+>      typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
+  startRoot(my.buffer)
+>         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), h);
+  endRoot(my.buffer)
+endfunction
+
+# define function for buffer handle
+function createBufferHandle(buffer, type)
+  startRoot(my.buffer)
+>        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), h);
+  endRoot(my.buffer)
+endfunction
+
+# define function for primal extraction
+function createPrimalExtraction(buffer)
+  startRoot(my.buffer)
+>           $(my.buffer.typeName)::getValues($(my.buffer.name), $(my.buffer.count), h->$(my.Buffer.name)Primals);
+  endRoot(my.buffer)
+endfunction
 
 .endtemplate
 .output "$(switches.arg1)"
+#pragma once
+
+#include "include/medipack.h"
+
 namespace medi {
 .for functions.function as curFunction
+.- create the reverse function
   template<$(curFunction.tplDef)>
-  TAMPI_$(curFunction.name)($(curFunction.argDef)) {
-    if(!$(curFunction.adType)::IS_ActiveType) {
-      MPI_$(curFunction.name)($(curFunction.argReg));
-    } else {
-      $(curFunction.adType)::Handle h = $(curFunction.adType)::startAssembly();
-. for curFunction.send
-      $(send.typeName)::ModifiedType* $(send.name)Mod = $(send.typeName)::prepareSendBuffer($(send.name), $(send.count), h);
-. endfor
-. for curFunction.recv
-      $(recv.typeName)::ModifiedType* $(recv.name)Mod = $(recv.typeName)::prepareRecvBuffer($(recv.name), $(recv.count), h);
+  void TAMPI_$(curFunction.name)_b(Handle* h) {
+.- unpack the arguments
+. for curFunction. as item
+.   if(name(item) <> "type" & name(item) <> "send" & name(item) <> "recv")
+    $(item.taType) $(item.name) = h->$(item.name);
+.   endif
 . endfor
 
-      TAMPI_$(curFunction.name)<$(curFunction.tplArg)>($(curFunction.argArg));
+.- check here if an operator exists and set the parameter for the create function
+.  primalRequired = "false"
+.  if(defined(curFunction->operator))
+.    primalRequired = "$(curFunction->operator.name).requiresPrimalSend"
+.  endif
+
+. for curFunction.recv
+    typename $(recv.typeName)::AdjointType* $(recv.name)Adjoints = NULL;
+    double* $(recv.name)Primals = NULL;
+    int $(recv.name)Size = 0;
+.   startRoot(recv)
+      $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, h->$(recv.name)Count, $(primalRequired));
+      $(recv.typeName)::getAdjoints(h->$(recv.name)Indices, h->$(recv.name)Count, $(recv.name)Adjoints);
+
+.  if(defined(curFunction->operator))
+      $(curFunction->operator.name).preAdjointOperation($(recv.name)Adjoints, h->$(recv.name)Primals, h->$(recv.name)Count);
+      if($(primalRequired)) {
+        copyPrimals($(recv.name)Primals, h->$(recv.name)Primals, h->$(recv.name)Count);
+      }
+.   endif
+.   endRoot(recv)
+. endfor
+
+. for curFunction.send
+    typename $(send.typeName)::AdjointType* $(send.name)Adjoints = NULL;
+    double* $(send.name)Primals = NULL;
+    int $(send.name)Size = 0;
+.   startRoot(send)
+      $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(primalRequired));
+.   endRoot(send)
+. endfor
+
+    if(root == getRank(comm)) {
+      MPI_Bcast(recvbufAdjoints, recvbufSize, MPI_BYTE, root, comm);
+      deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
+      sendbufAdjoints = recvbufAdjoints;
+      sendbufPrimals = recvbufPrimals;
+      recvbufAdjoints = NULL;
+      recvbufPrimals = NULL;
+    } else {
+      MPI_Bcast(sendbufAdjoints, sendbufSize, MPI_BYTE, root, comm);
+    }
+
+. for curFunction.send
+.   startRoot(send)
+.     if(defined(curFunction->operator))
+        $(curFunction->operator.name).postAdjointOperation($(send.name)Adjoints, h->$(send.name)Primals, $(send.name)Primals, h->$(send.name)Count);
+.     endif
+      $(send.typeName)::updateAdjoints(h->$(send.name)Indices, h->$(send.name)Count, $(send.name)Adjoints);
+      deleteReverseBuffer($(send.name)Adjoints , $(send.name)Primals, $(primalRequired));
+.   endRoot(send)
+. endfor
+
+. for curFunction.recv
+.   startRoot(recv)
+      deleteReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, $(primalRequired));
+.   endRoot(recv)
+. endfor
+  }
+
+.- create the primal function
+  template<$(curFunction.tplDef)>
+  int TAMPI_$(curFunction.name)($(curFunction.argDef)) {
+    int rStatus;
+    if(!$(curFunction.adType)::IS_ActiveType) {
+      rStatus = MPI_$(curFunction.name)($(curFunction.argReg));
+    } else {
+      Handle* h = NULL;
+      if($(curFunction.adType)::isHandleRequired()) {
+        h = new Handle();
+      }
+      $(curFunction.adType)::startAssembly(h);
+
+. for curFunction.operator
+      if(NULL != h && op.requiresPrimal) {
+.   for curFunction.send
+.       createPrimalExtraction(send)
+.   endfor
+      }
+. endfor
+
+. for curFunction.send
+.     createBufferPrepare(send, "Send")
+. endfor
+
+. for curFunction.recv
+.     createBufferPrepare(recv, "Recv")
+. endfor
+
+      if(NULL != h) {
+        h->func = TAMPI_$(curFunction.name)_b<DATATYPE>;
+        h->op = op;
+        h->root = root;
+        h->comm = comm;
+      }
+
+      rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArg)>($(curFunction.argArg));
       $(curFunction.adType)::addToolAction(h);
 
 . for curFunction.send
-      $(send.typeName)::handleSendBuffer($(send.name), $(send.name)Mod, $(send.count), h);
+.      createBufferHandle(send, "Send")
 . endfor
+
 . for curFunction.recv
-      $(recv.typeName)::handleRecvBuffer($(recv.name), $(recv.name)Mod, $(recv.count), h);
+.      createBufferHandle(recv, "Recv")
+. endfor
+
+. for curFunction.operator
+      if(NULL != h && op.requiresPrimal) {
+.   for curFunction.recv
+.       createPrimalExtraction(recv)
+.   endfor
+      }
 . endfor
 
       $(curFunction.adType)::stopAssembly(h);
     }
+
+    return rStatus;
+  }
+
+  template<>
+  int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
+. for curFunction. as item
+.   if(name(item) <> "type")  # exclude the types because they are handled as templates
+    MEDI_UNUSED($(item.name));
+.   endif
+. endfor
+    return 0;
   }
 .endfor
 }

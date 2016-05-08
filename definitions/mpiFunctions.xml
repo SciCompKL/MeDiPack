@@ -4,7 +4,7 @@
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_DataType"/>
-    <arg name="op" type="MPI_Op"/>
+    <operator name="op" type="MPI_Op"/>
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>

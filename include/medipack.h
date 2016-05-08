@@ -6,7 +6,11 @@
 #define MEDI_UNUSED(name) (void)(name)
 #define MEDI_CHECK_ERROR(expr) (expr)
 
+
 namespace medi {
+
+  typedef MPI_Comm TAMPI_Comm;
+
   struct Handle;
   typedef void (*ReverseFunction)(Handle* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
@@ -44,23 +48,24 @@ namespace medi {
 
   struct Handle {
     ReverseFunction func;
-    int sendCount;
-    int* sendIndices;
-    double* sendPrimals;
+    int sendbufCount;
+    int* sendbufIndices;
+    double* sendbufPrimals;
 
+    int count;
     TAMPI_Op op;
     int root;
     MPI_Comm comm;
 
-    int recvCount;
-    int* recvIndices;
-    double* recvPrimals;
+    int recvbufCount;
+    int* recvbufIndices;
+    double* recvbufPrimals;
 
     ~Handle() {
-      if(NULL != sendIndices) { delete [] sendIndices; }
-      if(NULL != sendPrimals) { delete [] sendPrimals; }
-      if(NULL != recvIndices) { delete [] recvIndices; }
-      if(NULL != recvPrimals) { delete [] recvPrimals; }
+      if(NULL != sendbufIndices) { delete [] sendbufIndices; }
+      if(NULL != sendbufPrimals) { delete [] sendbufPrimals; }
+      if(NULL != recvbufIndices) { delete [] recvbufIndices; }
+      if(NULL != recvbufPrimals) { delete [] recvbufPrimals; }
     }
   };
 
@@ -178,10 +183,10 @@ namespace medi {
 
     static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, Handle* h) {
       if(ADTool::isActive()) {
-        h->sendCount = count;
-        h->sendIndices = new int[count];
+        h->sendbufCount = count;
+        h->sendbufIndices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
-          h->sendIndices[pos] = ADTool::getIndex(buf[pos]);
+          h->sendbufIndices[pos] = ADTool::getIndex(buf[pos]);
         }
       }
       ModifiedType* modBuf = NULL;
@@ -218,10 +223,10 @@ namespace medi {
       }
 
       if(ADTool::isActive()) {
-        h->recvCount = count;
-        h->recvIndices = new int[count];
+        h->recvbufCount = count;
+        h->recvbufIndices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
-          h->recvIndices[pos] = ADTool::getIndex(buf[pos]);
+          h->recvbufIndices[pos] = ADTool::getIndex(buf[pos]);
         }
       }
     }

@@ -1,7 +1,8 @@
 #include <mpi.h>
 #include <codi.hpp>
 
-#include "test.hpp"
+#include "generated/tampiFunctions.hpp"
+//#include "test.hpp"
 
 #include "medipack.h"
 #include "codiMediPackTypes.hpp"
@@ -78,7 +79,7 @@ int main(int nargs, char** args) {
 
   // Reduce all of the local sums into the global sum
   Number* global_sum = new Number[n];
-  medi::TAMPI_Reduce<CoDiDataType>(nums, global_sum, n, codiMinTOp, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Reduce<CoDiDataType>(nums, global_sum, n, codiAddTOp, 0, MPI_COMM_WORLD);
 
   // Print the result
   if (world_rank == 0) {
