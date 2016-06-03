@@ -110,6 +110,7 @@ struct CoDiPackTool {
   typedef codi::RealReverse::GradientValue AdjointType;
   typedef codi::RealReverse ModifiedType;
   typedef double PassiveType;
+  typedef codi::RealReverse::GradientData IndexType;
 
   const static bool IS_ActiveType = true;
   const static bool IS_RequiresModifiedBuffer = false;
@@ -125,27 +126,27 @@ struct CoDiPackTool {
     return Type::getGlobalTape().isActive();
   }
 
-  static inline void startAssembly(medi::Handle* h) {
+  static inline void startAssembly(medi::HandleBase* h) {
 
   }
 
-  static inline void addToolAction(medi::Handle* h) {
+  static inline void addToolAction(medi::HandleBase* h) {
     if(NULL != h) {
       Type::getGlobalTape().pushExternalFunctionHandle(callFunc, h, deleteFunc);
     }
   }
 
-  static inline void stopAssembly(medi::Handle* h) {
+  static inline void stopAssembly(medi::HandleBase* h) {
 
   }
 
   static void callFunc(void* h) {
-    medi::Handle* handle = static_cast<medi::Handle*>(h);
+    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     handle->func(handle);
   }
 
   static void deleteFunc(void* h) {
-    medi::Handle* handle = static_cast<medi::Handle*>(h);
+    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     delete handle;
   }
 

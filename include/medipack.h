@@ -10,9 +10,10 @@
 namespace medi {
 
   typedef MPI_Comm TAMPI_Comm;
+  typedef MPI_Status TAMPI_Status;
 
-  struct Handle;
-  typedef void (*ReverseFunction)(Handle* h);
+  struct HandleBase;
+  typedef void (*ReverseFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
 
@@ -46,27 +47,10 @@ namespace medi {
       postAdjointOperation(postAdjointOperation) {}
   };
 
-  struct Handle {
+  struct HandleBase {
     ReverseFunction func;
-    int sendbufCount;
-    int* sendbufIndices;
-    double* sendbufPrimals;
 
-    int count;
-    TAMPI_Op op;
-    int root;
-    MPI_Comm comm;
-
-    int recvbufCount;
-    int* recvbufIndices;
-    double* recvbufPrimals;
-
-    ~Handle() {
-      if(NULL != sendbufIndices) { delete [] sendbufIndices; }
-      if(NULL != sendbufPrimals) { delete [] sendbufPrimals; }
-      if(NULL != recvbufIndices) { delete [] recvbufIndices; }
-      if(NULL != recvbufPrimals) { delete [] recvbufPrimals; }
-    }
+    virtual ~HandleBase() {}
   };
 
   inline int getRank(MPI_Comm comm) {
@@ -140,9 +124,9 @@ namespace medi {
       }
 
       static bool isHandleRequired() { return false; }
-      static inline void startAssembly(Handle* h) { MEDI_UNUSED(h); }
-      static inline void addToolAction(Handle* h) { MEDI_UNUSED(h); }
-      static inline void stopAssembly(Handle* h) { MEDI_UNUSED(h); }
+      static inline void startAssembly(HandleBase* h) { MEDI_UNUSED(h); }
+      static inline void addToolAction(HandleBase* h) { MEDI_UNUSED(h); }
+      static inline void stopAssembly(HandleBase* h) { MEDI_UNUSED(h); }
       static inline int getIndex(const Type& value) { MEDI_UNUSED(value); return 0; }
       static inline Type getValue(const Type& value) { return value; }
       static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) { MEDI_UNUSED(modValue); MEDI_UNUSED(value); }
@@ -155,15 +139,16 @@ namespace medi {
       typedef typename Tool::Type Type;
       typedef typename Tool::AdjointType AdjointType;
       typedef typename Tool::PassiveType PassiveType;
+      typedef int IndexType;
 
       typedef typename Tool::ModifiedType ModifiedType;
       typedef EmptyDataType ModifiedNested;
 
-      static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(h); return NULL; }
-      static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(h); }
-      static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(h); return NULL; }
-      static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, Handle* h) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(h); }
-      static inline void getValues(const Type* buf, int count, double* &primals) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(primals); }
+      static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
+      static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+      static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
+      static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+      static inline void getValues(const Type* buf, int count, PassiveType* &primals) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(primals); }
       static inline void getAdjoints(const int* indices, int count, AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
       static inline void updateAdjoints(const int* indices, int count, const AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
   };
@@ -175,18 +160,19 @@ namespace medi {
     typedef typename ADTool::Type Type;
     typedef typename ADTool::AdjointType AdjointType;
     typedef typename ADTool::PassiveType PassiveType;
+    typedef typename ADTool::IndexType IndexType;
 
     typedef ADTool Tool;
 
     typedef typename ADTool::ModifiedType ModifiedType;
     typedef typename ADTool::ModifiedNested ModifiedNested;
 
-    static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, Handle* h) {
+    static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, IndexType* &indices, int &indexCount) {
       if(ADTool::isActive()) {
-        h->sendbufCount = count;
-        h->sendbufIndices = new int[count];
+        indexCount = count;
+        indices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
-          h->sendbufIndices[pos] = ADTool::getIndex(buf[pos]);
+          indices[pos] = ADTool::getIndex(buf[pos]);
         }
       }
       ModifiedType* modBuf = NULL;
@@ -202,14 +188,15 @@ namespace medi {
       return modBuf;
     }
 
-    static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, Handle* h) {
+    static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) {
       if(ADTool::IS_RequiresModifiedBuffer) {
         delete [] modBuf;
       }
     }
 
-    static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, Handle* h) {
-      (void)h;
+    static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, IndexType* &indices, int &indexCount) {
+      MEDI_UNUSED(indices);
+      MEDI_UNUSED(indexCount);
       if(ADTool::IS_RequiresModifiedBuffer) {
         return new ModifiedType[count];
       } else {
@@ -217,16 +204,16 @@ namespace medi {
       }
     }
 
-    static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, Handle* h) {
+    static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) {
       for(int pos = 0; pos < count; ++pos) {
         ADTool::getFromModifyBuffer(modBuf[pos], buf[pos]);
       }
 
       if(ADTool::isActive()) {
-        h->recvbufCount = count;
-        h->recvbufIndices = new int[count];
+        indexCount = count;
+        indices = new int[count];
         for(int pos = 0; pos < count; ++pos) {
-          h->recvbufIndices[pos] = ADTool::getIndex(buf[pos]);
+          indices[pos] = ADTool::getIndex(buf[pos]);
         }
       }
     }

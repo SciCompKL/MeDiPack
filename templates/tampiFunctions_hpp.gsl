@@ -6,6 +6,8 @@ function modifyTypeName(type)
 endfunction
 
 for functions.function as curFunction
+ #generate the constants for each function
+ curFunction.handleName = "TAMPI_$(curFunction.name)_Handle"
  #generate the names for the datatypes
  for curFunction.send
    send.typeName = "$(send.type:upper)"
@@ -17,16 +19,19 @@ for functions.function as curFunction
 # build the definitions for the templates
  curFunction.tplDef = ""
  curFunction.tplArg = ""
+ curFunction.tplArgMod = ""
  curFunction.tplEmpty = ""
  for curFunction.type
    type.tplName = "$(type.name:upper)"
    curFunction.tplDef += "typename $(type.tplName)"
-   curFunction.tplArg += "typename $(type.tplName)::ModifiedNested"
+   curFunction.tplArg += "$(type.tplName)"
+   curFunction.tplArgMod += "typename $(type.tplName)::ModifiedNested"
    curFunction.tplEmpty += "EmptyDataType"
 
    comma = last()?? "" ? ", "
    curFunction.tplDef += comma
    curFunction.tplArg += comma
+   curFunction.tplArgMod += comma
    curFunction.tplEmpty += comma
  endfor
 
@@ -97,14 +102,14 @@ endfunction
 function createBufferPrepare(buffer, type)
 >      typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
   startRoot(my.buffer)
->         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), h);
+>         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
   endRoot(my.buffer)
 endfunction
 
 # define function for buffer handle
 function createBufferHandle(buffer, type)
   startRoot(my.buffer)
->        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), h);
+>        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
   endRoot(my.buffer)
 endfunction
 
@@ -123,10 +128,35 @@ endfunction
 
 namespace medi {
 .for functions.function as curFunction
+.- create the struct for the data store
+  template<$(curFunction.tplDef)>
+  struct $(curFunction.handleName) : public HandleBase {
+. for curFunction. as item
+.   if(name(item) <> "type")
+.     if(name(item) = "send" | name(item) = "recv")
+        typename $(item.typeName)::IndexType* $(item.name)Indices;
+        typename $(item.typeName)::PassiveType* $(item.name)Primals;
+        int $(item.name)Count;
+.     else
+        $(item.taType) $(item.name);
+.     endif
+.   endif
+. endfor
+    ~$(curFunction.handleName) () {
+. for curFunction. as item
+.   if(name(item) = "send" | name(item) = "recv")
+      if(NULL != $(item.name)Indices) { delete [] $(item.name)Indices; }
+      if(NULL != $(item.name)Primals) { delete [] $(item.name)Primals; }
+.   endif
+. endfor
+    }
+  };
+
 .- create the reverse function
   template<$(curFunction.tplDef)>
-  void TAMPI_$(curFunction.name)_b(Handle* h) {
-.- unpack the arguments
+  void TAMPI_$(curFunction.name)_b(HandleBase* handle) {
+    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+.- unpack the arguments (buffers are accessed directly)
 . for curFunction. as item
 .   if(name(item) <> "type" & name(item) <> "send" & name(item) <> "recv")
     $(item.taType) $(item.name) = h->$(item.name);
@@ -141,7 +171,7 @@ namespace medi {
 
 . for curFunction.recv
     typename $(recv.typeName)::AdjointType* $(recv.name)Adjoints = NULL;
-    double* $(recv.name)Primals = NULL;
+    typename $(recv.typeName)::PassiveType* $(recv.name)Primals = NULL;
     int $(recv.name)Size = 0;
 .   startRoot(recv)
       $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, h->$(recv.name)Count, $(primalRequired));
@@ -158,7 +188,7 @@ namespace medi {
 
 . for curFunction.send
     typename $(send.typeName)::AdjointType* $(send.name)Adjoints = NULL;
-    double* $(send.name)Primals = NULL;
+    typename $(send.typeName)::PassiveType* $(send.name)Primals = NULL;
     int $(send.name)Size = 0;
 .   startRoot(send)
       $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(primalRequired));
@@ -200,9 +230,9 @@ namespace medi {
     if(!$(curFunction.adType)::IS_ActiveType) {
       rStatus = MPI_$(curFunction.name)($(curFunction.argReg));
     } else {
-      Handle* h = NULL;
+      $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
       if($(curFunction.adType)::isHandleRequired()) {
-        h = new Handle();
+        h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
       $(curFunction.adType)::startAssembly(h);
 
@@ -224,12 +254,15 @@ namespace medi {
 
       if(NULL != h) {
         h->func = TAMPI_$(curFunction.name)_b<DATATYPE>;
-        h->op = op;
-        h->root = root;
-        h->comm = comm;
+.- pack the arguments (buffers are packed in buffer methods)
+. for curFunction. as item
+.   if(name(item) <> "type" & name(item) <> "send" & name(item) <> "recv")
+        h->$(item.name) = $(item.name);
+.   endif
+. endfor
       }
 
-      rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArg)>($(curFunction.argArg));
+      rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArgMod)>($(curFunction.argArg));
       $(curFunction.adType)::addToolAction(h);
 
 . for curFunction.send
