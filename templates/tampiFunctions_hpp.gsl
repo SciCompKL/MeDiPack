@@ -43,6 +43,7 @@ for functions.function as curFunction
 #build the argument lists
  curFunction.argDef = ""
  curFunction.argArg = ""
+ curFunction.argRev = ""
  curFunction.argEmpty = ""
  for curFunction. as item
    constMod = defined(item.const) ?? "const " ? ""
@@ -52,19 +53,23 @@ for functions.function as curFunction
      if(name(item) =  "recv" | name(item) =  "send")
        curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
        curFunction.argArg += "$(item.name)Mod"    # append 'Mod' to the bufferNames
+       curFunction.argRev += "$(item.name)Adjoints, $(item.name)Primals, $(item.name)Size"    # append adjoint and primal buffer and the byte size
        curFunction.argEmpty += "typename EmptyDataType::Type* $(item.name)"
      elsif(name(item) = "operator")
        curFunction.argDef += "$(item.taType) $(item.name)"
        curFunction.argArg += "*$(item.name).modifiedOp"
+       curFunction.argRev += "$(item.name)"
        curFunction.argEmpty += "$(item.taType) $(item.name)"
      else
        curFunction.argDef += "$(item.taType) $(item.name)"
        curFunction.argArg += "$(item.name)"
+       curFunction.argRev += "$(item.name)"
        curFunction.argEmpty += "$(item.taType) $(item.name)"
      endif
      comma = last()?? "" ? ", "
      curFunction.argDef += comma
      curFunction.argArg += comma
+     curFunction.argRev += comma
      curFunction.argEmpty += comma
    endif
  endfor
@@ -124,7 +129,8 @@ endfunction
 .output "$(switches.arg1)"
 #pragma once
 
-#include "include/medipack.h"
+#include "../include/medipack.h"
+#include "../include/reverseFunctions.hpp"
 
 namespace medi {
 .for functions.function as curFunction
@@ -195,16 +201,7 @@ namespace medi {
 .   endRoot(send)
 . endfor
 
-    if(root == getRank(comm)) {
-      MPI_Bcast(recvbufAdjoints, recvbufSize, MPI_BYTE, root, comm);
-      deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
-      sendbufAdjoints = recvbufAdjoints;
-      sendbufPrimals = recvbufPrimals;
-      recvbufAdjoints = NULL;
-      recvbufPrimals = NULL;
-    } else {
-      MPI_Bcast(sendbufAdjoints, sendbufSize, MPI_BYTE, root, comm);
-    }
+    TAMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
 . for curFunction.send
 .   startRoot(send)
