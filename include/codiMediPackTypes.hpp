@@ -3,7 +3,7 @@
 #include "medipack.h"
 
 template <typename T>
-void codiMpiAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   for(int i = 0; i < *len; ++i) {
@@ -12,7 +12,7 @@ void codiMpiAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiMpiMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiModifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   for(int i = 0; i < *len; ++i) {
@@ -21,7 +21,7 @@ void codiMpiMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiMpiMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiModifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   using std::max;
@@ -31,7 +31,7 @@ void codiMpiMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiMpiMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiModifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   using std::min;
@@ -41,7 +41,7 @@ void codiMpiMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiValueAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   for(int i = 0; i < *len; ++i) {
@@ -50,7 +50,7 @@ void codiValueAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiValueMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiUnmodifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   for(int i = 0; i < *len; ++i) {
@@ -59,7 +59,7 @@ void codiValueMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiValueMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiUnmodifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   using std::max;
@@ -69,7 +69,7 @@ void codiValueMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 }
 
 template <typename T>
-void codiValueMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
+void codiUnmodifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   using std::min;
@@ -105,21 +105,65 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
   }
 }
 
+template<typename CoDiType>
 struct CoDiPackTool {
-  typedef codi::RealReverse Type;
-  typedef codi::RealReverse::GradientValue AdjointType;
-  typedef codi::RealReverse ModifiedType;
-  typedef double PassiveType;
-  typedef codi::RealReverse::GradientData IndexType;
+  typedef CoDiType Type;
+  typedef typename CoDiType::GradientValue AdjointType;
+  typedef CoDiType ModifiedType;
+  typedef typename CoDiType::PassiveReal PassiveType;
+  typedef typename CoDiType::GradientData IndexType;
 
   const static bool IS_ActiveType = true;
   const static bool IS_RequiresModifiedBuffer = false;
 
   static MPI_Datatype MPIType;
+  static medi::TAMPI_Op OP_ADD;
+  static medi::TAMPI_Op OP_MUL;
+  static medi::TAMPI_Op OP_MIN;
+  static medi::TAMPI_Op OP_MAX;
+
+  private:
+  static medi::TAMPI_Op OP_ADD_MOD;
+  static medi::TAMPI_Op OP_MUL_MOD;
+  static medi::TAMPI_Op OP_MIN_MOD;
+  static medi::TAMPI_Op OP_MAX_MOD;
+
+  public:
   typedef medi::PassiveDataType<Type> ModifiedNested;
 
-  static void init(MPI_Datatype mpiType) {
-    MPIType = mpiType;
+
+  static void initTypes() {
+    // create the mpi type for CoDiPack
+    // this type is used in this type and the passive formulation
+    int blockLength[2] = {1,1};
+    MPI_Aint displacements[2] = {0, sizeof(double)};
+    MPI_Datatype types[2] = {MPI_DOUBLE, MPI_INT};
+    MPI_Datatype codiMpiType;
+    MPI_Type_create_struct(2, blockLength, displacements, types, &codiMpiType);
+    MPI_Type_commit(&codiMpiType);
+    MPIType = codiMpiType;
+    medi::PassiveTool<ModifiedType>::init(codiMpiType);
+  }
+
+  static void initOperator(medi::TAMPI_Op& op, medi::TAMPI_Op& opMod, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
+    MPI_Op modifiedTypeOperator;
+    MPI_Op_create(modifiedFunc, true, &modifiedTypeOperator);
+    opMod.init(requiresPrimal, requiresPrimalSend, modifiedTypeOperator, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
+    MPI_Op valueTYpeOperator;
+    MPI_Op_create(primalFunc, true, &valueTYpeOperator);
+    op.init(requiresPrimal, requiresPrimalSend, valueTYpeOperator, &opMod, preAdjointOperation, postAdjointOperation);
+  }
+
+  static void initOperators() {
+    initOperator(OP_ADD, OP_ADD_MOD, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
+    initOperator(OP_MUL, OP_MUL_MOD, true, false, (MPI_User_function*)codiModifiedMul<Type>, (MPI_User_function*)codiUnmodifiedMul<Type>, (medi::PreAdjointOperation)codiPreAdjMul<double, double>, (medi::PostAdjointOperation)codiPostAdjMul<double, double>);
+    initOperator(OP_MIN, OP_MIN_MOD, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
+    initOperator(OP_MAX, OP_MAX_MOD, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
+  }
+
+  static void init() {
+    initTypes();
+    initOperators();
   }
 
   static bool isHandleRequired() {
@@ -127,6 +171,7 @@ struct CoDiPackTool {
   }
 
   static inline void startAssembly(medi::HandleBase* h) {
+    MEDI_UNUSED(h);
 
   }
 
@@ -137,7 +182,7 @@ struct CoDiPackTool {
   }
 
   static inline void stopAssembly(medi::HandleBase* h) {
-
+    MEDI_UNUSED(h);
   }
 
   static void callFunc(void* h) {
@@ -168,12 +213,12 @@ struct CoDiPackTool {
   }
 
   static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) {
-    (void)value;
-    (void)modValue;
+    MEDI_UNUSED(value);
+    MEDI_UNUSED(value);
   }
 
   static inline void getFromModifyBuffer(const ModifiedType& modValue, Type& value) {
-    (void)modValue;
+    MEDI_UNUSED(modValue);
     if(0 != value.getGradientData()) {
       value.getGradientData() = 0;
       Type::getGlobalTape().registerInput(value);
@@ -185,4 +230,12 @@ struct CoDiPackTool {
   }
 };
 
-MPI_Datatype CoDiPackTool::MPIType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MPIType;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MAX;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD_MOD;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL_MOD;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN_MOD;
+template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MAX_MOD;
