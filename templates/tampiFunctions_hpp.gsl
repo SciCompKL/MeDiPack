@@ -285,7 +285,7 @@ namespace medi {
   }
 
   template<>
-  int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
+  inline int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
 . for curFunction. as item
 .   if(name(item) <> "type")  # exclude the types because they are handled as templates
     MEDI_UNUSED($(item.name));

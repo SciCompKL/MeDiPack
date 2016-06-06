@@ -9,6 +9,11 @@
 
 namespace medi {
 
+#define TAMPI_COMM_WORLD MPI_COMM_WORLD
+#define TAMPI_Comm_rank MPI_Comm_rank
+#define TAMPI_Comm_size MPI_Comm_size
+#define TAMPI_Init MPI_Init
+
   typedef MPI_Comm TAMPI_Comm;
   typedef MPI_Status TAMPI_Status;
 
@@ -17,8 +22,8 @@ namespace medi {
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
 
-  void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
-  void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
+  static void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
+  static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
 
   struct TAMPI_Op {
     /*const*/ bool requiresPrimal;
@@ -38,13 +43,14 @@ namespace medi {
       preAdjointOperation(noPreAdjointOperation),
       postAdjointOperation(noPostAdjointOperation) {}
 
-    TAMPI_Op(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, const TAMPI_Op* modifiedOp, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) :
-      requiresPrimal(requiresPrimal),
-      requiresPrimalSend(requiresPrimalSend),
-      primalFunction(primalFunction),
-      modifiedOp(modifiedOp),
-      preAdjointOperation(preAdjointOperation),
-      postAdjointOperation(postAdjointOperation) {}
+    void init(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, const TAMPI_Op* modifiedOp, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) {
+      this->requiresPrimal = requiresPrimal;
+      this->requiresPrimalSend = requiresPrimalSend;
+      this->primalFunction = primalFunction;
+      this->modifiedOp = modifiedOp;
+      this->preAdjointOperation = preAdjointOperation;
+      this->postAdjointOperation = postAdjointOperation;
+    }
   };
 
   struct HandleBase {
