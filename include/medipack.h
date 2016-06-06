@@ -9,10 +9,11 @@
 
 namespace medi {
 
-#define TAMPI_COMM_WORLD MPI_COMM_WORLD
-#define TAMPI_Comm_rank MPI_Comm_rank
-#define TAMPI_Comm_size MPI_Comm_size
-#define TAMPI_Init MPI_Init
+  #define TAMPI_COMM_WORLD MPI_COMM_WORLD
+  #define TAMPI_Comm_rank MPI_Comm_rank
+  #define TAMPI_Comm_size MPI_Comm_size
+  #define TAMPI_Init MPI_Init
+  #define TAMPI_STATUS_IGNORE MPI_STATUS_IGNORE
 
   typedef MPI_Comm TAMPI_Comm;
   typedef MPI_Status TAMPI_Status;

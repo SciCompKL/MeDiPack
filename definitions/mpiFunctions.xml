@@ -8,7 +8,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Recv">
-    <send name="buf" const="1" type="datatype" count="count"/>
+    <recv name="buf" type="datatype" count="count"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
     <arg name="source" type="int"/>

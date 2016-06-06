@@ -12,10 +12,11 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, int count, int dest, int tag, TAMPI_Comm comm) {
+  void TAMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, int count, int src, int tag, TAMPI_Comm comm, TAMPI_Status* status) {
     MEDI_UNUSED(bufPrimals);
     MEDI_UNUSED(count);
-    MPI_Send(bufAdjoints, bufSize, MPI_BYTE, dest, tag, comm);
+    MEDI_UNUSED(status);
+    MPI_Send(bufAdjoints, bufSize, MPI_BYTE, src, tag, comm);
   }
 
   template<typename DATATYPE>
