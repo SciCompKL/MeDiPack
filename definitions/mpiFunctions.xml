@@ -7,6 +7,15 @@
     <arg name="tag" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
+  <function name="Isend" async="request">
+    <send name="buf" const="1" type="datatype" count="count"/>
+    <arg name="count" type="int"/>
+    <type name="datatype" type="MPI_Datatype"/>
+    <arg name="dest" type="int"/>
+    <arg name="tag" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
   <function name="Recv">
     <recv name="buf" type="datatype" count="count"/>
     <arg name="count" type="int"/>
@@ -15,6 +24,15 @@
     <arg name="tag" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
     <arg name="status" type="MPI_Status*"/>
+  </function>
+  <function name="Irecv" async="request">
+    <recv name="buf" type="datatype" count="count"/>
+    <arg name="count" type="int"/>
+    <type name="datatype" type="MPI_Datatype"/>
+    <arg name="source" type="int"/>
+    <arg name="tag" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Reduce">
     <send name="sendbuf" const="1" type="datatype" count="count"/>
