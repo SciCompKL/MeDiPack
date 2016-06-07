@@ -14,12 +14,14 @@ namespace medi {
   #define TAMPI_Comm_size MPI_Comm_size
   #define TAMPI_Init MPI_Init
   #define TAMPI_STATUS_IGNORE MPI_STATUS_IGNORE
+  #define TAMPI_REQUEST_NULL NULL
 
   typedef MPI_Comm TAMPI_Comm;
   typedef MPI_Status TAMPI_Status;
 
   struct HandleBase;
   typedef void (*ReverseFunction)(HandleBase* h);
+  typedef void (*ContinueFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
 

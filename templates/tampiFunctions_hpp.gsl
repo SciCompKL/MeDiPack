@@ -81,6 +81,8 @@ for functions.function as curFunction
      curFunction.argReg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
    elsif(name(item) = "operator")
      curFunction.argReg += "$(item.name).primalFunction"    # get the regular mpi type
+   elsif(name(item) = "request")
+     curFunction.argReg += "&$(item.name)->request"
    else
      curFunction.argReg += "$(item.name)"
    endif
@@ -125,12 +127,73 @@ function createPrimalExtraction(buffer)
   endRoot(my.buffer)
 endfunction
 
+function unpackHandle(curFunction, reverse)
+>   $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
+# unpack the arguments (buffers are accessed directly)
+  for my.curFunction. as item
+    if(name(item) <> "type")
+      if(name(item) = "send" | name(item) = "recv")
+        if(1 = my.reverse)
+>        typename $(item.typeName)::PassiveType* $(item.name)Adjoints = h->$(item.name)Adjoints;
+>        typename $(item.typeName)::PassiveType* $(item.name)Primals = h->$(item.name)PrimalsReverse;
+        else
+         constMod = defined(item.const) ?? "const " ? ""
+>        $(constMod)typename $(item.typeName)::Type* $(item.name) = h->$(item.name);
+>        typename $(item.typeName)::ModifiedType* $(item.name)Mod = h->$(item.name)Mod;
+        endif
+      else
+>         $(item.taType) $(item.name) = h->$(item.name);
+      endif
+    endif
+  endfor
+endfunction
+
+function addPrimalAsyncSplit(curFunction)
+  if(defined(my.curFunction.async))
+>      $(my.curFunction.async)->handle = h;
+>      $(my.curFunction.async)->func = (ContinueFunction)TAMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
+>      if(NULL != h) {
+>        WaitHandle* waitH = new WaitHandle((ContinueFunction)TAMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
+>        $(my.curFunction.adType)::addToolAction(waitH);
+>      }
+>    }
+>
+>    return rStatus;
+>  }
+>
+>  template<$(my.curFunction.tplDef)>
+>  int TAMPI_$(my.curFunction.name)_finish(HandleBase* handle) {
+>    int rStatus = 0;
+>    if($(my.curFunction.adType)::IS_ActiveType) {
+    unpackHandle(my.curFunction, 0)
+>
+  endif
+endfunction
+
+function addReverseAsyncSplit(curFunction)
+  if(defined(my.curFunction.async))
+  for my.curFunction. as item
+    if(name(item) = "send" | name(item) = "recv")
+>     h->$(item.name)Adjoints = $(item.name)Adjoints;
+>     h->$(item.name)PrimalsReverse = $(item.name)Primals;
+    endif
+  endfor
+>  }
+>
+>  template<$(my.curFunction.tplDef)>
+>  void TAMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
+    unpackHandle(my.curFunction, 1)
+>
+  endif
+endfunction
+
 .endtemplate
 .output "$(switches.arg1)"
 #pragma once
 
 #include "../include/medipack.h"
 #include "../include/reverseFunctions.hpp"
+#include "../include/tampi/async.hpp"
 
 namespace medi {
 .for functions.function as curFunction
@@ -140,8 +203,13 @@ namespace medi {
 . for curFunction. as item
 .   if(name(item) <> "type")
 .     if(name(item) = "send" | name(item) = "recv")
+.       constMod = defined(item.const) ?? "const " ? ""
+        $(constMod)typename $(item.typeName)::Type* $(item.name);  // required for async requests
+        typename $(item.typeName)::ModifiedType* $(item.name)Mod;  // required for async requests
         typename $(item.typeName)::IndexType* $(item.name)Indices;
         typename $(item.typeName)::PassiveType* $(item.name)Primals;
+        typename $(item.typeName)::PassiveType* $(item.name)Adjoints;  // required for async requests
+        typename $(item.typeName)::PassiveType* $(item.name)PrimalsReverse;  // required for async requests
         int $(item.name)Count;
 .     else
         $(item.taType) $(item.name);
@@ -161,13 +229,7 @@ namespace medi {
 .- create the reverse function
   template<$(curFunction.tplDef)>
   void TAMPI_$(curFunction.name)_b(HandleBase* handle) {
-    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
-.- unpack the arguments (buffers are accessed directly)
-. for curFunction. as item
-.   if(name(item) <> "type" & name(item) <> "send" & name(item) <> "recv")
-    $(item.taType) $(item.name) = h->$(item.name);
-.   endif
-. endfor
+.  unpackHandle(curFunction, 1)
 
 .- check here if an operator exists and set the parameter for the create function
 .  primalRequired = "false"
@@ -176,8 +238,8 @@ namespace medi {
 .  endif
 
 . for curFunction.recv
-    typename $(recv.typeName)::AdjointType* $(recv.name)Adjoints = NULL;
-    typename $(recv.typeName)::PassiveType* $(recv.name)Primals = NULL;
+    $(recv.name)Adjoints = NULL;
+    $(recv.name)Primals = NULL;
     int $(recv.name)Size = 0;
 .   startRoot(recv)
       $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, h->$(recv.name)Count, $(primalRequired));
@@ -193,8 +255,8 @@ namespace medi {
 . endfor
 
 . for curFunction.send
-    typename $(send.typeName)::AdjointType* $(send.name)Adjoints = NULL;
-    typename $(send.typeName)::PassiveType* $(send.name)Primals = NULL;
+    $(send.name)Adjoints = NULL;
+    $(send.name)Primals = NULL;
     int $(send.name)Size = 0;
 .   startRoot(send)
       $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(primalRequired));
@@ -203,6 +265,7 @@ namespace medi {
 
     TAMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
+. addReverseAsyncSplit(curFunction)
 . for curFunction.send
 .   startRoot(send)
 .     if(defined(curFunction->operator))
@@ -220,6 +283,11 @@ namespace medi {
 . endfor
   }
 
+.- predefine the async function
+. if(defined(curFunction.async))
+  template<$(curFunction.tplDef)>
+  int TAMPI_$(curFunction.name)_finish(HandleBase* handle);
+. endif
 .- create the primal function
   template<$(curFunction.tplDef)>
   int TAMPI_$(curFunction.name)($(curFunction.argDef)) {
@@ -250,16 +318,20 @@ namespace medi {
 . endfor
 
       if(NULL != h) {
-        h->func = TAMPI_$(curFunction.name)_b<DATATYPE>;
+        h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .- pack the arguments (buffers are packed in buffer methods)
 . for curFunction. as item
-.   if(name(item) <> "type" & name(item) <> "send" & name(item) <> "recv")
-        h->$(item.name) = $(item.name);
+.   if(name(item) <> "type")
+      h->$(item.name) = $(item.name);
+.     if(name(item) = "send" | name(item) = "recv")
+      h->$(item.name)Mod = $(item.name)Mod;
+.     endif
 .   endif
 . endfor
       }
 
       rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArgMod)>($(curFunction.argArg));
+. addPrimalAsyncSplit(curFunction)
       $(curFunction.adType)::addToolAction(h);
 
 . for curFunction.send

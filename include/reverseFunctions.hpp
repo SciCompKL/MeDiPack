@@ -1,6 +1,7 @@
 #pragma once
 
 #include "medipack.h"
+#include "tampi/async.hpp"
 
 namespace medi {
 
@@ -31,6 +32,21 @@ namespace medi {
       recvbufPrimals = NULL;
     } else {
       MPI_Bcast(sendbufAdjoints, sendbufSize, MPI_BYTE, root, comm);
+    }
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Ireduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, int count, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(count);
+    if(root == getRank(comm)) {
+      MPI_Ibcast(recvbufAdjoints, recvbufSize, MPI_BYTE, root, comm, &request->request);
+      deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
+      sendbufAdjoints = recvbufAdjoints;
+      sendbufPrimals = recvbufPrimals;
+      recvbufAdjoints = NULL;
+      recvbufPrimals = NULL;
+    } else {
+      MPI_Ibcast(sendbufAdjoints, sendbufSize, MPI_BYTE, root, comm, &request->request);
     }
   }
 }
