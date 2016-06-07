@@ -7,3 +7,5 @@ MeDiPack.creator.user
 MeDiPack.files
 MeDiPack.includes
 mpi31-report.pdf
+tests/build
+tests/results
