@@ -141,6 +141,12 @@ function unpackHandle(curFunction, reverse)
 >        $(constMod)typename $(item.typeName)::Type* $(item.name) = h->$(item.name);
 >        typename $(item.typeName)::ModifiedType* $(item.name)Mod = h->$(item.name)Mod;
         endif
+      elsif(name(item) = "request")
+        if(1 = my.reverse)
+>         $(item.taType) $(item.name) = &h->$(item.name)Reverse;
+        else
+>         $(item.taType) $(item.name) = h->$(item.name);
+        endif
       else
 >         $(item.taType) $(item.name) = h->$(item.name);
       endif
@@ -184,6 +190,8 @@ function addReverseAsyncSplit(curFunction)
 >  void TAMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
     unpackHandle(my.curFunction, 1)
 >
+>    MPI_Wait(&$(my.curFunction.async)->request, MPI_STATUS_IGNORE);
+>
   endif
 endfunction
 
@@ -211,6 +219,9 @@ namespace medi {
         typename $(item.typeName)::PassiveType* $(item.name)Adjoints;  // required for async requests
         typename $(item.typeName)::PassiveType* $(item.name)PrimalsReverse;  // required for async requests
         int $(item.name)Count;
+.     elsif(name(item) = "request")
+        $(item.taType) $(item.name);
+        TAMPI_Request $(item.name)Reverse;
 .     else
         $(item.taType) $(item.name);
 .     endif
