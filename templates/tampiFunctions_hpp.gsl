@@ -95,7 +95,7 @@ endfor
 
 function startRoot(buffer)
   if(defined(my.buffer.root))  # check if this buffer is only required on the root process
->      if($(my.buffer.root) == getRank(comm)) {
+>      if($(my.buffer.root) == getCommRank(comm)) {
   endif
 endfunction
 

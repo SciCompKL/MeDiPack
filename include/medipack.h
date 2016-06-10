@@ -62,7 +62,7 @@ namespace medi {
     virtual ~HandleBase() {}
   };
 
-  inline int getRank(MPI_Comm comm) {
+  inline int getCommRank(MPI_Comm comm) {
     int rank;
     MEDI_CHECK_ERROR(MPI_Comm_rank(comm, &rank));
 
