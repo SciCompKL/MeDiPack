@@ -34,6 +34,16 @@ namespace medi {
     MPI_Isend(bufAdjoints, bufSize, MPI_BYTE, src, tag, comm, &request->request);
   }
 
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int recvbufSize, int recvcount, int root, TAMPI_Comm comm) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcount);
+
+    MPI_Gather(recvbufAdjoints, recvbufSize, MPI_BYTE, sendbufAdjoints, sendbufSize, MPI_BYTE, root, comm);
+  }
+
   template<typename DATATYPE>
   void TAMPI_Reduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
     MEDI_UNUSED(count);

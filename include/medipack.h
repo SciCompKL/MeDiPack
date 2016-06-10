@@ -69,19 +69,26 @@ namespace medi {
     return rank;
   }
 
+  inline int getCommSize(MPI_Comm comm) {
+    int size;
+    MEDI_CHECK_ERROR(MPI_Comm_size(comm, &size));
+
+    return size;
+  }
+
   template<typename AT, typename PT>
-  inline int allocateReverseBuffer(AT* &adjoints, PT* &primals, int count, bool allocatePrimals) {
+  inline int allocateReverseBuffer(AT* &adjoints, PT* &primals, int count, int ranks, bool allocatePrimals) {
     int bufferSize = 0;
     if(allocatePrimals) {
       // create both buffers as a single array and set the pointers accordingly
       bufferSize = (sizeof(AT) + sizeof(PT)) * count;
-      char* buffer = new char[bufferSize];
+      char* buffer = new char[bufferSize * ranks];
       adjoints = reinterpret_cast<AT*>(buffer);
-      primals = reinterpret_cast<PT*>(buffer + sizeof(AT) * count);
+      primals = reinterpret_cast<PT*>(buffer + sizeof(AT) * count * ranks);
     } else {
       // only create the adjoint buffer
       bufferSize = sizeof(AT) * count;
-      adjoints = new AT[count];
+      adjoints = new AT[count * ranks];
       primals = NULL;
     }
 
@@ -153,10 +160,11 @@ namespace medi {
       typedef typename Tool::ModifiedType ModifiedType;
       typedef EmptyDataType ModifiedNested;
 
-      static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
-      static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
-      static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
-      static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+      static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, int ranks, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
+      static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, int ranks, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+      static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, int ranks, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); return NULL; }
+      static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, int ranks, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(modBuf); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+
       static inline void getValues(const Type* buf, int count, PassiveType* &primals) { MEDI_UNUSED(buf); MEDI_UNUSED(count); MEDI_UNUSED(primals); }
       static inline void getAdjoints(const int* indices, int count, AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
       static inline void updateAdjoints(const int* indices, int count, const AdjointType* adjoints) { MEDI_UNUSED(indices); MEDI_UNUSED(count); MEDI_UNUSED(adjoints); }
@@ -176,52 +184,55 @@ namespace medi {
     typedef typename ADTool::ModifiedType ModifiedType;
     typedef typename ADTool::ModifiedNested ModifiedNested;
 
-    static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, IndexType* &indices, int &indexCount) {
+    static inline ModifiedType* prepareSendBuffer(const Type* buf, int count, int ranks, IndexType* &indices, int &indexCount) {
+      int totalSize = count * ranks;
       if(ADTool::isActive()) {
-        indexCount = count;
-        indices = new int[count];
-        for(int pos = 0; pos < count; ++pos) {
+        indexCount = count;  // we leave this here because the is the value per rank
+        indices = new int[totalSize];
+        for(int pos = 0; pos < totalSize; ++pos) {
           indices[pos] = ADTool::getIndex(buf[pos]);
         }
       }
       ModifiedType* modBuf = NULL;
       if(ADTool::IS_RequiresModifiedBuffer) {
-        modBuf = new ModifiedType[count];
+        modBuf = new ModifiedType[totalSize];
       } else {
         modBuf = const_cast<Type*>(buf);
       }
-      for(int pos = 0; pos < count; ++pos) {
+      for(int pos = 0; pos < totalSize; ++pos) {
         ADTool::setIntoModifyBuffer(modBuf[pos], buf[pos]);
       }
 
       return modBuf;
     }
 
-    static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) {
+    static inline void handleSendBuffer(const Type* buf, ModifiedType* modBuf, int count, int ranks, IndexType* &indices, int &indexCount) {
       if(ADTool::IS_RequiresModifiedBuffer) {
         delete [] modBuf;
       }
     }
 
-    static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, IndexType* &indices, int &indexCount) {
+    static inline ModifiedType* prepareRecvBuffer(Type* buf, int count, int ranks, IndexType* &indices, int &indexCount) {
       MEDI_UNUSED(indices);
       MEDI_UNUSED(indexCount);
       if(ADTool::IS_RequiresModifiedBuffer) {
-        return new ModifiedType[count];
+        int totalSize = count * ranks;
+        return new ModifiedType[totalSize];
       } else {
         return buf;
       }
     }
 
-    static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, IndexType* &indices, int &indexCount) {
-      for(int pos = 0; pos < count; ++pos) {
+    static inline void handleRecvBuffer(Type* buf, ModifiedType* modBuf, int count, int ranks, IndexType* &indices, int &indexCount) {
+      int totalSize = count * ranks;
+      for(int pos = 0; pos < totalSize; ++pos) {
         ADTool::getFromModifyBuffer(modBuf[pos], buf[pos]);
       }
 
       if(ADTool::isActive()) {
-        indexCount = count;
-        indices = new int[count];
-        for(int pos = 0; pos < count; ++pos) {
+        indexCount = count; // we leave this here because the is the value per rank
+        indices = new int[totalSize];
+        for(int pos = 0; pos < totalSize; ++pos) {
           indices[pos] = ADTool::getIndex(buf[pos]);
         }
       }

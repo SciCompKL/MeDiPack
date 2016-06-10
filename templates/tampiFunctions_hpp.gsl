@@ -89,6 +89,16 @@ for functions.function as curFunction
    curFunction.argReg += last()?? "" ? ", "  # append the seperator if neede
  endfor
 
+# add properties to the buffers
+ for curFunction. as item
+   if(name(item) =  "recv" | name(item) =  "send")
+     item.rankCount = "1"
+     if(defined(item.ranks))
+       item.rankCount = "getCommSize($(item.ranks))"
+     endif
+   endif
+ endfor
+
  # define the ad type that is used in this function
  curFunction.adType = "$(curFunction->type.tplName)::Tool"
 endfor
@@ -109,14 +119,14 @@ endfunction
 function createBufferPrepare(buffer, type)
 >      typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
   startRoot(my.buffer)
->         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+>         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
   endRoot(my.buffer)
 endfunction
 
 # define function for buffer handle
 function createBufferHandle(buffer, type)
   startRoot(my.buffer)
->        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+>        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), $(my.buffer.rankCount), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
   endRoot(my.buffer)
 endfunction
 
@@ -189,6 +199,11 @@ function addReverseAsyncSplit(curFunction)
 >  template<$(my.curFunction.tplDef)>
 >  void TAMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
     unpackHandle(my.curFunction, 1)
+    for my.curFunction. as item
+      if(name(item) = "send" | name(item) = "recv")
+>       int $(item.name)TotalSize = h->$(item.name)Count * $(item.rankCount);
+      endif
+    endfor
 >
 >    MPI_Wait(&$(my.curFunction.async)->request, MPI_STATUS_IGNORE);
 >
@@ -252,9 +267,10 @@ namespace medi {
     $(recv.name)Adjoints = NULL;
     $(recv.name)Primals = NULL;
     int $(recv.name)Size = 0;
+    int $(recv.name)TotalSize = h->$(recv.name)Count * $(recv.rankCount);
 .   startRoot(recv)
-      $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, h->$(recv.name)Count, $(primalRequired));
-      $(recv.typeName)::getAdjoints(h->$(recv.name)Indices, h->$(recv.name)Count, $(recv.name)Adjoints);
+      $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals,  h->$(recv.name)Count, $(recv.rankCount), $(primalRequired));
+      $(recv.typeName)::getAdjoints(h->$(recv.name)Indices, $(recv.name)TotalSize, $(recv.name)Adjoints);
 
 .  if(defined(curFunction->operator))
       $(curFunction->operator.name).preAdjointOperation($(recv.name)Adjoints, h->$(recv.name)Primals, h->$(recv.name)Count);
@@ -269,8 +285,9 @@ namespace medi {
     $(send.name)Adjoints = NULL;
     $(send.name)Primals = NULL;
     int $(send.name)Size = 0;
+    int $(send.name)TotalSize = h->$(send.name)Count * $(send.rankCount);
 .   startRoot(send)
-      $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(primalRequired));
+      $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(send.rankCount), $(primalRequired));
 .   endRoot(send)
 . endfor
 
@@ -280,9 +297,9 @@ namespace medi {
 . for curFunction.send
 .   startRoot(send)
 .     if(defined(curFunction->operator))
-        $(curFunction->operator.name).postAdjointOperation($(send.name)Adjoints, h->$(send.name)Primals, $(send.name)Primals, h->$(send.name)Count);
+        $(curFunction->operator.name).postAdjointOperation($(send.name)Adjoints, h->$(send.name)Primals, $(send.name)Primals, $(send.name)TotalSize);
 .     endif
-      $(send.typeName)::updateAdjoints(h->$(send.name)Indices, h->$(send.name)Count, $(send.name)Adjoints);
+      $(send.typeName)::updateAdjoints(h->$(send.name)Indices, $(send.name)TotalSize, $(send.name)Adjoints);
       deleteReverseBuffer($(send.name)Adjoints , $(send.name)Primals, $(primalRequired));
 .   endRoot(send)
 . endfor
