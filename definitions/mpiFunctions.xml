@@ -44,6 +44,18 @@
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
+  <function name="Scatterv">
+    <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
+    <arg name="sendcounts" type="int*" const="1"/>
+    <displs name="displs" type="int*" const="1"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcount"/>
+    <arg name="recvcount" type="int"/>
+    <type name="recvtype" type="MPI_Datatype"/>
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+  </function>
+
   <function name="Reduce">
     <send name="sendbuf" const="1" type="datatype" count="count"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>

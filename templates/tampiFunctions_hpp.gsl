@@ -53,11 +53,20 @@ for functions.function as curFunction
      if(name(item) =  "recv" | name(item) =  "send")
        curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
        curFunction.argArg += "$(item.name)Mod"    # append 'Mod' to the bufferNames
-       curFunction.argRev += "$(item.name)Adjoints, $(item.name)Primals, $(item.name)Size"    # append adjoint and primal buffer and the byte size
+       if(defined(item.displs))
+         curFunction.argRev += "$(item.name)Adjoints, $(item.name)Primals, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
+       else
+         curFunction.argRev += "$(item.name)Adjoints, $(item.name)Primals, $(item.name)Size, $(item.name)Type"    # append adjoint and primal buffer and the byte size
+       endif
        curFunction.argEmpty += "typename EmptyDataType::Type* $(item.name)"
      elsif(name(item) = "operator")
        curFunction.argDef += "$(item.taType) $(item.name)"
        curFunction.argArg += "*$(item.name).modifiedOp"
+       curFunction.argRev += "$(item.name)"
+       curFunction.argEmpty += "$(item.taType) $(item.name)"
+     elsif(name(item) = "displs")
+       curFunction.argDef += "$(item.taType) $(item.name)"
+       curFunction.argArg += "$(item.name)Mod"
        curFunction.argRev += "$(item.name)"
        curFunction.argEmpty += "$(item.taType) $(item.name)"
      else
@@ -93,8 +102,8 @@ for functions.function as curFunction
  for curFunction. as item
    if(name(item) =  "recv" | name(item) =  "send")
      item.rankCount = "1"
-     if(defined(item.ranks))
-       item.rankCount = "getCommSize($(item.ranks))"
+     if(defined(item.ranks) | defined(item.displs))
+       item.rankCount = "getCommSize(comm)"
      endif
    endif
  endfor
@@ -117,16 +126,64 @@ endfunction
 
 # define function for buffer prepare
 function createBufferPrepare(buffer, type)
->      typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
+> typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
+  if(defined(my.buffer.displs))
+>   int* $(my.buffer.displs)Mod = NULL;
+  endif
   startRoot(my.buffer)
->         $(my.buffer.name)Mod = $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+  if(defined(my.buffer.displs))
+>   $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+  else
+>   $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+  endif
   endRoot(my.buffer)
 endfunction
 
 # define function for buffer handle
 function createBufferHandle(buffer, type)
   startRoot(my.buffer)
->        $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.name)Mod, $(my.buffer.count), $(my.buffer.rankCount), h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+  if(defined(my.buffer.displs))
+>   $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+  else
+>   $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+  endif
+  endRoot(my.buffer)
+endfunction
+
+function createBufferReverseSetup(buffer, curFunction, isRecv)
+> $(my.buffer.name)Adjoints = NULL;
+> $(my.buffer.name)Primals = NULL;
+> int $(my.buffer.name)Size = 0;
+  if(defined(my.buffer.displs))
+>   int $(my.buffer.name)TotalSize = h->$(my.buffer.name)TotalSize;
+  else
+>   int $(my.buffer.name)TotalSize = h->$(my.buffer.name)Count * $(my.buffer.rankCount);
+  endif
+> MPI_Datatype $(my.buffer.name)Type;
+  startRoot(my.buffer)
+>   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, $(my.buffer.name)TotalSize, $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
+    if(1 = my.isRecv)
+>     $(my.buffer.typeName)::getAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
+>
+      if(defined(my.curFunction->operator))
+>       $(my.curFunction->operator.name).preAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
+>       if($(primalRequired)) {
+>         copyPrimals($(my.buffer.name)Primals, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
+>       }
+      endif
+    endif
+  endRoot(my.buffer)
+endfunction
+
+function createBufferReverseCleanup(buffer, curFunction, isSend)
+  startRoot(my.buffer)
+    if(1 = my.isSend)
+      if(defined(my.curFunction->operator))
+>       $(my.curFunction->operator.name).postAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, $(my.buffer.name)Primals, $(my.buffer.name)TotalSize);
+      endif
+>     $(my.buffer.typeName)::updateAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
+    endif
+>   deleteReverseBuffer($(my.buffer.name)Adjoints , $(my.buffer.name)Primals, $(primalRequired));
   endRoot(my.buffer)
 endfunction
 
@@ -142,12 +199,12 @@ function unpackHandle(curFunction, reverse)
 # unpack the arguments (buffers are accessed directly)
   for my.curFunction. as item
     if(name(item) <> "type")
+      constMod = defined(item.const) ?? "const " ? ""
       if(name(item) = "send" | name(item) = "recv")
         if(1 = my.reverse)
 >        typename $(item.typeName)::PassiveType* $(item.name)Adjoints = h->$(item.name)Adjoints;
 >        typename $(item.typeName)::PassiveType* $(item.name)Primals = h->$(item.name)PrimalsReverse;
         else
-         constMod = defined(item.const) ?? "const " ? ""
 >        $(constMod)typename $(item.typeName)::Type* $(item.name) = h->$(item.name);
 >        typename $(item.typeName)::ModifiedType* $(item.name)Mod = h->$(item.name)Mod;
         endif
@@ -158,7 +215,7 @@ function unpackHandle(curFunction, reverse)
 >         $(item.taType) $(item.name) = h->$(item.name);
         endif
       else
->         $(item.taType) $(item.name) = h->$(item.name);
+>         $(constMod)$(item.taType) $(item.name) = h->$(item.name);
       endif
     endif
   endfor
@@ -225,20 +282,26 @@ namespace medi {
   struct $(curFunction.handleName) : public HandleBase {
 . for curFunction. as item
 .   if(name(item) <> "type")
+.     constMod = defined(item.const) ?? "const " ? ""
 .     if(name(item) = "send" | name(item) = "recv")
-.       constMod = defined(item.const) ?? "const " ? ""
         $(constMod)typename $(item.typeName)::Type* $(item.name);  // required for async requests
         typename $(item.typeName)::ModifiedType* $(item.name)Mod;  // required for async requests
         typename $(item.typeName)::IndexType* $(item.name)Indices;
         typename $(item.typeName)::PassiveType* $(item.name)Primals;
         typename $(item.typeName)::PassiveType* $(item.name)Adjoints;  // required for async requests
         typename $(item.typeName)::PassiveType* $(item.name)PrimalsReverse;  // required for async requests
-        int $(item.name)Count;
+.        if(defined(item.displs))
+          int* $(item.name)Count;
+          int* $(item.name)Displs;
+          int $(item.name)TotalSize;
+.        else
+          int $(item.name)Count;
+.        endif
 .     elsif(name(item) = "request")
         $(item.taType) $(item.name);
         TAMPI_Request $(item.name)Reverse;
 .     else
-        $(item.taType) $(item.name);
+        $(constMod)$(item.taType) $(item.name);
 .     endif
 .   endif
 . endfor
@@ -247,6 +310,10 @@ namespace medi {
 .   if(name(item) = "send" | name(item) = "recv")
       if(NULL != $(item.name)Indices) { delete [] $(item.name)Indices; }
       if(NULL != $(item.name)Primals) { delete [] $(item.name)Primals; }
+.     if(defined(item.displs))
+        if(NULL != $(item.name)Count) { delete [] $(item.name)Count; }
+        if(NULL != $(item.name)Displs) { delete [] $(item.name)Displs; }
+.     endif
 .   endif
 . endfor
     }
@@ -264,50 +331,22 @@ namespace medi {
 .  endif
 
 . for curFunction.recv
-    $(recv.name)Adjoints = NULL;
-    $(recv.name)Primals = NULL;
-    int $(recv.name)Size = 0;
-    int $(recv.name)TotalSize = h->$(recv.name)Count * $(recv.rankCount);
-.   startRoot(recv)
-      $(recv.name)Size = allocateReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals,  h->$(recv.name)Count, $(recv.rankCount), $(primalRequired));
-      $(recv.typeName)::getAdjoints(h->$(recv.name)Indices, $(recv.name)TotalSize, $(recv.name)Adjoints);
-
-.  if(defined(curFunction->operator))
-      $(curFunction->operator.name).preAdjointOperation($(recv.name)Adjoints, h->$(recv.name)Primals, h->$(recv.name)Count);
-      if($(primalRequired)) {
-        copyPrimals($(recv.name)Primals, h->$(recv.name)Primals, h->$(recv.name)Count);
-      }
-.   endif
-.   endRoot(recv)
+.   createBufferReverseSetup(recv, curFunction, 1)
 . endfor
 
 . for curFunction.send
-    $(send.name)Adjoints = NULL;
-    $(send.name)Primals = NULL;
-    int $(send.name)Size = 0;
-    int $(send.name)TotalSize = h->$(send.name)Count * $(send.rankCount);
-.   startRoot(send)
-      $(send.name)Size = allocateReverseBuffer($(send.name)Adjoints , $(send.name)Primals, h->$(send.name)Count, $(send.rankCount), $(primalRequired));
-.   endRoot(send)
+.   createBufferReverseSetup(send, curFunction, 0)
 . endfor
 
     TAMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
 . addReverseAsyncSplit(curFunction)
 . for curFunction.send
-.   startRoot(send)
-.     if(defined(curFunction->operator))
-        $(curFunction->operator.name).postAdjointOperation($(send.name)Adjoints, h->$(send.name)Primals, $(send.name)Primals, $(send.name)TotalSize);
-.     endif
-      $(send.typeName)::updateAdjoints(h->$(send.name)Indices, $(send.name)TotalSize, $(send.name)Adjoints);
-      deleteReverseBuffer($(send.name)Adjoints , $(send.name)Primals, $(primalRequired));
-.   endRoot(send)
+.   createBufferReverseCleanup(send, curFunction, 1)
 . endfor
 
 . for curFunction.recv
-.   startRoot(recv)
-      deleteReverseBuffer($(recv.name)Adjoints , $(recv.name)Primals, $(primalRequired));
-.   endRoot(recv)
+.   createBufferReverseCleanup(recv, curFunction, 0)
 . endfor
   }
 
