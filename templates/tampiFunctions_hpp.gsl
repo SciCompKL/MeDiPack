@@ -127,26 +127,31 @@ endfunction
 # define function for buffer prepare
 function createBufferPrepare(buffer, type)
 > typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
+
+  # check if this is a displaced buffer
+> // create the modified buffer for $(my.buffer.name) (e.g. store value, create)
   if(defined(my.buffer.displs))
 >   int* $(my.buffer.displs)Mod = NULL;
   endif
+
   startRoot(my.buffer)
-  if(defined(my.buffer.displs))
->   $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
-  else
->   $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-  endif
+    if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
+>     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+    else
+>     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+    endif
   endRoot(my.buffer)
 endfunction
 
 # define function for buffer handle
 function createBufferHandle(buffer, type)
+> // handle the modified buffer for $(my.buffer.name) (e.g. extract values, delete)
   startRoot(my.buffer)
-  if(defined(my.buffer.displs))
->   $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
-  else
->   $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-  endif
+    if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
+>     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+    else
+>     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+    endif
   endRoot(my.buffer)
 endfunction
 
@@ -190,7 +195,7 @@ endfunction
 # define function for primal extraction
 function createPrimalExtraction(buffer)
   startRoot(my.buffer)
->           $(my.buffer.typeName)::getValues($(my.buffer.name), $(my.buffer.count), h->$(my.Buffer.name)Primals);
+>   $(my.buffer.typeName)::getValues($(my.buffer.name), $(my.buffer.count), h->$(my.Buffer.name)Primals);
   endRoot(my.buffer)
 endfunction
 
@@ -350,72 +355,87 @@ namespace medi {
 . endfor
   }
 
-.- predefine the async function
+.--- predefine the async function
 . if(defined(curFunction.async))
-  template<$(curFunction.tplDef)>
-  int TAMPI_$(curFunction.name)_finish(HandleBase* handle);
+    template<$(curFunction.tplDef)>
+    int TAMPI_$(curFunction.name)_finish(HandleBase* handle);
 . endif
+
+.-------------------------------------------------------------------------
 .- create the primal function
+.-------------------------------------------------------------------------
   template<$(curFunction.tplDef)>
   int TAMPI_$(curFunction.name)($(curFunction.argDef)) {
     int rStatus;
     if(!$(curFunction.adType)::IS_ActiveType) {
+      // call the regular function if the type is not active
       rStatus = MPI_$(curFunction.name)($(curFunction.argReg));
     } else {
+
+      // the type is an AD type so handle the buffers
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
+      // the handle is created if a reverse action should be recorded, h != NULL => tape is active
       if($(curFunction.adType)::isHandleRequired()) {
         h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
       $(curFunction.adType)::startAssembly(h);
 
-. for curFunction.operator
-      if(NULL != h && op.requiresPrimal) {
-.   for curFunction.send
-.       createPrimalExtraction(send)
-.   endfor
-      }
-. endfor
+.-    if there is an operator in the arguments the primals might need to be extracted
+.     for curFunction.operator
+        // extract the primal values for the operator if required
+        if(NULL != h && op.requiresPrimal) {
+.             for curFunction.send
+.             createPrimalExtraction(send)
+.         endfor
+        }
+.     endfor
 
-. for curFunction.send
-.     createBufferPrepare(send, "Send")
-. endfor
+.     for curFunction.send
+.       createBufferPrepare(send, "Send")
+.     endfor
 
-. for curFunction.recv
-.     createBufferPrepare(recv, "Recv")
-. endfor
+.     for curFunction.recv
+.       createBufferPrepare(recv, "Recv")
+.     endfor
 
+      // pack all the variables in the handle
       if(NULL != h) {
         h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
-.- pack the arguments (buffers are packed in buffer methods)
-. for curFunction. as item
-.   if(name(item) <> "type")
-      h->$(item.name) = $(item.name);
-.     if(name(item) = "send" | name(item) = "recv")
-      h->$(item.name)Mod = $(item.name)Mod;
-.     endif
-.   endif
-. endfor
+.-- pack the arguments (buffers are packed in buffer methods)
+.       for curFunction. as item
+.         if(name(item) <> "type")
+            h->$(item.name) = $(item.name);
+.
+.           if(name(item) = "send" | name(item) = "recv")
+.
+              h->$(item.name)Mod = $(item.name)Mod;
+.           endif
+.         endif
+.       endfor
       }
 
       rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArgMod)>($(curFunction.argArg));
-. addPrimalAsyncSplit(curFunction)
+.
+.     addPrimalAsyncSplit(curFunction)
+.
       $(curFunction.adType)::addToolAction(h);
 
-. for curFunction.send
-.      createBufferHandle(send, "Send")
-. endfor
+.     for curFunction.send
+.       createBufferHandle(send, "Send")
+.     endfor
 
-. for curFunction.recv
-.      createBufferHandle(recv, "Recv")
-. endfor
+.     for curFunction.recv
+.       createBufferHandle(recv, "Recv")
+.     endfor
 
-. for curFunction.operator
-      if(NULL != h && op.requiresPrimal) {
-.   for curFunction.recv
-.       createPrimalExtraction(recv)
-.   endfor
-      }
-. endfor
+.     for curFunction.operator
+        // extract the primal values for the operator if required
+        if(NULL != h && op.requiresPrimal) {
+.       for curFunction.recv
+.         createPrimalExtraction(recv)
+.       endfor
+        }
+.     endfor
 
       $(curFunction.adType)::stopAssembly(h);
     }
@@ -425,11 +445,11 @@ namespace medi {
 
   template<>
   inline int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
-. for curFunction. as item
-.   if(name(item) <> "type")  # exclude the types because they are handled as templates
-    MEDI_UNUSED($(item.name));
-.   endif
-. endfor
+.   for curFunction. as item
+.     if(name(item) <> "type")  # exclude the types because they are handled as templates
+        MEDI_UNUSED($(item.name));
+.     endif
+.   endfor
     return 0;
   }
 .endfor
