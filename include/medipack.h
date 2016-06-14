@@ -101,6 +101,16 @@ namespace medi {
     mpiType = MPI_DOUBLE;
   }
 
+  template<typename AT>
+  inline void combineAdjoints(int count, AT* &adjoints, int ranks) {
+    for(int curRank = 1; curRank < ranks; ++curRank) {
+      for(int curPos = 0; curPos < count; ++curPos) {
+        adjoints[curPos] += adjoints[count * curRank + curPos];
+      }
+    }
+  }
+
+
   template<typename AT, typename PT>
   inline void deleteReverseBuffer(AT* &adjoints, PT* &primals, bool allocatePrimals) {
     if(NULL != adjoints) {

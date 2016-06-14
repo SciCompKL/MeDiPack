@@ -166,7 +166,11 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
   endif
 > MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRoot(my.buffer)
->   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, $(my.buffer.name)TotalSize, $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
+    allMul = ""
+    if(defined(my.buffer.all))
+      allMul = "* getCommSize($(my.buffer.all))"
+    endif
+>   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, $(my.buffer.name)TotalSize $(allMul), $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
     if(1 = my.isRecv)
 >     $(my.buffer.typeName)::getAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
 >
@@ -185,6 +189,9 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
     if(1 = my.isSend)
       if(defined(my.curFunction->operator))
 >       $(my.curFunction->operator.name).postAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, $(my.buffer.name)Primals, $(my.buffer.name)TotalSize);
+      endif
+      if(defined(my.buffer.all))
+>       combineAdjoints($(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints, getCommSize($(my.buffer.all)));
       endif
 >     $(my.buffer.typeName)::updateAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
     endif
