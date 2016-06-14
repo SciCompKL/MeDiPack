@@ -212,6 +212,9 @@ function unpackHandle(curFunction, reverse)
         else
 >        $(constMod)typename $(item.typeName)::Type* $(item.name) = h->$(item.name);
 >        typename $(item.typeName)::ModifiedType* $(item.name)Mod = h->$(item.name)Mod;
+         if(defined(item.displs))
+>         int* $(item.displs)Mod = h->$(item.displs)Mod;
+         endif
         endif
       elsif(name(item) = "request")
         if(1 = my.reverse)
@@ -263,7 +266,11 @@ function addReverseAsyncSplit(curFunction)
     unpackHandle(my.curFunction, 1)
     for my.curFunction. as item
       if(name(item) = "send" | name(item) = "recv")
->       int $(item.name)TotalSize = h->$(item.name)Count * $(item.rankCount);
+        if(defined(item.displs))
+>         int $(item.name)TotalSize = h->$(item.name)TotalSize;
+        else
+>         int $(item.name)TotalSize = h->$(item.name)Count * $(item.rankCount);
+        endif
       endif
     endfor
 >
@@ -299,6 +306,7 @@ namespace medi {
           int* $(item.name)Count;
           int* $(item.name)Displs;
           int $(item.name)TotalSize;
+          int* $(item.displs)Mod;
 .        else
           int $(item.name)Count;
 .        endif
@@ -409,6 +417,9 @@ namespace medi {
 .           if(name(item) = "send" | name(item) = "recv")
 .
               h->$(item.name)Mod = $(item.name)Mod;
+.             if(defined(item.displs))
+                h->$(item.displs)Mod = $(item.displs)Mod;
+.             endif
 .           endif
 .         endif
 .       endfor
