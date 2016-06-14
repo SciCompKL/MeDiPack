@@ -78,7 +78,27 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
-
+  <function name="Gather">
+    <send name="sendbuf" type="sendtype" count="sendcount"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
+    <arg name="recvcount" type="int"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+  </function>
+  <function name="Igather" async="request">
+    <send name="sendbuf" type="sendtype" count="sendcount"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
+    <arg name="recvcount" type="int"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
   <function name="Reduce">
     <send name="sendbuf" const="1" type="datatype" count="count"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
