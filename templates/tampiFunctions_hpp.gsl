@@ -164,7 +164,7 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
   else
 >   int $(my.buffer.name)TotalSize = h->$(my.buffer.name)Count * $(my.buffer.rankCount);
   endif
-> MPI_Datatype $(my.buffer.name)Type;
+> MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRoot(my.buffer)
 >   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, $(my.buffer.name)TotalSize, $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
     if(1 = my.isRecv)

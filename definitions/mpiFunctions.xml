@@ -44,6 +44,17 @@
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
+  <function name="Iscatter" async="request">
+    <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcount"/>
+    <arg name="recvcount" type="int"/>
+    <type name="recvtype" type="MPI_Datatype"/>
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
   <function name="Scatterv">
     <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
     <arg name="sendcounts" type="int*" const="1"/>
