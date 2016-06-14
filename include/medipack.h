@@ -301,7 +301,7 @@ namespace medi {
       }
     }
 
-    static inline void prepareRecvBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSizeBuf) {
+    static inline void prepareRecvBuffer(Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSizeBuf) {
       if(ADTool::IS_RequiresModifiedBuffer) {
         displsMod = new int[ranks];
 
@@ -314,11 +314,11 @@ namespace medi {
         bufMod = new ModifiedType[totalSize];
       } else {
         bufMod = buf;
-        displsMod = displs;
+        displsMod = const_cast<int*>(displs);
       }
     }
 
-    static inline void handleRecvBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSizeBuf) {
+    static inline void handleRecvBuffer(Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSizeBuf) {
       for(int i = 0; i < ranks; ++i) {
         for(int pos = 0; pos < counts[i]; ++pos) {
           ADTool::getFromModifyBuffer(bufMod[pos + displsMod[i]], buf[pos + displs[i]]);

@@ -94,6 +94,28 @@ namespace medi {
     MPI_Iscatter(recvbufAdjoints, recvbufSize, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, root, comm, &request->request);
   }
 
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int* recvbufCounts, const int* recvbufDispls, MPI_Datatype recvbufType, const int* recvcounts, const int* displs, int root, TAMPI_Comm comm) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcounts);
+    MEDI_UNUSED(displs);
+
+    MPI_Scatterv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, root, comm);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int* recvbufCounts, const int* recvbufDispls, MPI_Datatype recvbufType, const int* recvcounts, const int* displs, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcounts);
+    MEDI_UNUSED(displs);
+
+    MPI_Iscatterv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, root, comm, &request->request);
+  }
+
   template<typename DATATYPE>
   void TAMPI_Reduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
     MEDI_UNUSED(count);
