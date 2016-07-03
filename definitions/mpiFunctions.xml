@@ -123,7 +123,7 @@
     <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Allgather">
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
