@@ -105,6 +105,21 @@ for functions.function as curFunction
      if(defined(item.ranks) | defined(item.displs))
        item.rankCount = "getCommSize(comm)"
      endif
+
+   endif
+ endfor
+
+ # link inplace buffers together
+ for curFunction. as item
+   if(name(item) =  "recv" | name(item) =  "send")
+     if(defined(item.inplace))
+       for curFunction. as linkedItem
+         if(linkedItem.name = item.inplace)
+           # found the buffer with the name so copy it to this buffer and create the link
+           copy linkedItem to item as inplaceBuffer
+         endif
+       endfor
+     endif
    endif
  endfor
 
@@ -124,10 +139,16 @@ function endRoot(buffer)
   endif
 endfunction
 
+function defineBuffersMod(curFunction)
+  for my.curFunction. as item
+    if(name(item) =  "recv" | name(item) =  "send")
+>     typename $(item.typeName)::ModifiedType* $(item.name)Mod = NULL;
+    endif
+  endfor
+endfunction
+
 # define function for buffer prepare
 function createBufferPrepare(buffer, type)
-> typename $(my.buffer.typeName)::ModifiedType* $(my.buffer.name)Mod = NULL;
-
   # check if this is a displaced buffer
 > // create the modified buffer for $(my.buffer.name) (e.g. store value, create)
   if(defined(my.buffer.displs))
@@ -135,10 +156,24 @@ function createBufferPrepare(buffer, type)
   endif
 
   startRoot(my.buffer)
+    if(defined(my.buffer.inplace))
+>     if(MPI_IN_PLACE != $(my.buffer.name)) {
+    endif
     if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
 >     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
     else
 >     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+    endif
+    if(defined(my.buffer.inplace))
+>     } else {
+>       $(my.buffer.name)Mod = static_cast<typename $(my.buffer.typeName)::Type*>(MPI_IN_PLACE);
+        inplaceBuffer = my.buffer->inplaceBuffer
+        if(defined(inplaceBuffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
+>         $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+        else
+>         $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+        endif
+>     }
     endif
   endRoot(my.buffer)
 endfunction
@@ -147,10 +182,16 @@ endfunction
 function createBufferHandle(buffer, type)
 > // handle the modified buffer for $(my.buffer.name) (e.g. extract values, delete)
   startRoot(my.buffer)
+    if(defined(my.buffer.inplace))
+>     if(MPI_IN_PLACE != $(my.buffer.name)) {
+    endif
     if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
 >     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
     else
 >     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+    endif
+    if(defined(my.buffer.inplace))
+>     }
     endif
   endRoot(my.buffer)
 endfunction
@@ -202,7 +243,13 @@ endfunction
 # define function for primal extraction
 function createPrimalExtraction(buffer)
   startRoot(my.buffer)
->   $(my.buffer.typeName)::getValues($(my.buffer.name), $(my.buffer.count), h->$(my.Buffer.name)Primals);
+>   const typename $(my.buffer.typeName)::Type* tempBuf = $(my.buffer.name);
+    if(defined(my.buffer.inplace))
+>     if(MPI_IN_PLACE == tempBuf) {
+>       tempBuf = $(my.buffer.inplace);
+>     }
+    endif
+>   $(my.buffer.typeName)::getValues(tempBuf, $(my.buffer.count), h->$(my.Buffer.name)Primals);
   endRoot(my.buffer)
 endfunction
 
@@ -387,6 +434,7 @@ namespace medi {
       rStatus = MPI_$(curFunction.name)($(curFunction.argReg));
     } else {
 
+.     defineBuffersMod(curFunction)
       // the type is an AD type so handle the buffers
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
       // the handle is created if a reverse action should be recorded, h != NULL => tape is active
@@ -399,18 +447,19 @@ namespace medi {
 .     for curFunction.operator
         // extract the primal values for the operator if required
         if(NULL != h && op.requiresPrimal) {
-.             for curFunction.send
-.             createPrimalExtraction(send)
+.         for curFunction.send
+.           createPrimalExtraction(send)
 .         endfor
         }
 .     endfor
 
-.     for curFunction.send
-.       createBufferPrepare(send, "Send")
-.     endfor
-
+.- TODO: for index deletion reverse this again and add an extra loop that creates the temporary buffers
 .     for curFunction.recv
 .       createBufferPrepare(recv, "Recv")
+.     endfor
+
+.     for curFunction.send
+.       createBufferPrepare(send, "Send")
 .     endfor
 
       // pack all the variables in the handle
