@@ -100,7 +100,7 @@
     <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Gatherv">
-    <send name="sendbuf" type="sendtype" count="sendcount"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
