@@ -141,7 +141,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Ireduce" async="request">
-    <send name="sendbuf" const="1" type="datatype" count="count"/>
+    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
