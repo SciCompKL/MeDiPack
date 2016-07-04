@@ -1,5 +1,7 @@
 <functions>
-  <function name="Send">
+  <!-- Point to point communication -->
+  <!-- Send routines -->
+  <function name="Send"> <!-- all defined -->
     <send name="buf" const="1" type="datatype" count="count"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
@@ -7,7 +9,7 @@
     <arg name="tag" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Isend" async="request">
+  <function name="Isend" async="request"> <!-- all defined -->
     <send name="buf" const="1" type="datatype" count="count"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
@@ -16,7 +18,60 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
-  <function name="Recv">
+  <function name="Bsend"> <!-- all defined -->
+    <send name="buf" const="1" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+  <function name="Ibsend" async="request"> <!-- all defined -->
+    <send name="buf" const="1" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*"/>
+  </function>
+  <function name="Ssend"> <!-- all defined -->
+    <send name="buf" type="datatype" const="1" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+  <function name="Issend" async="request"> <!-- all defined -->
+    <send name="buf" type="datatype" const="1" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*"/>
+  </function>
+  <function name="Rsend"> <!-- all defined -->
+    <send name="buf" type="datatype" const="1" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+  <function name="Irsend" async="request"> <!-- all defined -->
+    <send name="buf" type="datatype" const="1" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*"/>
+  </function>
+
+  <!-- Recv/Irecv-->
+  <function name="Recv"> <!-- all defined -->
     <recv name="buf" type="datatype" count="count"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
@@ -34,6 +89,7 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
+
   <function name="Scatter">
     <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
     <arg name="sendcount" type="int"/>

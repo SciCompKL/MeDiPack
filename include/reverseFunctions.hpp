@@ -20,6 +20,48 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void TAMPI_Bsend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Recv(bufAdjoints, bufSize, bufType, dest, tag, comm, MPI_STATUS_IGNORE);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Ibsend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Irecv(bufAdjoints, bufSize, bufType, dest, tag, comm, &request->request);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Ssend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Recv(bufAdjoints, bufSize, bufType, dest, tag, comm, MPI_STATUS_IGNORE);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Issend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Irecv(bufAdjoints, bufSize, bufType, dest, tag, comm, &request->request);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Rsend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Recv(bufAdjoints, bufSize, bufType, dest, tag, comm, MPI_STATUS_IGNORE);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Irsend_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(bufPrimals);
+    MEDI_UNUSED(count);
+    MPI_Irecv(bufAdjoints, bufSize, bufType, dest, tag, comm, &request->request);
+  }
+
+  template<typename DATATYPE>
   void TAMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, typename DATATYPE::PassiveType* bufPrimals, int bufSize, MPI_Datatype bufType, int count, int src, int tag, TAMPI_Comm comm, TAMPI_Status* status) {
     MEDI_UNUSED(bufPrimals);
     MEDI_UNUSED(count);
