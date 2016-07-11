@@ -505,6 +505,8 @@ namespace medi {
 .     endfor
 
       $(curFunction.adType)::stopAssembly(h);
+
+      // handle is deleted by the AD tool
     }
 
     return rStatus;

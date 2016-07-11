@@ -76,3 +76,5 @@ int main(int nargs, char** args) {
 
   MPI_Finalize();
 }
+
+#include <tampi/async.cpp>

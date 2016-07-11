@@ -14,7 +14,7 @@ namespace medi {
   #define TAMPI_Comm_size MPI_Comm_size
   #define TAMPI_Init MPI_Init
   #define TAMPI_STATUS_IGNORE MPI_STATUS_IGNORE
-  #define TAMPI_REQUEST_NULL NULL
+  #define TAMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
   #define TAMPI_IN_PLACE MPI_IN_PLACE
   #define TAMPI_Buffer_attach MPI_Buffer_attach
   #define TAMPI_Buffer_detach MPI_Buffer_detach

@@ -15,7 +15,7 @@ DEP_FILES   = $(wildcard $(BUILD_DIR)/Test**.d)
 DEP_FILES  += $(wildcard $(BUILD_DIR)/**/Test**.d)
 DEP_FILES  += $(wildcard $(BUILD_DIR)/**/**/Test**.d)
 
-FLAGS = -Wall -pedantic -std=c++11 -I../include
+FLAGS = -Wall -pedantic -std=c++11 -I../include -I../src
 
 ifeq ($(OPT), yes)
   CXX_FLAGS := -O3 $(FLAGS)
