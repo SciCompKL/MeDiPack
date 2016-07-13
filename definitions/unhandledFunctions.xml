@@ -1,0 +1,88 @@
+<functions>
+
+  <function name="Mrecv">
+    <recv name="buf" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="message" type="MPI_Message*" />
+    <arg name="status" type="MPI_Status*" />
+  </function>
+
+  <function name="Imrecv" async="request">
+    <recv name="buf" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="message" type="MPI_Message*" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+
+  <function name="Send_init">
+    <send name="buf" type="datatype" count="count" const="1"/>
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+  <function name="Bsend_init">
+    <send name="buf" type="datatype" count="count" const="1"/>
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+  <function name="Ssend_init">
+    <send name="buf" type="datatype" count="count" const="1"/>
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+  <function name="Rsend_init">
+    <send name="buf" type="datatype" count="count" const="1"/>
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+  <function name="Recv_init">
+    <send name="buf" type="datatype" count="count" const="1"/>
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="source" type="int" />
+    <arg name="tag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*" />
+  </function>
+
+  <function name="Start">
+    <request name="request" type="MPI_Request" />
+  </function>
+  <function name="Startall">
+    <arg name="count" type="int" />
+    <arg name="array_of_requests" type="MPI_Request*" />
+  </function>
+
+  <function name="Sendrecv_replace">
+    <arg name="buf" type="void*" /> <!-- needs to be defined -->
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="sendtag" type="int" />
+    <arg name="source" type="int" />
+    <arg name="recvtag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <arg name="status" type="MPI_Status " />
+  </function>
+
+  <!-- complete chapter 4 -->
+
+
+</functions>
