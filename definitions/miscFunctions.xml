@@ -56,4 +56,9 @@
     <arg name="flag" type="int " />
   </function>
 
+  <function name="Barrier">
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+
+
 </functions>

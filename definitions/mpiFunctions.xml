@@ -106,6 +106,18 @@
     <arg name="status" type="MPI_Status*" />
   </function>
 
+  <!-- collective communications -->
+
+  <!-- modified interface in order to work with the structure a wrapper is implemented that wraps onto this routine -->
+  <function name="Bcast_wrap"> <!-- all defined -->
+    <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
+    <recv name="bufferRecv" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="root" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+
   <function name="Scatter">
     <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
     <arg name="sendcount" type="int"/>
