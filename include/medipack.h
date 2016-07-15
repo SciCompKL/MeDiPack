@@ -59,6 +59,31 @@ namespace medi {
     }
   };
 
+  struct LinearDisplacements {
+      int* displs;
+      int* counts;
+
+      inline LinearDisplacements(int commSize, int length) {
+        counts = new int[commSize];
+        displs = new int[commSize];
+        for(int i = 0; i < commSize; ++i) {
+          counts[i] = length;
+          displs[i] = i * length;
+        }
+      }
+
+      inline ~LinearDisplacements() {
+        delete [] displs;
+        delete [] counts;
+      }
+
+      static inline void deleteFunc(void* d) {
+        LinearDisplacements* data = reinterpret_cast<LinearDisplacements*>(d);
+
+        delete data;
+      }
+  };
+
   struct HandleBase {
     ReverseFunction func;
 

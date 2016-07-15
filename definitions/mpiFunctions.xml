@@ -183,6 +183,28 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
+  <function name="Allgatherv"> <!-- all defined -->
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
+    <arg name="recvcounts" type="int*" const="1"/>
+    <displs name="displs" type="int*" const="1"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="comm" type="MPI_Comm"/>
+  </function>
+  <function name="Iallgatherv" async="request"> <!-- all defined -->
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
+    <arg name="recvcounts" type="int*" const="1"/>
+    <displs name="displs" type="int*" const="1"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
+
 
   <!-- scatters -->
   <function name="Scatter"> <!--TODO: inplace in recv missing-->

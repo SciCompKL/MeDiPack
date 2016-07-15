@@ -4,15 +4,34 @@
 
 namespace medi {
 
+  typedef void (*DeleteReverseData)(void* data);
+
   struct TAMPI_Request {
       MPI_Request request;
       HandleBase* handle;
       ContinueFunction func;
 
+      // required for reverse communication that needs to create data
+      void* reverseData;
+      DeleteReverseData deleteDataFunc;
+
       TAMPI_Request() :
         request(MPI_REQUEST_NULL),
         handle(NULL),
-        func(NULL) {}
+        func(NULL),
+        reverseData(NULL),
+        deleteDataFunc(NULL){}
+
+      inline void setReverseData(void* data, DeleteReverseData func) {
+        this->reverseData = data;
+        this->deleteDataFunc = func;
+      }
+
+      inline void deleteReverseData() {
+        if(NULL != reverseData) {
+           this->deleteDataFunc(this->reverseData);
+        }
+      }
   };
 
   inline bool operator ==(const TAMPI_Request& a, const TAMPI_Request& b) {
@@ -45,6 +64,8 @@ namespace medi {
 
   inline void performReverseAction(TAMPI_Request *request) {
     request->func(request->handle);
+
+    request->deleteReverseData();
     *request = TAMPI_REQUEST_NULL;
   }
 
