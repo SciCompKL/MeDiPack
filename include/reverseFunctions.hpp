@@ -77,6 +77,17 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Sendrecv_adj(typename SENDTYPE::AdjointType* sendbuf, typename SENDTYPE::PassiveType* sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, int dest, int sendtag,
+                     typename RECVTYPE::AdjointType* recvbuf, typename SENDTYPE::PassiveType* recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int recvcount, int source, int recvtag, TAMPI_Comm comm, TAMPI_Status*  status) {
+
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcount);
+    MPI_Sendrecv(recvbuf, recvbufSize, recvbufType, source, recvtag, sendbuf, sendbufSize, sendbufType, dest, sendtag, comm, status);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   void TAMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int recvcount, int root, TAMPI_Comm comm) {
     MEDI_UNUSED(sendbufPrimals);
     MEDI_UNUSED(sendcount);

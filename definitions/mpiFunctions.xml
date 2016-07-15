@@ -90,6 +90,22 @@
     <request name="request" type="MPI_Request*"/>
   </function>
 
+  <!-- Sendrecv-->
+  <function name="Sendrecv"> <!-- all defined -->
+    <send name="sendbuf" type="sendtype" const="1" count="sendcount" />
+    <arg name="sendcount" type="int" />
+    <type name="sendtype" type="MPI_Datatype" />
+    <arg name="dest" type="int" />
+    <arg name="sendtag" type="int" />
+    <recv name="recvbuf" type="recvtype" count="recvcount"/>
+    <arg name="recvcount" type="int" />
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="source" type="int" />
+    <arg name="recvtag" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <arg name="status" type="MPI_Status*" />
+  </function>
+
   <function name="Scatter">
     <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
     <arg name="sendcount" type="int"/>

@@ -79,7 +79,7 @@
     <arg name="source" type="int" />
     <arg name="recvtag" type="int" />
     <arg name="comm" type="MPI_Comm" />
-    <arg name="status" type="MPI_Status " />
+    <arg name="status" type="MPI_Status*" />
   </function>
 
   <!-- complete chapter 4 -->
