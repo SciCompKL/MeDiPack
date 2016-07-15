@@ -108,6 +108,7 @@
 
   <!-- collective communications -->
 
+  <!-- broadcasts -->
   <!-- modified interface in order to work with the structure a wrapper is implemented that wraps onto this routine -->
   <function name="Bcast_wrap"> <!-- all defined -->
     <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
@@ -118,6 +119,7 @@
     <arg name="comm" type="MPI_Comm" />
   </function>
 
+  <!-- gathers -->
   <function name="Gather"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
     <arg name="sendcount" type="int"/>
@@ -134,6 +136,29 @@
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
     <arg name="recvcount" type="int"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
+  <function name="Gatherv"> <!-- all defined -->
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
+    <arg name="recvcounts" type="int*" const="1"/>
+    <displs name="displs" type="int*" const="1"/>
+    <type name="recvtype" type="MPI_Datatype" />
+    <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+  </function>
+  <function name="Igatherv" async="request"> <!-- all defined -->
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <arg name="sendcount" type="int"/>
+    <type name="sendtype" type="MPI_Datatype"/>
+    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
+    <arg name="recvcounts" type="int*" const="1"/>
+    <displs name="displs" type="int*" const="1"/>
     <type name="recvtype" type="MPI_Datatype" />
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
@@ -179,29 +204,6 @@
     <recv name="recvbuf" type="recvtype" count="recvcount"/>
     <arg name="recvcount" type="int"/>
     <type name="recvtype" type="MPI_Datatype"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Gatherv">
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1"/>
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Igatherv" async="request">
-    <send name="sendbuf" type="sendtype" count="sendcount"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1"/>
-    <type name="recvtype" type="MPI_Datatype" />
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
