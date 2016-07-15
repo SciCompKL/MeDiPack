@@ -213,7 +213,7 @@ namespace medi {
     static inline void prepareSendBuffer(const Type* buf, int count, int ranks, ModifiedType* &bufMod, IndexType* &indices, int &indexCount) {
       int totalSize = count * ranks;
       if(ADTool::isActive()) {
-        indexCount = count;  // we leave this here because the is the value per rank
+        indexCount = count;  // we leave this here because this is the value per rank
         indices = new int[totalSize];
         for(int pos = 0; pos < totalSize; ++pos) {
           indices[pos] = ADTool::getIndex(buf[pos]);
@@ -238,7 +238,7 @@ namespace medi {
         offset = count * ownRank;
       }
       if(ADTool::isActive()) {
-        indexCount = count;  // we leave this here because the is the value per rank
+        indexCount = count;  // we leave this here because this is the value per rank
         indices = new int[totalSize];
         for(int pos = 0; pos < totalSize; ++pos) {
           indices[pos] = ADTool::getIndex(buf[pos + offset]);
