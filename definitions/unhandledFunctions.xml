@@ -84,5 +84,15 @@
 
   <!-- complete chapter 4 -->
 
-
+  <function name="Alltoallw">
+    <arg name="sendbuf" type="void*" const="1"/>
+    <arg name="sendcounts" type="int*" const="1"/>
+    <arg name="sdispls" type="int*" const="1"/>
+    <arg name="sendtypes" type="MPI_Datatype*" const="1"/>
+    <arg name="recvbuf" type="void*" />
+    <arg name="recvcounts" type="int*" const="1"/>
+    <arg name="rdispls" type="int*" const="1"/>
+    <arg name="recvtypes" type="MPI_Datatype*" const="1"/>
+    <arg name="comm" type="MPI_Comm" />
+  </function>
 </functions>
