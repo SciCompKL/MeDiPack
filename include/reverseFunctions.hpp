@@ -225,6 +225,50 @@ namespace medi {
     MPI_Ialltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvbufType, sendbufAdjoints, linDis->counts, linDis->displs, sendbufType, comm, &request->request);
   }
 
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Alltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int recvcount, TAMPI_Comm comm) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcount);
+
+    MPI_Alltoall(recvbufAdjoints, recvbufSize, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, comm);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Ialltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, int sendcount, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int recvcount, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcount);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcount);
+
+    MPI_Ialltoall(recvbufAdjoints, recvbufSize, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, comm, &request->request);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int* sendbufCounts, const int* sendbufDispls, MPI_Datatype sendbufType, const int* sendcounts, const int* sdispls, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int* recvbufCounts, const int* recvbufDispls, MPI_Datatype recvbufType, const int* recvcounts, const int* rdispls, TAMPI_Comm comm) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcounts);
+    MEDI_UNUSED(sdispls);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcounts);
+    MEDI_UNUSED(rdispls);
+
+    MPI_Alltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvbufType, sendbufAdjoints, sendbufCounts, sendbufDispls, sendbufType, comm);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void TAMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, typename SENDTYPE::PassiveType* &sendbufPrimals, int* sendbufCounts, const int* sendbufDispls, MPI_Datatype sendbufType, const int* sendcounts, const int* sdispls, typename RECVTYPE::AdjointType* &recvbufAdjoints, typename RECVTYPE::PassiveType* &recvbufPrimals, int* recvbufCounts, const int* recvbufDispls, MPI_Datatype recvbufType, const int* recvcounts, const int* rdispls, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(sendcounts);
+    MEDI_UNUSED(sdispls);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(recvcounts);
+    MEDI_UNUSED(rdispls);
+
+    MPI_Ialltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvbufType, sendbufAdjoints, sendbufCounts, sendbufDispls, sendbufType, comm, &request->request);
+  }
+
   template<typename DATATYPE>
   void TAMPI_Reduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
     MEDI_UNUSED(count);

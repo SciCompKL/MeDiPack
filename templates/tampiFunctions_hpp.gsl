@@ -169,9 +169,17 @@ function createBufferPrepare(buffer, type)
 >       $(my.buffer.name)Mod = static_cast<typename $(my.buffer.typeName)::Type*>(MPI_IN_PLACE);
         inplaceBuffer = my.buffer->inplaceBuffer
         if(defined(inplaceBuffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
->         $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+          if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
+>           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+          else
+>           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+          endif
         else
->         $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+          if(defined(my.buffer.ranks)) # call the correct routine for displacement buffers and none displacement buffers
+>           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), true, getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+          else
+>           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), false, getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+          endif
         endif
 >     }
     endif

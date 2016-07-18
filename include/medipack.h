@@ -205,13 +205,14 @@ namespace medi {
       typedef EmptyDataType ModifiedNested;
 
       static inline void prepareSendBuffer(const Type* buf, int count, int ranks, ModifiedType* &bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
-      static inline void prepareInplaceSendBuffer(const Type* buf, int count, int ranks, int ownRank, ModifiedType* bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(ownRank); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
+      static inline void prepareInplaceSendBuffer(const Type* buf, int count, int ranks, bool all, int ownRank, ModifiedType* bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(all); MEDI_UNUSED(ownRank); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
       static inline void handleSendBuffer(const Type* buf, int count, int ranks, ModifiedType* bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
       static inline void prepareRecvBuffer(Type* buf, int count, int ranks, ModifiedType* &bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
       static inline void handleRecvBuffer(Type* buf, int count, int ranks, ModifiedType* bufMod, IndexType* &indices, int &indexCount) { MEDI_UNUSED(buf); MEDI_UNUSED(bufMod); MEDI_UNUSED(count); MEDI_UNUSED(ranks); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount); }
 
       static inline void prepareSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSize) {MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCounts); MEDI_UNUSED(indexDispls); CODI_UNUSED(totalSize);}
       static inline void prepareInplaceSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, int ownRank, ModifiedType* bufMod, int* &displsMod, IndexType* &indices, int &indexCount) {MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(ownRank); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCount);}
+      static inline void prepareInplaceSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, int ownRank, ModifiedType* bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSize) {MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(ownRank); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCounts); MEDI_UNUSED(indexDispls); CODI_UNUSED(totalSize);}
       static inline void handleSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSize) { MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCounts); MEDI_UNUSED(indexDispls); CODI_UNUSED(totalSize);}
       static inline void prepareRecvBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSize) { MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCounts); MEDI_UNUSED(indexDispls); CODI_UNUSED(totalSize);}
       static inline void handleRecvBuffer(const Type* buf, const int* counts, const int* displs, int ranks, ModifiedType* &bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSize) { MEDI_UNUSED(buf); MEDI_UNUSED(counts); MEDI_UNUSED(displs); MEDI_UNUSED(ranks); MEDI_UNUSED(bufMod); MEDI_UNUSED(displsMod); MEDI_UNUSED(indices); MEDI_UNUSED(indexCounts); MEDI_UNUSED(indexDispls); CODI_UNUSED(totalSize);}
@@ -254,7 +255,7 @@ namespace medi {
       }
     }
 
-    static inline void prepareInplaceSendBuffer(const Type* buf, int count, int ranks, int ownRank, ModifiedType* bufMod, IndexType* &indices, int &indexCount) {
+    static inline void prepareInplaceSendBuffer(const Type* buf, int count, int ranks, bool all, int ownRank, ModifiedType* bufMod, IndexType* &indices, int &indexCount) {
       int totalSize = count; // we only need to store the values of our rank
 
       // calculate our position in the buffer
@@ -262,6 +263,11 @@ namespace medi {
       if(1 != ranks) {
         offset = count * ownRank;
       }
+      if(all) {
+        totalSize = ranks * count;
+        offset = 0;
+      }
+
       if(ADTool::isActive()) {
         indexCount = count;  // we leave this here because this is the value per rank
         indices = new int[totalSize];
@@ -354,7 +360,7 @@ namespace medi {
       }
     }
 
-    static inline void prepareInplaceSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, int ownRank, ModifiedType* bufMod, int* displsMod, IndexType* &indices, int &indexCount) {
+    static inline void prepareInplaceSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, int ownRank, ModifiedType* bufMod, int* &displsMod, IndexType* &indices, int &indexCount) {
       int ownCount = counts[ownRank];
       int ownOffset = displs[ownRank];
       if(ADTool::isActive()) {
@@ -371,6 +377,39 @@ namespace medi {
         // we need to set our values in the modified buffer
         for(int pos = 0; pos < ownCount; ++pos) {
           ADTool::setIntoModifyBuffer(bufMod[pos + displsMod[ownRank]], buf[pos + ownOffset]);
+        }
+      }
+    }
+
+    static inline void prepareInplaceSendBuffer(const Type* buf, const int* counts, const int* displs, int ranks, int ownRank, ModifiedType* bufMod, int* &displsMod, IndexType* &indices, int* &indexCounts, int* &indexDispls, int &totalSizeBuf) {
+      int totalSize = 0;
+      for(int i = 0; i < ranks; ++i) {
+        totalSize += counts[i];
+      }
+      if(ADTool::isActive()) {
+        indices = new int[totalSize];
+        indexCounts = new int[ranks];
+        indexDispls = new int[ranks];
+        totalSizeBuf = totalSize;
+
+        int curOffset = 0;
+        for(int i = 0; i < ranks; ++i) {
+          indexCounts[i] = counts[i];
+          indexDispls[i] = curOffset;
+          curOffset += counts[i];
+
+          for(int pos = 0; pos < counts[i]; ++pos) {
+            indices[pos + indexDispls[i]] = ADTool::getIndex(buf[pos + displs[i]]);
+          }
+        }
+      }
+      if(ADTool::IS_RequiresModifiedBuffer) {
+        // buffers are crated in the prepare recv
+        // we need to set our values in the modified buffer
+        for(int i = 0; i < ranks; ++i) {
+          for(int pos = 0; pos < counts[i]; ++pos) {
+            ADTool::setIntoModifyBuffer(bufMod[pos + displsMod[i]], buf[pos + displs[i]]);
+          }
         }
       }
     }
