@@ -272,7 +272,6 @@
     <arg name="comm" type="MPI_Comm" />
     <request name="request" type="MPI_Request*"/>
   </function>
-
   <function name="Alltoallv"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
     <arg name="sendcounts" type="int*" const="1"/>
@@ -297,7 +296,8 @@
     <request name="request" type="MPI_Request*"/>
   </function>
 
-  <function name="Reduce">
+  <!-- reduce -->
+  <function name="Reduce"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
@@ -306,13 +306,30 @@
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Ireduce" async="request">
+  <function name="Ireduce" async="request"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
     <type name="datatype" type="MPI_Datatype"/>
     <operator name="op" type="MPI_Op"/>
     <arg name="root" type="int"/>
+    <arg name="comm" type="MPI_Comm"/>
+    <request name="request" type="MPI_Request*"/>
+  </function>
+  <function name="Allreduce"> <!-- all defined -->
+    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+    <recv name="recvbuf" type="datatype" count="count" />
+    <arg name="count" type="int"/>
+    <type name="datatype" type="MPI_Datatype"/>
+    <operator name="op" type="MPI_Op"/>
+    <arg name="comm" type="MPI_Comm"/>
+  </function>
+  <function name="Iallreduce" async="request"> <!-- all defined -->
+    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+    <recv name="recvbuf" type="datatype" count="count"/>
+    <arg name="count" type="int"/>
+    <type name="datatype" type="MPI_Datatype"/>
+    <operator name="op" type="MPI_Op"/>
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>

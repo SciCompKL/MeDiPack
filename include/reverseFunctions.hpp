@@ -298,4 +298,24 @@ namespace medi {
       MPI_Ibcast(sendbufAdjoints, sendbufSize, sendbufType, root, comm, &request->request);
     }
   }
+
+  template<typename DATATYPE>
+  void TAMPI_Allreduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(op);
+    MEDI_UNUSED(count);
+
+    MPI_Allgather(recvbufAdjoints, recvbufSize, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, comm);
+  }
+
+  template<typename DATATYPE>
+  void TAMPI_Iallreduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
+    MEDI_UNUSED(sendbufPrimals);
+    MEDI_UNUSED(recvbufPrimals);
+    MEDI_UNUSED(op);
+    MEDI_UNUSED(count);
+
+    MPI_Iallgather(recvbufAdjoints, recvbufSize, recvbufType, sendbufAdjoints, sendbufSize, sendbufType, comm, &request->request);
+  }
 }

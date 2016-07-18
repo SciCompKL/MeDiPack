@@ -95,4 +95,16 @@
     <arg name="recvtypes" type="MPI_Datatype*" const="1"/>
     <arg name="comm" type="MPI_Comm" />
   </function>
+
+  <function name="Op_create">
+    <arg name="user_fn" type="MPI_User_function*" />
+    <arg name="commute" type="int" />
+    <arg name="op" type="MPI_Op*" />
+  </function>
+
+  <function name="Op_free">
+    <arg name="op" type="MPI_Op " />
+  </function>
+
+
 </functions>
