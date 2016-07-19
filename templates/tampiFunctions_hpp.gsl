@@ -2,7 +2,14 @@
 .template 0
 
 function modifyTypeName(type)
-  return string.replace(type, "MPI_|TAMPI_")
+  return string.replace(my.type, "MPI_|TAMPI_")
+endfunction
+
+function addHandleData(handle, name, type)
+  new my.handle.item
+    define item.name = my.name
+    define item.type = my.type
+  endnew
 endfunction
 
 for functions.function as curFunction
@@ -11,6 +18,11 @@ for functions.function as curFunction
  if(!defined(curFunction.mpiName))
   curFunction.mpiName = "MPI_$(curFunction.name)"
  endif
+
+ # mark all orignal arguments as args
+ for curFunction. as item
+   item.arg = 1
+ endfor
  #generate the names for the datatypes
  for curFunction.send
    send.typeName = "$(send.type:upper)"
@@ -43,12 +55,12 @@ for functions.function as curFunction
    item.taType = modifyTypeName(item.type)
  endfor
 
-#build the argument lists
+#build the argument lists and the list for the handles
  curFunction.argDef = ""
  curFunction.argArg = ""
  curFunction.argRev = ""
  curFunction.argEmpty = ""
- for curFunction. as item
+ for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
    curFunction.argDef +=   constMod # prepend the const modifier
    curFunction.argEmpty +=   constMod # prepend the const modifier
@@ -86,9 +98,20 @@ for functions.function as curFunction
    endif
  endfor
 
+ new curFunction.primalHandle as handle
+   define handle.noarg = 1
+ endnew
+ new curFunction.reverseHandle as handle
+   define handle.noarg = 1
+ endnew
+ for curFunction. as item where defined(item.arg)
+# TODO
+ endfor
+
 #build the argument list for the regular call
  curFunction.argReg = ""
- for curFunction. as item
+ for curFunction. as item where defined(item.arg)
+
    if(name(item) = "type")
      curFunction.argReg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
    elsif(name(item) = "operator")
@@ -102,7 +125,8 @@ for functions.function as curFunction
  endfor
 
 # add properties to the buffers
- for curFunction. as item
+ for curFunction. as item where defined(item.arg)
+
    if(name(item) =  "recv" | name(item) =  "send")
      item.rankCount = "1"
      if(defined(item.ranks) | defined(item.displs))
@@ -113,10 +137,12 @@ for functions.function as curFunction
  endfor
 
  # link inplace buffers together
- for curFunction. as item
+ for curFunction. as item where defined(item.arg)
+
    if(name(item) =  "recv" | name(item) =  "send")
      if(defined(item.inplace))
-       for curFunction. as linkedItem
+       for curFunction. as linkedItem where defined(linkedItem.arg)
+
          if(linkedItem.name = item.inplace)
            # found the buffer with the name so copy it to this buffer and create the link
            copy linkedItem to item as inplaceBuffer
@@ -143,7 +169,7 @@ function endRoot(buffer)
 endfunction
 
 function defineBuffersMod(curFunction)
-  for my.curFunction. as item
+  for my.curFunction. as item where defined(item.arg)
     if(name(item) =  "recv" | name(item) =  "send")
 >     typename $(item.typeName)::ModifiedType* $(item.name)Mod = NULL;
     endif
@@ -267,7 +293,7 @@ endfunction
 function unpackHandle(curFunction, reverse)
 >   $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
 # unpack the arguments (buffers are accessed directly)
-  for my.curFunction. as item
+  for my.curFunction. as item where defined(item.arg)
     if(name(item) <> "type")
       constMod = defined(item.const) ?? "const " ? ""
       if(name(item) = "send" | name(item) = "recv")
@@ -290,6 +316,21 @@ function unpackHandle(curFunction, reverse)
       else
 >         $(constMod)$(item.taType) $(item.name) = h->$(item.name);
       endif
+    endif
+  endfor
+endfunction
+
+function packHandle(curFunction, reverse)
+# pack the arguments
+  for my.curFunction->handle. as item
+    if(1 = my.reverse)
+      out = item.reverse
+    else
+      out = item.primal
+    endif
+
+    if(out)
+>     h->$(item.name) = $(item.name);
     endif
   endfor
 endfunction
@@ -357,7 +398,7 @@ namespace medi {
 .- create the struct for the data store
   template<$(curFunction.tplDef)>
   struct $(curFunction.handleName) : public HandleBase {
-. for curFunction. as item
+. for curFunction. as item where defined(item.arg)
 .   if(name(item) <> "type")
 .     constMod = defined(item.const) ?? "const " ? ""
 .     if(name(item) = "send" | name(item) = "recv")
@@ -383,8 +424,9 @@ namespace medi {
 .     endif
 .   endif
 . endfor
+
     ~$(curFunction.handleName) () {
-. for curFunction. as item
+. for curFunction. as item where defined(item.arg)
 .   if(name(item) = "send" | name(item) = "recv")
       if(NULL != $(item.name)Indices) { delete [] $(item.name)Indices; }
       if(NULL != $(item.name)Primals) { delete [] $(item.name)Primals; }
@@ -477,7 +519,7 @@ namespace medi {
       if(NULL != h) {
         h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
-.       for curFunction. as item
+.       for curFunction. as item where defined(item.arg)
 .         if(name(item) <> "type")
             h->$(item.name) = $(item.name);
 .
@@ -525,7 +567,7 @@ namespace medi {
 
   template<>
   inline int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
-.   for curFunction. as item
+.   for curFunction. as item where defined(item.arg)
 .     if(name(item) <> "type")  # exclude the types because they are handled as templates
         MEDI_UNUSED($(item.name));
 .     endif
