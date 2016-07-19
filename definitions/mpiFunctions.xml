@@ -121,7 +121,7 @@
 
   <!-- gathers -->
   <function name="Gather"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
@@ -131,7 +131,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Igather" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
@@ -142,7 +142,7 @@
     <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Gatherv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
@@ -153,7 +153,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Igatherv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
@@ -165,7 +165,7 @@
     <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Allgather"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -174,7 +174,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Iallgather" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -184,7 +184,7 @@
     <request name="request" type="MPI_Request*"/>
   </function>
   <function name="Allgatherv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
@@ -194,7 +194,7 @@
     <arg name="comm" type="MPI_Comm"/>
   </function>
   <function name="Iallgatherv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf"/>
+    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
     <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
@@ -297,7 +297,7 @@
   </function>
 
   <!-- reduce -->
-  <function name="Reduce"> <!-- all defined -->
+  <function name="Reduce_global"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
@@ -333,4 +333,5 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
+
 </functions>

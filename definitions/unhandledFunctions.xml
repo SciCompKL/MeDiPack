@@ -106,5 +106,35 @@
     <arg name="op" type="MPI_Op " />
   </function>
 
+  <function name="Reduce_local">
+    <arg name="inbuf" type="void*" const="1"/>
+    <arg name="inoutbuf" type="void*" />
+    <arg name="count" type="int" />
+    <arg name="datatype" type="MPI_Datatype" />
+    <arg name="op" type="MPI_Op" />
+  </function>
+
+  <function name="Op_commutative">
+    <arg name="op" type="MPI_Op" />
+    <arg name="commute" type="int " />
+  </function>
+
+  <function name="Reduce_scatter_block">
+    <arg name="sendbuf" type="void*" const="1"/>
+    <arg name="recvbuf" type="void*" />
+    <arg name="recvcount" type="int" />
+    <arg name="datatype" type="MPI_Datatype" />
+    <arg name="op" type="MPI_Op" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
+
+  <function name="Reduce_scatter">
+    <arg name="sendbuf" type="void*" const="1"/>
+    <arg name="recvbuf" type="void*" />
+    <arg name="recvcounts" type="int*" const="1"/>
+    <arg name="datatype" type="MPI_Datatype" />
+    <arg name="op" type="MPI_Op" />
+    <arg name="comm" type="MPI_Comm" />
+  </function>
 
 </functions>

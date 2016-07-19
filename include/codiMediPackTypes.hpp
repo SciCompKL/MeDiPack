@@ -149,14 +149,20 @@ struct CoDiPackTool {
     MPI_Op modifiedTypeOperator;
     MPI_Op_create(modifiedFunc, true, &modifiedTypeOperator);
     opMod.init(requiresPrimal, requiresPrimalSend, modifiedTypeOperator, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
-    MPI_Op valueTYpeOperator;
-    MPI_Op_create(primalFunc, true, &valueTYpeOperator);
-    op.init(requiresPrimal, requiresPrimalSend, valueTYpeOperator, &opMod, preAdjointOperation, postAdjointOperation);
+    MPI_Op valueTypeOperator;
+    MPI_Op_create(primalFunc, true, &valueTypeOperator);
+    op.init(requiresPrimal, requiresPrimalSend, valueTypeOperator, &opMod, preAdjointOperation, postAdjointOperation);
+  }
+
+  static void initOperator(medi::TAMPI_Op& op, MPI_User_function* primalFunc) {
+    MPI_Op valueTypeOperator;
+    MPI_Op_create(primalFunc, true, &valueTypeOperator);
+    op.init(valueTypeOperator);
   }
 
   static void initOperators() {
     initOperator(OP_ADD, OP_ADD_MOD, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
-    initOperator(OP_MUL, OP_MUL_MOD, true, false, (MPI_User_function*)codiModifiedMul<Type>, (MPI_User_function*)codiUnmodifiedMul<Type>, (medi::PreAdjointOperation)codiPreAdjMul<double, double>, (medi::PostAdjointOperation)codiPostAdjMul<double, double>);
+    initOperator(OP_MUL, (MPI_User_function*)codiUnmodifiedMul<Type>);
     initOperator(OP_MIN, OP_MIN_MOD, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
     initOperator(OP_MAX, OP_MAX_MOD, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
   }
