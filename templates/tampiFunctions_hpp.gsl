@@ -8,6 +8,9 @@ endfunction
 for functions.function as curFunction
  #generate the constants for each function
  curFunction.handleName = "TAMPI_$(curFunction.name)_Handle"
+ if(!defined(curFunction.mpiName))
+  curFunction.mpiName = "MPI_$(curFunction.name)"
+ endif
  #generate the names for the datatypes
  for curFunction.send
    send.typeName = "$(send.type:upper)"
@@ -439,7 +442,7 @@ namespace medi {
     int rStatus;
     if(!$(curFunction.adType)::IS_ActiveType) {
       // call the regular function if the type is not active
-      rStatus = MPI_$(curFunction.name)($(curFunction.argReg));
+      rStatus = $(curFunction.mpiName)($(curFunction.argReg));
     } else {
 
 .     defineBuffersMod(curFunction)

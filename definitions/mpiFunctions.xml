@@ -297,7 +297,7 @@
   </function>
 
   <!-- reduce -->
-  <function name="Reduce_global"> <!-- all defined -->
+  <function name="Reduce_global" mpiName="MPI_Reduce"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
@@ -306,7 +306,7 @@
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Ireduce" async="request"> <!-- all defined -->
+  <function name="Ireduce_global" async="request" mpiName="MPI_Ireduce"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
     <recv name="recvbuf" type="datatype" count="count" root="root"/>
     <arg name="count" type="int"/>
@@ -316,7 +316,7 @@
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
-  <function name="Allreduce"> <!-- all defined -->
+  <function name="Allreduce_global" mpiName="MPI_Allreduce"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
     <recv name="recvbuf" type="datatype" count="count" />
     <arg name="count" type="int"/>
@@ -324,7 +324,7 @@
     <operator name="op" type="MPI_Op"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Iallreduce" async="request"> <!-- all defined -->
+  <function name="Iallreduce_global" async="request" mpiName="MPI_Iallreduce"> <!-- all defined -->
     <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
     <recv name="recvbuf" type="datatype" count="count"/>
     <arg name="count" type="int"/>

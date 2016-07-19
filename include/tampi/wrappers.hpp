@@ -1,5 +1,6 @@
 #pragma once
 
+#include "async.hpp"
 #include "../medipack.h"
 
 namespace medi {
@@ -18,22 +19,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int TAMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm);
-  template<typename SENDTYPE, typename RECVTYPE>
-  int TAMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, typename RECVTYPE::Type* recvbuf, int recvcount, int root, TAMPI_Comm comm);
+  struct TAMPI_Ireduce_Handle : public HandleBase {
+      TAMPI_Comm comm;
+      int root;
+      bool all;
+      int count;
+      TAMPI_Op op;
+      typename DATATYPE::Type* recvbuf;
+      typename DATATYPE::Type* tempbuf;
+
+      HandleBase* origHandle;
+      ContinueFunction origFunc;
+  };
+
 
   template<typename DATATYPE>
-  inline int TAMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
-    if(op.hasAdjoint) {
-      return TAMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, op, root, comm);
-    } else {
-      // perform a gather and apply the operator locally
-      int commSize = getCommSize(comm);
+  inline void performReduce(bool all, typename DATATYPE::Type* tempbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
+    int commSize = getCommSize(comm);
+    int commRank = getCommRank(comm);
 
-      typename DATATYPE::Type* tempbuf = new typename DATATYPE::Type[count * commSize];
-
-      int rValue = TAMPI_Gather<DATATYPE, DATATYPE>(sendbuf, count, tempbuf, count, root, comm);
-
+    if(all || root == commRank) {
       for(int j = 1; j < commSize; ++j) {
         MPI_Reduce_local(&tempbuf[j * count], tempbuf, count, DATATYPE::Tool::MPIType, op.primalFunction);
       }
@@ -43,12 +48,156 @@ namespace medi {
       }
 
       delete [] tempbuf;
+    }
+  }
+
+  template<typename DATATYPE>
+  inline int TAMPI_Ireduce_finish(HandleBase* handle) {
+
+    TAMPI_Ireduce_Handle<DATATYPE>* h = static_cast<TAMPI_Ireduce_Handle<DATATYPE>*>(handle);
+    // first call the orignal function
+    h->origFunc(h->origHandle);
+
+    performReduce<DATATYPE>(h->all, h->tempbuf, h->recvbuf, h->count, h->op, h->root, h->comm);
+
+    return 0;
+  }
+
+  template<typename DATATYPE>
+  int TAMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int TAMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, typename RECVTYPE::Type* recvbuf, int recvcount, int root, TAMPI_Comm comm);
+
+  template<typename DATATYPE>
+  inline int TAMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm) {
+    if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
+      return TAMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, op, root, comm);
+    } else {
+      // perform a gather and apply the operator locally
+      int commSize = getCommSize(comm);
+      int commRank = getCommRank(comm);
+
+      typename DATATYPE::Type* tempbuf = NULL;
+      if(root == commRank) {
+        tempbuf = new typename DATATYPE::Type[count * commSize];
+      }
+
+      const typename DATATYPE::Type* sendbufGather = sendbuf;
+      if(TAMPI_IN_PLACE == sendbuf) {
+        sendbufGather = recvbuf;
+      }
+      int rValue = TAMPI_Gather<DATATYPE, DATATYPE>(sendbufGather, count, tempbuf, count, root, comm);
+
+      performReduce<DATATYPE>(false, tempbuf, recvbuf, count, op, root, comm);
 
       return rValue;
     }
   }
 
-  inline int MPI_Reduce_global(const void* sendbuf, void* recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
-    return MPI_Reduce(sendbuf, recvbuf, count, type, op, root, comm);
+  template<typename DATATYPE>
+  int TAMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int TAMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, typename RECVTYPE::Type* recvbuf, int recvcount, int root, TAMPI_Comm comm, TAMPI_Request* request);
+
+  template<typename DATATYPE>
+  inline int TAMPI_Ireduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+    if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
+      return TAMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, op, root, comm, request);
+    } else {
+      // perform a gather and apply the operator locally
+      int commSize = getCommSize(comm);
+      int commRank = getCommRank(comm);
+
+      typename DATATYPE::Type* tempbuf = NULL;
+      if(root == commRank) {
+        tempbuf = new typename DATATYPE::Type[count * commSize];
+      }
+
+      const typename DATATYPE::Type* sendbufGather = sendbuf;
+      if(TAMPI_IN_PLACE == sendbuf) {
+        sendbufGather = recvbuf;
+      }
+      int rValue = TAMPI_Igather<DATATYPE, DATATYPE>(sendbufGather, count, tempbuf, count, root, comm, request);
+      TAMPI_Ireduce_Handle<DATATYPE>* curHandle = new TAMPI_Ireduce_Handle<DATATYPE>();
+      curHandle->comm = comm;
+      curHandle->root = root;
+      curHandle->all = false;
+      curHandle->count = count;
+      curHandle->op = op;
+      curHandle->recvbuf = recvbuf;
+      curHandle->tempbuf = tempbuf;
+      curHandle->origHandle = request->handle;
+      curHandle->origFunc = request->func;
+
+      // set our own handle now to the request
+      request->handle = curHandle;
+      request->func = (ContinueFunction)TAMPI_Ireduce_finish<DATATYPE>;
+
+      return rValue;
+    }
+  }
+
+  template<typename DATATYPE>
+  int TAMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, TAMPI_Comm comm);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int TAMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, typename RECVTYPE::Type* recvbuf, int recvcount, TAMPI_Comm comm);
+  template<typename DATATYPE>
+  inline int TAMPI_Allreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, TAMPI_Comm comm) {
+    if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
+      return TAMPI_Allreduce_global<DATATYPE>(sendbuf, recvbuf, count, op, comm);
+    } else {
+      // perform a gather and apply the operator locally
+      int commSize = getCommSize(comm);
+
+      typename DATATYPE::Type* tempbuf = new typename DATATYPE::Type[count * commSize];
+
+      const typename DATATYPE::Type* sendbufGather = sendbuf;
+      if(TAMPI_IN_PLACE == sendbuf) {
+        sendbufGather = recvbuf;
+      }
+      int rValue = TAMPI_Allgather<DATATYPE, DATATYPE>(sendbufGather, count, tempbuf, count, comm);
+
+      performReduce<DATATYPE>(true, tempbuf, recvbuf, count, op, -1, comm);
+
+      return rValue;
+    }
+  }
+
+  template<typename DATATYPE>
+  int TAMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int TAMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, typename RECVTYPE::Type* recvbuf, int recvcount, TAMPI_Comm comm, TAMPI_Request* request);
+  template<typename DATATYPE>
+  inline int TAMPI_Iallreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
+    if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
+      return TAMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, op, comm, request);
+    } else {
+      // perform a gather and apply the operator locally
+      int commSize = getCommSize(comm);
+
+      typename DATATYPE::Type* tempbuf = new typename DATATYPE::Type[count * commSize];
+
+      const typename DATATYPE::Type* sendbufGather = sendbuf;
+      if(TAMPI_IN_PLACE == sendbuf) {
+        sendbufGather = recvbuf;
+      }
+      int rValue = TAMPI_Iallgather<DATATYPE, DATATYPE>(sendbufGather, count, tempbuf, count, comm, request);
+      TAMPI_Ireduce_Handle<DATATYPE>* curHandle = new TAMPI_Ireduce_Handle<DATATYPE>();
+      curHandle->comm = comm;
+      curHandle->root = -1;
+      curHandle->all = true;
+      curHandle->count = count;
+      curHandle->op = op;
+      curHandle->recvbuf = recvbuf;
+      curHandle->tempbuf = tempbuf;
+      curHandle->origHandle = request->handle;
+      curHandle->origFunc = request->func;
+
+      // set our own handle now to the request
+      request->handle = curHandle;
+      request->func = (ContinueFunction)TAMPI_Ireduce_finish<DATATYPE>;
+
+      return rValue;
+    }
   }
 }

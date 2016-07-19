@@ -285,7 +285,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Ireduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void TAMPI_Ireduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Ibcast(recvbufAdjoints, recvbufSize, recvbufType, root, comm, &request->request);
@@ -300,7 +300,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Allreduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm) {
+  void TAMPI_Allreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm) {
     MEDI_UNUSED(sendbufPrimals);
     MEDI_UNUSED(recvbufPrimals);
     MEDI_UNUSED(op);
@@ -310,7 +310,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Iallreduce_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
+  void TAMPI_Iallreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, typename DATATYPE::PassiveType* &sendbufPrimals, int sendbufSize, MPI_Datatype sendbufType, typename DATATYPE::AdjointType* &recvbufAdjoints, typename DATATYPE::PassiveType* &recvbufPrimals, int recvbufSize, MPI_Datatype recvbufType, int count, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
     MEDI_UNUSED(sendbufPrimals);
     MEDI_UNUSED(recvbufPrimals);
     MEDI_UNUSED(op);
