@@ -105,7 +105,12 @@ for functions.function as curFunction
    define handle.noarg = 1
  endnew
  for curFunction. as item where defined(item.arg)
-# TODO
+   if(name(item) <> "type")  # exclude the types because they are handled as templates
+     if(name(item) =  "recv" | name(item) =  "send")
+       addHandleData(curFunction->primalHandle, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
+       addHandleData(curFunction->reverseHandle, "$(item.name)TotalSize", "int")
+     endif
+   endif
  endfor
 
 #build the argument list for the regular call
@@ -154,6 +159,9 @@ for functions.function as curFunction
 
  # define the ad type that is used in this function
  curFunction.adType = "$(curFunction->type.tplName)::Tool"
+
+ # define the main type that is used in this function
+ curFunction.mainType = "$(curFunction->type.tplName)"
 endfor
 
 function startRoot(buffer)
@@ -168,89 +176,84 @@ function endRoot(buffer)
   endif
 endfunction
 
-function defineBuffersMod(curFunction)
-  for my.curFunction. as item where defined(item.arg)
-    if(name(item) =  "recv" | name(item) =  "send")
->     typename $(item.typeName)::ModifiedType* $(item.name)Mod = NULL;
-    endif
-  endfor
-endfunction
-
-# define function for buffer prepare
-function createBufferPrepare(buffer, type)
-  # check if this is a displaced buffer
-> // create the modified buffer for $(my.buffer.name) (e.g. store value, create)
-  if(defined(my.buffer.displs))
->   int* $(my.buffer.displs)Mod = NULL;
+# createBufferAccessLogic
+# @param[in] modifiedCheck  Adds a check if modifed buffers are required.
+#                            0 -> no check
+#                            1 -> add positive check (exectued if modified buffers are required)
+#                           -1 -> add negative check (executed if no modified buffers are required)
+function createBufferAccessLogic(buffer, modifiedCheck, access)
+  startRoot(my.buffer)
+  if(1 = my.modifiedCheck)
+>  if($(my.buffer.typeName)::IS_RequiresModifiedBuffer) {
+  elsif(-1 = my.modifiedCheck)
+>  if(!$(my.buffer.typeName)::IS_RequiresModifiedBuffer) {
   endif
-
-  startRoot(my.buffer)
-    if(defined(my.buffer.inplace))
->     if(MPI_IN_PLACE != $(my.buffer.name)) {
-    endif
-    if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
->     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
-    else
->     $(my.buffer.typeName)::prepare$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-    endif
-    if(defined(my.buffer.inplace))
+     if(defined(my.buffer.inplace))
+>      if(TAMPI_IN_PLACE != $(my.buffer.name)) {
+     endif
+     generateLoop(my.buffer, my.access)
+     if(defined(my.buffer.inplace))
 >     } else {
->       $(my.buffer.name)Mod = static_cast<typename $(my.buffer.typeName)::Type*>(MPI_IN_PLACE);
         inplaceBuffer = my.buffer->inplaceBuffer
-        if(defined(inplaceBuffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
-          if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
->           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
-          else
->           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.displs), $(inplaceBuffer.rankCount), getCommRank(comm), $(inplaceBuffer.name)Mod, $(inplaceBuffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-          endif
-        else
-          if(defined(my.buffer.ranks)) # call the correct routine for displacement buffers and none displacement buffers
->           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), true, getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-          else
->           $(inplaceBuffer.typeName)::prepareInplace$(my.type)Buffer($(inplaceBuffer.name), $(inplaceBuffer.count), $(inplaceBuffer.rankCount), false, getCommRank(comm), $(inplaceBuffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
-          endif
-        endif
+        generateInplaceLoop(my.buffer, inplaceBuffer, my.access)
 >     }
-    endif
+     endif
+  if(0 <> my.modifiedCheck)
+>  }
+  endif
   endRoot(my.buffer)
 endfunction
 
-# define function for buffer handle
-function createBufferHandle(buffer, type)
-> // handle the modified buffer for $(my.buffer.name) (e.g. extract values, delete)
-  startRoot(my.buffer)
-    if(defined(my.buffer.inplace))
->     if(MPI_IN_PLACE != $(my.buffer.name)) {
-    endif
-    if(defined(my.buffer.displs)) # call the correct routine for displacement buffers and none displacement buffers
->     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.displs), $(my.buffer.rankCount), $(my.buffer.name)Mod, $(my.buffer.displs)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count, h->$(my.buffer.name)Displs, h->$(my.buffer.name)TotalSize);
+
+function createBufferElementsComputation(buffer)
+  if(defined(my.buffer.inplace))
+>   if(TAMPI_IN_PLACE != $(my.buffer.name)) {
+  endif
+# the buffer is defined
+  if(defined(my.buffer.displs))
+>   $(my.buffer.name)Elements = $(my.buffer.displs)TotalSize;
+  elsif(defined(my.buffer.ranks))
+>   $(my.buffer.name)Elements = $(my.buffer.count) * getCommSize($(my.buffer.ranks));
+  else
+>   $(my.buffer.name)Elements = $(my.buffer.count);
+  endif
+  if(defined(my.buffer.inplace))
+    inplaceBuffer = my.buffer->inplaceBuffer
+>   } else {
+
+    # The buffer is an inplace buffer
+    if(defined(inplaceBuffer.displs))
+      if(defined(my.buffer.displs)) # both have the same layout so copy the total size
+>       $(my.buffer.name)Elements = $(inplaceBuffer.displs)TotalSize;
+      else  # buffer is a normal buffer so just get the size from the rank
+>       $(my.buffer.name)Elements = $(inplaceBuffer.count)[getCommRank(comm)];
+      endif
+    elsif(defined(inplaceBuffer.ranks))
+      if(defined(my.buffer.ranks)) # both have the same layout so copy the total size
+>       $(my.buffer.name)Elements = $(inplaceBuffer.count) * getCommSize($(my.buffer.ranks));
+      else # buffer is a normal buffer so just get the size from the rank
+>       $(my.buffer.name)Elements = $(inplaceBuffer.count);
+      endif
     else
->     $(my.buffer.typeName)::handle$(my.type)Buffer($(my.buffer.name), $(my.buffer.count), $(my.buffer.rankCount), $(my.buffer.name)Mod, h->$(my.buffer.name)Indices, h->$(my.buffer.name)Count);
+>     $(my.buffer.name)Elements = $(inplaceBuffer.count);
     endif
-    if(defined(my.buffer.inplace))
->     }
-    endif
-  endRoot(my.buffer)
+>   }
+  endif
 endfunction
 
 function createBufferReverseSetup(buffer, curFunction, isRecv)
 > $(my.buffer.name)Adjoints = NULL;
 > $(my.buffer.name)Primals = NULL;
 > int $(my.buffer.name)Size = 0;
-  if(defined(my.buffer.displs))
->   int $(my.buffer.name)TotalSize = h->$(my.buffer.name)TotalSize;
-  else
->   int $(my.buffer.name)TotalSize = h->$(my.buffer.name)Count * $(my.buffer.rankCount);
-  endif
 > MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRoot(my.buffer)
     allMul = ""
     if(defined(my.buffer.all))
       allMul = "* getCommSize($(my.buffer.all))"
     endif
->   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, $(my.buffer.name)TotalSize $(allMul), $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
+>   allocateReverseBuffer($(my.buffer.name)Adjoints, $(my.buffer.name)Primals, h->$(my.buffer.name)Count, h->$(my.buffer.name)TotalSize $(allMul), $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
     if(1 = my.isRecv)
->     $(my.buffer.typeName)::getAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
+>     $(my.buffer.typeName)::getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
 >
       if(defined(my.curFunction->operator))
 >       $(my.curFunction->operator.name).preAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
@@ -266,12 +269,12 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
   startRoot(my.buffer)
     if(1 = my.isSend)
       if(defined(my.curFunction->operator))
->       $(my.curFunction->operator.name).postAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, $(my.buffer.name)Primals, $(my.buffer.name)TotalSize);
+>       $(my.curFunction->operator.name).postAdjointOperation($(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, $(my.buffer.name)Primals, h->$(my.buffer.name)TotalSize);
       endif
       if(defined(my.buffer.all))
->       combineAdjoints($(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints, getCommSize($(my.buffer.all)));
+>       combineAdjoints(h->$(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints, getCommSize($(my.buffer.all)));
       endif
->     $(my.buffer.typeName)::updateAdjoints(h->$(my.buffer.name)Indices, $(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
+>     $(my.buffer.typeName)::updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, $(my.buffer.name)Adjoints);
     endif
 >   deleteReverseBuffer($(my.buffer.name)Adjoints , $(my.buffer.name)Primals, $(primalRequired));
   endRoot(my.buffer)
@@ -290,6 +293,49 @@ function createPrimalExtraction(buffer)
   endRoot(my.buffer)
 endfunction
 
+function outputStatement(statement, typeName, name, pos, linPos, startLinPos, count)
+> $(string.replace(my.statement, "$typeName$|$(my.typeName),$name$|$(my.name),$pos$|$(my.pos),$linPos$|$(my.linPos),$startLinPos$|$(my.startLinPos),$curCount$|$(my.count)"))
+endfunction
+
+#create a loop around a statement
+function generateLoop(buffer, statement)
+  if(defined(my.buffer.displs))
+>   for(int i = 0; i < getCommSize(comm); ++i) {
+      pos = "$(my.buffer.displs)[i]"
+      linPos = "$(my.buffer.displs)Mod[i]"
+      curCount = "$(my.buffer.count)[i]"
+      outputStatement(my.statement, my.buffer.typeName, my.buffer.name, pos, linPos, linPos, curCount)
+>   }
+  elsif(defined(my.buffer.ranks))
+    outputStatement(my.statement, my.buffer.typeName, my.buffer.name, "0", "0", "0", "$(my.buffer.count) * getCommSize($(my.buffer.ranks))")
+  else
+    outputStatement(my.statement, my.buffer.typeName, my.buffer.name, "0", "0", "0", "$(my.buffer.count)")
+  endif
+endfunction
+
+#create a loop around a statement
+function generateInplaceLoop(buffer, inplaceBuffer, statement)
+  if(defined(my.buffer.displs) | defined(my.buffer.ranks))
+    # this buffer has a special layout so the other buffer must have the same layout
+    generateLoop(my.inplaceBuffer, my.statement)
+  elsif(defined(my.inplaceBuffer.displs))
+>   {
+      # TODO: add marker for displacement buffers, that indicates the communicator
+>     const int rank = getCommRank(comm);
+      pos = "$(my.inplaceBuffer.displs)[rank]"
+      linPos = "$(my.inplaceBuffer.displs)Mod[rank]"
+      curCount = "$(my.inplaceBuffer.count)[rank]"
+      outputStatement(my.statement, my.inplaceBuffer.typeName, my.inplaceBuffer.name, pos, linPos, "0", curCount)
+>   }
+  elsif(defined(my.inplaceBuffer.ranks))
+     pos = "$(my.inplaceBuffer.count) * getCommRank($(my.inplaceBuffer.ranks))"
+     curCount = "$(my.inplaceBuffer.count)"
+    outputStatement(my.statement, my.inplaceBuffer.typeName, my.inplaceBuffer.name, pos, pos, "0", curCount)
+  else
+    generateLoop(my.inplaceBuffer, my.statement)
+  endif
+endfunction
+
 function unpackHandle(curFunction, reverse)
 >   $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
 # unpack the arguments (buffers are accessed directly)
@@ -304,7 +350,7 @@ function unpackHandle(curFunction, reverse)
 >        $(constMod)typename $(item.typeName)::Type* $(item.name) = h->$(item.name);
 >        typename $(item.typeName)::ModifiedType* $(item.name)Mod = h->$(item.name)Mod;
          if(defined(item.displs))
->         int* $(item.displs)Mod = h->$(item.displs)Mod;
+>         const int* $(item.displs)Mod = h->$(item.displs)Mod;
          endif
         endif
       elsif(name(item) = "request")
@@ -411,8 +457,7 @@ namespace medi {
 .        if(defined(item.displs))
           int* $(item.name)Count;
           int* $(item.name)Displs;
-          int $(item.name)TotalSize;
-          int* $(item.displs)Mod;
+          const int* $(item.displs)Mod;
 .        else
           int $(item.name)Count;
 .        endif
@@ -423,6 +468,9 @@ namespace medi {
         $(constMod)$(item.taType) $(item.name);
 .     endif
 .   endif
+. endfor
+. for curFunction->reverseHandle. as item
+    $(item.type) $(item.name);
 . endfor
 
     ~$(curFunction.handleName) () {
@@ -487,7 +535,6 @@ namespace medi {
       rStatus = $(curFunction.mpiName)($(curFunction.argReg));
     } else {
 
-.     defineBuffersMod(curFunction)
       // the type is an AD type so handle the buffers
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
       // the handle is created if a reverse action should be recorded, h != NULL => tape is active
@@ -506,14 +553,96 @@ namespace medi {
         }
 .     endfor
 
-.- TODO: for index deletion reverse this again and add an extra loop that creates the temporary buffers
-.     for curFunction.recv
-.       createBufferPrepare(recv, "Recv")
+.-    create the linear displacements
+.     for curFunction.displs as item
+        const int* $(item.name)Mod = $(item.name);
+        int $(item.name)TotalSize = 0;
+        if(NULL != $(item.name)) {
+          $(item.name)TotalSize = computeDisplacementsTotalSize($(item.counts), getCommSize($(item.ranks)));
+          if($(curFunction.mainType)::IS_RequiresModifiedBuffer) {
+            $(item.name)Mod = createLinearDisplacements($(item.counts), getCommSize($(item.ranks)));
+          }
+        }
 .     endfor
 
-.     for curFunction.send
-.       createBufferPrepare(send, "Send")
+.-    create the buffers
+.     for curFunction. as item where defined(item.arg)
+.       if(name(item) =  "recv" | name(item) =  "send")
+          typename $(item.typeName)::ModifiedType* $(item.name)Mod = NULL;
+          int $(item.name)Elements = 0;
+
+.         startRoot(item)
+            // compute the total size of the buffer
+.           createBufferElementsComputation(item)
+
+.           inplace = ""
+.           if(defined(item.inplace))
+.             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
+.           endif
+            if($(item.typeName)::IS_RequiresModifiedBuffer $(inplace)) {
+              $(item.name)Mod = new typename $(item.typeName)::ModifiedType[$(item.name)Elements];
+            } else {
+              $(item.name)Mod = reinterpret_cast<typename $(item.typeName)::ModifiedType*>(const_cast<typename $(item.typeName)::Type*>($(item.name)));
+            }
+.         endRoot(item)
+.       endif
 .     endfor
+
+.-    copy the data into the modified buffers
+.     for curFunction. as item where defined(item.arg)
+.       if(name(item) = "send")
+.         createBufferAccessLogic(item, 1, "$typeName$::copyIntoModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.       endif
+.     endfor
+
+      if(NULL != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+.       for curFunction. as item where defined(item.arg)
+.         if(name(item) =  "send" | name(item) =  "recv")
+.           startRoot(item)
+.             if(defined(item.inplace))
+                if(TAMPI_IN_PLACE != $(item.name)) {
+.             endif
+.             if(defined(item.displs))
+                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.typeName)::IndicesPerElement);
+.             else
+                h->$(item.name)Count = $(item.count) * $(item.typeName)::IndicesPerElement;
+.             endif
+.             if(defined(item.inplace))
+.               inplaceBuffer = item->inplaceBuffer
+                } else {
+.                if(defined(inplaceBuffer.displs))
+.                  if(defined(item.displs))
+                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.typeName)::IndicesPerElement);
+.                  else
+                     h->$(item.name)Count = $(inplaceBuffer.count)[getCommRank(comm)] * $(inplaceBuffer.typeName)::IndicesPerElement;
+.                  endif
+.                else
+                   h->$(item.name)Count = $(inplaceBuffer.count) * $(inplaceBuffer.typeName)::IndicesPerElement;
+.                endif
+                }
+.             endif
+              h->$(item.name)TotalSize = $(item.name)Elements * $(item.typeName)::IndicesPerElement;
+              h->$(item.name)Indices = new typename $(item.typeName)::IndexType[h->$(item.name)TotalSize];
+.           endRoot(item)
+.         endif
+.       endfor
+
+.       for curFunction. as item where defined(item.arg)
+.         if(name(item) =  "send")
+.-          The index buffer is always the one from the buffer we are currently handling
+.           createBufferAccessLogic(item, 0, "$typeName$::getIndices(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.         endif
+.       endfor
+
+.       for curFunction. as item where defined(item.arg)
+.         if(name(item) =  "recv")
+.           createBufferAccessLogic(item, -1, "$typeName$::clearIndices(&$name$[$pos$], $curCount$);")
+.         endif
+.       endfor
+      }
 
       // pack all the variables in the handle
       if(NULL != h) {
@@ -540,13 +669,21 @@ namespace medi {
 .
       $(curFunction.adType)::addToolAction(h);
 
-.     for curFunction.send
-.       createBufferHandle(send, "Send")
+.-    copy the data from the modified buffers
+.     for curFunction. as item where defined(item.arg)
+.       if(name(item) =  "recv")
+.         createBufferAccessLogic(item, 1, "$typeName$::copyFromModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.       endif
 .     endfor
 
-.     for curFunction.recv
-.       createBufferHandle(recv, "Recv")
-.     endfor
+      if(NULL != h) {
+.       for curFunction. as item where defined(item.arg)
+.         if(name(item) =  "recv")
+.-          The index buffer is always the one from the buffer we are currently handling
+.           createBufferAccessLogic(item, 0, "$typeName$::registerValue(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.         endif
+.       endfor
+      }
 
 .     for curFunction.operator
         // extract the primal values for the operator if required
@@ -558,6 +695,28 @@ namespace medi {
 .     endfor
 
       $(curFunction.adType)::stopAssembly(h);
+
+.-    delete the linear displacements
+.     for curFunction.displs as item
+        if($(curFunction.mainType)::IS_RequiresModifiedBuffer) {
+          delete [] $(item.name)Mod;
+        }
+.     endfor
+
+.-    delete the buffers
+.     for curFunction. as item where defined(item.arg)
+.       if(name(item) =  "recv" | name(item) =  "send")
+.         startRoot(item)
+.           inplace = ""
+.           if(defined(item.inplace))
+.             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
+.           endif
+            if($(item.typeName)::IS_RequiresModifiedBuffer $(inplace)) {
+              delete [] $(item.name)Mod;
+            }
+.         endRoot(item)
+.       endif
+.     endfor
 
       // handle is deleted by the AD tool
     }

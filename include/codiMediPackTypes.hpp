@@ -205,6 +205,11 @@ struct CoDiPackTool {
     return value.getGradientData();
   }
 
+  static inline void clearIndex(Type& value) {
+    value.~Type();
+    value.getGradientData() = 0;
+  }
+
   static inline PassiveType getValue(const Type& value) {
     return value.getValue();
   }
@@ -229,6 +234,13 @@ struct CoDiPackTool {
       value.getGradientData() = 0;
       Type::getGlobalTape().registerInput(value);
     }
+  }
+
+  static inline int registerValue(Type& value) {
+    value.getGradientData() = 0;
+    Type::getGlobalTape().registerInput(value);
+
+    return value.getGradientData();
   }
 
   static bool isActive() {
