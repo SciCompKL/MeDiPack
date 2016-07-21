@@ -207,44 +207,44 @@
 
 
   <!-- scatters -->
-  <function name="Scatter"> <!--TODO: inplace in recv missing-->
+  <function name="Scatter"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" />
+    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf"/>
     <arg name="recvcount" type="int"/>
     <type name="recvtype" type="MPI_Datatype"/>
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Iscatter" async="request"> <!--TODO: inplace in recv missing-->
+  <function name="Iscatter" async="request"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
     <arg name="sendcount" type="int"/>
     <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" />
+    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
     <arg name="recvcount" type="int"/>
     <type name="recvtype" type="MPI_Datatype"/>
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
     <request name="request" type="MPI_Request*"/>
   </function>
-  <function name="Scatterv"> <!--TODO: inplace in recv missing-->
+  <function name="Scatterv"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
     <arg name="sendcounts" type="int*" const="1"/>
     <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
     <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" />
+    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
     <arg name="recvcount" type="int"/>
     <type name="recvtype" type="MPI_Datatype"/>
     <arg name="root" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
   </function>
-  <function name="Iscatterv" async="request"> <!--TODO: inplace in recv missing-->
+  <function name="Iscatterv" async="request"> <!-- all defined -->
     <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
     <arg name="sendcounts" type="int*" const="1"/>
     <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
     <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" />
+    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
     <arg name="recvcount" type="int"/>
     <type name="recvtype" type="MPI_Datatype"/>
     <arg name="root" type="int"/>
