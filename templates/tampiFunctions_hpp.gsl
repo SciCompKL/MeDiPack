@@ -5,10 +5,11 @@ function modifyTypeName(type)
   return string.replace(my.type, "MPI_|TAMPI_")
 endfunction
 
-function addHandleData(handle, name, type)
+function addHandleData(handle, pack, name, type)
   new my.handle.item
     define item.name = my.name
     define item.type = my.type
+    define item.pack = my.pack
   endnew
 endfunction
 
@@ -108,27 +109,27 @@ for functions.function as curFunction
    if(name(item) <> "type")  # exclude the types because they are handled as templates
      constMod = defined(item.const) ?? "const " ? ""
      if(name(item) =  "recv" | name(item) =  "send")
-       addHandleData(curFunction->reverseHandle, "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")  # change back
-       addHandleData(curFunction->reverseHandle, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")  # change back
-       addHandleData(curFunction->reverseHandle, "$(item.name)TotalSize", "int")
-       addHandleData(curFunction->reverseHandle, "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
-       addHandleData(curFunction->reverseHandle, "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
-       addHandleData(curFunction->reverseHandle, "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
-       addHandleData(curFunction->reverseHandle, "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
+       addHandleData(curFunction->reverseHandle, 1, "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")  # change back
+       addHandleData(curFunction->reverseHandle, 1, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")  # change back
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)TotalSize", "int")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
        if(defined(item.displs))
-         addHandleData(curFunction->reverseHandle, "$(item.name)Count", "int*")
-         addHandleData(curFunction->reverseHandle, "$(item.name)Displs", "int*")
-         addHandleData(curFunction->reverseHandle, "$(item.displs)Mod", "const int*")
+         addHandleData(curFunction->reverseHandle, 0, "$(item.name)Count", "int*")
+         addHandleData(curFunction->reverseHandle, 0, "$(item.name)Displs", "int*")
+         addHandleData(curFunction->reverseHandle, 1, "$(item.displs)Mod", "const int*")
        else
-         addHandleData(curFunction->reverseHandle, "$(item.name)Count", "int")
+         addHandleData(curFunction->reverseHandle, 0, "$(item.name)Count", "int")
        endif
      elsif(name(item) = "request")
-       addHandleData(curFunction->reverseHandle, "$(item.name)", "$(item.taType)") # change back
-       addHandleData(curFunction->reverseHandle, "$(item.name)Reverse", "TAMPI_Request")
+       addHandleData(curFunction->reverseHandle, 1, "$(item.name)", "$(item.taType)") # change back
+       addHandleData(curFunction->reverseHandle, 0, "$(item.name)Reverse", "TAMPI_Request")
      else
        # add other items to both handles
-       addHandleData(curFunction->primalHandle, "$(item.name)", "$(constMod) $(item.taType)")
-       addHandleData(curFunction->reverseHandle, "$(item.name)", "$(constMod) $(item.taType)")
+       addHandleData(curFunction->primalHandle, 1, "$(item.name)", "$(constMod) $(item.taType)")
+       addHandleData(curFunction->reverseHandle, 1, "$(item.name)", "$(constMod) $(item.taType)") # change to 0
      endif
    endif
  endfor
@@ -386,16 +387,10 @@ function unpackHandle(curFunction, reverse)
   endfor
 endfunction
 
-function packHandle(curFunction, reverse)
+function packHandle(handle)
 # pack the arguments
-  for my.curFunction->handle. as item
-    if(1 = my.reverse)
-      out = item.reverse
-    else
-      out = item.primal
-    endif
-
-    if(out)
+  for my.handle. as item
+    if 1 = item.pack
 >     h->$(item.name) = $(item.name);
     endif
   endfor
@@ -643,19 +638,7 @@ namespace medi {
       if(NULL != h) {
         h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
-.       for curFunction. as item where defined(item.arg)
-.         if(name(item) <> "type")
-            h->$(item.name) = $(item.name);
-.
-.           if(name(item) = "send" | name(item) = "recv")
-.
-              h->$(item.name)Mod = $(item.name)Mod;
-.             if(defined(item.displs))
-                h->$(item.displs)Mod = $(item.displs)Mod;
-.             endif
-.           endif
-.         endif
-.       endfor
+.       packHandle(curFunction->reverseHandle)
       }
 
       rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArgMod)>($(curFunction.argArg));
