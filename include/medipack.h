@@ -36,7 +36,7 @@ namespace medi {
     /*const*/ bool requiresPrimalSend;
 
     /*const*/ MPI_Op primalFunction;
-    const TAMPI_Op* modifiedOp;
+    /*const*/ MPI_Op modifiedPrimalFunction;
 
     /*const*/ PreAdjointOperation preAdjointOperation;
     /*const*/ PostAdjointOperation postAdjointOperation;
@@ -49,16 +49,16 @@ namespace medi {
       requiresPrimal(false),
       requiresPrimalSend(false),
       primalFunction(MPI_SUM),
-      modifiedOp(NULL),
+      modifiedPrimalFunction(MPI_SUM),
       preAdjointOperation(noPreAdjointOperation),
       postAdjointOperation(noPostAdjointOperation),
       hasAdjoint(false) {}
 
-    void init(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, const TAMPI_Op* modifiedOp, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) {
+    void init(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, MPI_Op modifiedPrimalFunction, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) {
       this->requiresPrimal = requiresPrimal;
       this->requiresPrimalSend = requiresPrimalSend;
       this->primalFunction = primalFunction;
-      this->modifiedOp = modifiedOp;
+      this->modifiedPrimalFunction = modifiedPrimalFunction;
       this->preAdjointOperation = preAdjointOperation;
       this->postAdjointOperation = postAdjointOperation;
       this->hasAdjoint = true;
@@ -68,7 +68,7 @@ namespace medi {
       this->requiresPrimal = false;
       this->requiresPrimalSend = false;
       this->primalFunction = primalFunction;
-      this->modifiedOp = NULL;
+      this->modifiedPrimalFunction = MPI_SUM;
       this->preAdjointOperation = noPreAdjointOperation;
       this->postAdjointOperation = noPostAdjointOperation;
       this->hasAdjoint = false;

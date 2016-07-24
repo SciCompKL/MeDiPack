@@ -60,49 +60,34 @@ for functions.function as curFunction
 
 #build the argument lists and the list for the handles
  curFunction.argDef = ""
- curFunction.argArg = ""
  curFunction.argRev = ""
- curFunction.argEmpty = ""
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
    curFunction.argDef +=   constMod # prepend the const modifier
-   curFunction.argEmpty +=   constMod # prepend the const modifier
    if(name(item) <> "type")  # exclude the types because they are handled as templates
      if(name(item) =  "recv" | name(item) =  "send")
        curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
-       curFunction.argArg += "$(item.name)Mod"    # append 'Mod' to the bufferNames
        if(defined(item.displs))
          curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        else
          curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, $(item.name)Size, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        endif
-       curFunction.argEmpty += "typename EmptyDataType::Type* $(item.name)"
      elsif(name(item) = "operator")
        curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argArg += "*$(item.name).modifiedOp"
        curFunction.argRev += "h->$(item.name)"
-       curFunction.argEmpty += "$(item.taType) $(item.name)"
      elsif(name(item) = "displs")
        curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argArg += "$(item.name)Mod"
        curFunction.argRev += "h->$(item.name)"
-       curFunction.argEmpty += "$(item.taType) $(item.name)"
      elsif(name(item) = "request")
        curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argArg += "$(item.name)"
        curFunction.argRev += "&h->$(item.name)Reverse"
-       curFunction.argEmpty += "$(item.taType) $(item.name)"
      else
        curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argArg += "$(item.name)"
        curFunction.argRev += "h->$(item.name)"
-       curFunction.argEmpty += "$(item.taType) $(item.name)"
      endif
      comma = last()?? "" ? ", "
      curFunction.argDef += comma
-     curFunction.argArg += comma
      curFunction.argRev += comma
-     curFunction.argEmpty += comma
    endif
  endfor
 
@@ -157,6 +142,26 @@ for functions.function as curFunction
      curFunction.argReg += "$(item.name)"
    endif
    curFunction.argReg += last()?? "" ? ", "  # append the seperator if neede
+ endfor
+
+#build the argument list for the regular call with modified items
+ curFunction.argArg = ""
+ for curFunction. as item where defined(item.arg)
+
+   if(name(item) =  "recv" | name(item) =  "send")
+     curFunction.argArg += "$(item.name)Mod"
+   elsif(name(item) = "type")
+     curFunction.argArg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
+   elsif(name(item) = "operator")
+     curFunction.argArg += "$(item.name).modifiedPrimalFunction"
+   elsif(name(item) = "displs")
+     curFunction.argArg += "$(item.name)Mod"
+   elsif(name(item) = "request")
+     curFunction.argArg += "&$(item.name)->request"
+   else
+     curFunction.argArg += "$(item.name)"
+   endif
+   curFunction.argArg += last()?? "" ? ", "  # append the seperator if neede
  endfor
 
 # add properties to the buffers
@@ -631,7 +636,7 @@ namespace medi {
 .       packHandle(curFunction->reverseHandle, "h")
       }
 
-      rStatus = TAMPI_$(curFunction.name)<$(curFunction.tplArgMod)>($(curFunction.argArg));
+      rStatus = $(curFunction.mpiName)($(curFunction.argArg));
 .
 .     addPrimalAsyncSplit(curFunction)
 .
@@ -692,14 +697,5 @@ namespace medi {
     return rStatus;
   }
 
-  template<>
-  inline int TAMPI_$(curFunction.name)<$(curFunction.tplEmpty)>($(curFunction.argEmpty)) {
-.   for curFunction. as item where defined(item.arg)
-.     if(name(item) <> "type")  # exclude the types because they are handled as templates
-        MEDI_UNUSED($(item.name));
-.     endif
-.   endfor
-    return 0;
-  }
 .endfor
 }

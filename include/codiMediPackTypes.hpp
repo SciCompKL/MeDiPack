@@ -122,12 +122,6 @@ struct CoDiPackTool {
   static medi::TAMPI_Op OP_MIN;
   static medi::TAMPI_Op OP_MAX;
 
-  private:
-  static medi::TAMPI_Op OP_ADD_MOD;
-  static medi::TAMPI_Op OP_MUL_MOD;
-  static medi::TAMPI_Op OP_MIN_MOD;
-  static medi::TAMPI_Op OP_MAX_MOD;
-
   public:
   typedef medi::PassiveDataType<Type> ModifiedNested;
 
@@ -145,13 +139,12 @@ struct CoDiPackTool {
     medi::PassiveTool<ModifiedType>::init(codiMpiType);
   }
 
-  static void initOperator(medi::TAMPI_Op& op, medi::TAMPI_Op& opMod, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
+  static void initOperator(medi::TAMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
     MPI_Op modifiedTypeOperator;
     MPI_Op_create(modifiedFunc, true, &modifiedTypeOperator);
-    opMod.init(requiresPrimal, requiresPrimalSend, modifiedTypeOperator, NULL, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
     MPI_Op valueTypeOperator;
     MPI_Op_create(primalFunc, true, &valueTypeOperator);
-    op.init(requiresPrimal, requiresPrimalSend, valueTypeOperator, &opMod, preAdjointOperation, postAdjointOperation);
+    op.init(requiresPrimal, requiresPrimalSend, valueTypeOperator, modifiedTypeOperator, preAdjointOperation, postAdjointOperation);
   }
 
   static void initOperator(medi::TAMPI_Op& op, MPI_User_function* primalFunc) {
@@ -161,10 +154,10 @@ struct CoDiPackTool {
   }
 
   static void initOperators() {
-    initOperator(OP_ADD, OP_ADD_MOD, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
+    initOperator(OP_ADD, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
     initOperator(OP_MUL, (MPI_User_function*)codiUnmodifiedMul<Type>);
-    initOperator(OP_MIN, OP_MIN_MOD, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
-    initOperator(OP_MAX, OP_MAX_MOD, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
+    initOperator(OP_MIN, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
+    initOperator(OP_MAX, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
   }
 
   static void init() {
@@ -253,7 +246,3 @@ template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MAX;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD_MOD;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL_MOD;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN_MOD;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MAX_MOD;
