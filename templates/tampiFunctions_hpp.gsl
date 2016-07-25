@@ -395,10 +395,13 @@ endfunction
 
 function addPrimalAsyncSplit(curFunction)
   if(defined(my.curFunction.async))
+>
 >      $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = new $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>();
        packHandle(my.curFunction->primalHandle, "asyncHandle")
 >      $(my.curFunction.async)->handle = asyncHandle;
 >      $(my.curFunction.async)->func = (ContinueFunction)TAMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
+>
+>      // create adjoint wait
 >      if(NULL != h) {
 >        WaitHandle* waitH = new WaitHandle((ContinueFunction)TAMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType)::addToolAction(waitH);
@@ -415,7 +418,10 @@ function addPrimalAsyncSplit(curFunction)
 >      $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = static_cast<$(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>*>(handle);
 #      unpack the arguments (buffers are accessed directly)
        for my.curFunction->primalHandle. as item
->        $(item.type) $(item.name) = asyncHandle->$(item.name); MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
+>        $(item.type) $(item.name) = asyncHandle->$(item.name);
+       endfor
+       for my.curFunction->primalHandle. as item
+>        MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
        endfor
 >
 >      delete asyncHandle;
@@ -465,42 +471,44 @@ namespace medi {
     }
   };
 
-  template<$(curFunction.tplDef)>
-  struct $(curFunction.asyncHandleName) : public HandleBase {
-. for curFunction->primalHandle. as item
-    $(item.type) $(item.name);
-. endfor
-  };
+. if(defined(curFunction.async))
+    template<$(curFunction.tplDef)>
+    struct $(curFunction.asyncHandleName) : public HandleBase {
+.   for curFunction->primalHandle. as item
+      $(item.type) $(item.name);
+.   endfor
+    };
+. endif
 
 .- create the reverse function
   template<$(curFunction.tplDef)>
   void TAMPI_$(curFunction.name)_b(HandleBase* handle) {
-   $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
 
-.- check here if an operator exists and set the parameter for the create function
-.  primalRequired = "false"
-.  if(defined(curFunction->operator))
-.    primalRequired = "h->$(curFunction->operator.name).requiresPrimalSend"
-.  endif
-
-. for curFunction.recv
-.   createBufferReverseSetup(recv, curFunction, 1)
-. endfor
-
-. for curFunction.send
-.   createBufferReverseSetup(send, curFunction, 0)
-. endfor
+.-  check here if an operator exists and set the parameter for the create function
+.   primalRequired = "false"
+.   if(defined(curFunction->operator))
+.     primalRequired = "h->$(curFunction->operator.name).requiresPrimalSend"
+.   endif
+.
+.   for curFunction.recv
+.     createBufferReverseSetup(recv, curFunction, 1)
+.   endfor
+.
+.   for curFunction.send
+.     createBufferReverseSetup(send, curFunction, 0)
+.   endfor
 
     TAMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
-. addReverseAsyncSplit(curFunction)
-. for curFunction.send
-.   createBufferReverseCleanup(send, curFunction, 1)
-. endfor
-
-. for curFunction.recv
-.   createBufferReverseCleanup(recv, curFunction, 0)
-. endfor
+.   addReverseAsyncSplit(curFunction)
+.   for curFunction.send
+.     createBufferReverseCleanup(send, curFunction, 1)
+.   endfor
+.
+.   for curFunction.recv
+.     createBufferReverseCleanup(recv, curFunction, 0)
+.   endfor
   }
 
 .--- predefine the async function
@@ -508,7 +516,7 @@ namespace medi {
     template<$(curFunction.tplDef)>
     int TAMPI_$(curFunction.name)_finish(HandleBase* handle);
 . endif
-
+.
 .-------------------------------------------------------------------------
 .- create the primal function
 .-------------------------------------------------------------------------
@@ -527,7 +535,7 @@ namespace medi {
         h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
       $(curFunction.adType)::startAssembly(h);
-
+.
 .-    if there is an operator in the arguments the primals might need to be extracted
 .     for curFunction.operator
         // extract the primal values for the operator if required
@@ -537,7 +545,7 @@ namespace medi {
 .         endfor
         }
 .     endfor
-
+.
 .-    create the linear displacements
 .     for curFunction.displs as item
         const int* $(item.name)Mod = $(item.name);
@@ -549,7 +557,7 @@ namespace medi {
           }
         }
 .     endfor
-
+.
 .-    create the buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv" | name(item) =  "send")
@@ -627,10 +635,8 @@ namespace medi {
 .           createBufferAccessLogic(item, -1, "$typeName$::clearIndices(&$name$[$pos$], $curCount$);")
 .         endif
 .       endfor
-      }
 
-      // pack all the variables in the handle
-      if(NULL != h) {
+        // pack all the variables in the handle
         h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
@@ -650,6 +656,7 @@ namespace medi {
 .     endfor
 
       if(NULL != h) {
+        // handle the recv buffers
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
@@ -657,7 +664,7 @@ namespace medi {
 .         endif
 .       endfor
       }
-
+.
 .     for curFunction.operator
         // extract the primal values for the operator if required
         if(NULL != h && op.requiresPrimal) {
@@ -668,7 +675,7 @@ namespace medi {
 .     endfor
 
       $(curFunction.adType)::stopAssembly(h);
-
+.
 .-    delete the linear displacements
 .     for curFunction.displs as item
         if($(curFunction.mainType)::IS_RequiresModifiedBuffer) {
