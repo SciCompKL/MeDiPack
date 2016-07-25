@@ -132,11 +132,9 @@ struct CoDiPackTool {
     int blockLength[2] = {1,1};
     MPI_Aint displacements[2] = {0, sizeof(double)};
     MPI_Datatype types[2] = {MPI_DOUBLE, MPI_INT};
-    MPI_Datatype codiMpiType;
-    MPI_Type_create_struct(2, blockLength, displacements, types, &codiMpiType);
-    MPI_Type_commit(&codiMpiType);
-    MPIType = codiMpiType;
-    medi::PassiveTool<ModifiedType>::init(codiMpiType);
+    MPI_Type_create_struct(2, blockLength, displacements, types, &MPIType);
+    MPI_Type_commit(&MPIType);
+    medi::PassiveTool<ModifiedType>::init(MPIType);
   }
 
   static void initOperator(medi::TAMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
@@ -163,6 +161,37 @@ struct CoDiPackTool {
   static void init() {
     initTypes();
     initOperators();
+  }
+
+  static void finalizeOperators() {
+    MPI_Op_free(&OP_ADD.primalFunction);
+    if(OP_ADD.hasAdjoint) {
+      MPI_Op_free(&OP_ADD.modifiedPrimalFunction);
+    }
+
+    MPI_Op_free(&OP_MUL.primalFunction);
+    if(OP_MUL.hasAdjoint) {
+      MPI_Op_free(&OP_MUL.modifiedPrimalFunction);
+    }
+
+    MPI_Op_free(&OP_MIN.primalFunction);
+    if(OP_MIN.hasAdjoint) {
+      MPI_Op_free(&OP_MIN.modifiedPrimalFunction);
+    }
+
+    MPI_Op_free(&OP_MAX.primalFunction);
+    if(OP_MAX.hasAdjoint) {
+      MPI_Op_free(&OP_MAX.modifiedPrimalFunction);
+    }
+  }
+
+  static void finalizeTypes() {
+    MPI_Type_free(&MPIType);
+  }
+
+  static void finalize() {
+    finalizeOperators();
+    finalizeTypes();
   }
 
   static bool isHandleRequired() {

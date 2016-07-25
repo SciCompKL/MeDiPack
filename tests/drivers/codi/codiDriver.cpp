@@ -74,7 +74,11 @@ int main(int nargs, char** args) {
     tape.reset();
   }
 
-  MPI_Finalize();
+  delete [] y;
+  delete [] x;
+
+  TOOL::finalize();
+  TAMPI_Finalize();
 }
 
 #include <tampi/async.cpp>

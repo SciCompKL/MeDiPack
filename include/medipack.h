@@ -13,6 +13,7 @@ namespace medi {
   #define TAMPI_Comm_rank MPI_Comm_rank
   #define TAMPI_Comm_size MPI_Comm_size
   #define TAMPI_Init MPI_Init
+  #define TAMPI_Finalize MPI_Finalize
   #define TAMPI_STATUS_IGNORE MPI_STATUS_IGNORE
   #define TAMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
   #define TAMPI_IN_PLACE MPI_IN_PLACE
