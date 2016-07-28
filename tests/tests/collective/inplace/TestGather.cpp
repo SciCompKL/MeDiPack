@@ -15,7 +15,7 @@ void func(NUMBER* x, NUMBER* y) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::TAMPI_Gather(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, mpiNumberType, 10, mpiNumberType, 0, MPI_COMM_WORLD);
+    medi::TAMPI_Gather(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   } else {
     medi::TAMPI_Gather(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   }

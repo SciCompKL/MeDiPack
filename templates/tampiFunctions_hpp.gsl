@@ -59,34 +59,22 @@ for functions.function as curFunction
  endfor
 
 #build the argument lists and the list for the handles
- curFunction.argDef = ""
  curFunction.argRev = ""
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
-   curFunction.argDef +=   constMod # prepend the const modifier
    if(name(item) <> "type")  # exclude the types because they are handled as templates
      if(name(item) =  "recv" | name(item) =  "send")
-       curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
        if(defined(item.displs))
          curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        else
          curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, $(item.name)Size, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        endif
-     elsif(name(item) = "operator")
-       curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argRev += "h->$(item.name)"
-     elsif(name(item) = "displs")
-       curFunction.argDef += "$(item.taType) $(item.name)"
-       curFunction.argRev += "h->$(item.name)"
      elsif(name(item) = "request")
-       curFunction.argDef += "$(item.taType) $(item.name)"
        curFunction.argRev += "&h->$(item.name)Reverse"
      else
-       curFunction.argDef += "$(item.taType) $(item.name)"
        curFunction.argRev += "h->$(item.name)"
      endif
      comma = last()?? "" ? ", "
-     curFunction.argDef += comma
      curFunction.argRev += comma
    endif
  endfor
@@ -128,10 +116,26 @@ for functions.function as curFunction
  # also add the async handle to the primal handle
  addHandleData(curFunction->primalHandle, 1, 0, "h", "$(curFunction.handleName)<$(curFunction.tplArg)>*")
 
+#build the argument lists and the list for the handles
+ curFunction.argDef = ""
+ for curFunction. as item where defined(item.arg)
+   constMod = defined(item.const) ?? "const " ? ""
+   curFunction.argDef +=   constMod # prepend the const modifier
+   if(name(item) =  "recv" | name(item) =  "send")
+     curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
+   elsif(name(item) = "type")
+     curFunction.argDef += "$(item.tplName) $(item.name)"
+   else
+     curFunction.argDef += "$(item.taType) $(item.name)"
+   endif
+
+   comma = last()?? "" ? ", "
+   curFunction.argDef += comma
+ endfor
+
 #build the argument list for the regular call
  curFunction.argReg = ""
  for curFunction. as item where defined(item.arg)
-
    if(name(item) = "type")
      curFunction.argReg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
    elsif(name(item) = "operator")
@@ -144,10 +148,9 @@ for functions.function as curFunction
    curFunction.argReg += last()?? "" ? ", "  # append the seperator if neede
  endfor
 
-#build the argument list for the regular call with modified items
+#build the argument list for the call with modified items
  curFunction.argArg = ""
  for curFunction. as item where defined(item.arg)
-
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "type")
