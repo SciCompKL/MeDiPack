@@ -15,7 +15,7 @@ void func(NUMBER* x, NUMBER* y) {
     y[i] = x[i];
   }
   medi::TAMPI_Request request;
-  medi::TAMPI_Ialltoall<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, 5, MPI_COMM_WORLD, &request);
+  medi::TAMPI_Ialltoall(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);
 }

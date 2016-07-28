@@ -13,9 +13,9 @@ void func(NUMBER* x, NUMBER* y) {
 
   medi::TAMPI_Request request;
   if(0 == world_rank) {
-    medi::TAMPI_Iscatter<MPI_NUMBER, MPI_NUMBER>(x, 10, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Iscatter(x, 10, mpiNumberType, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
-    medi::TAMPI_Iscatter<MPI_NUMBER, MPI_NUMBER>(x, 10, y, 10, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Iscatter(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);

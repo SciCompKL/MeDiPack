@@ -12,8 +12,8 @@ void func(NUMBER* x, NUMBER* y) {
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
   if(0 == world_rank) {
-    medi::TAMPI_Sendrecv<MPI_NUMBER, MPI_NUMBER>(x, 10, 1, 42 , y, 10, 1, 43, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
+    medi::TAMPI_Sendrecv(x, 10, mpiNumberType, 1, 42, y, 10, mpiNumberType, 1, 43, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
   } else {
-    medi::TAMPI_Sendrecv<MPI_NUMBER, MPI_NUMBER>(x, 10, 0, 43 , y, 10, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
+    medi::TAMPI_Sendrecv(x, 10, mpiNumberType, 0, 43, y, 10, mpiNumberType, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
   }
 }

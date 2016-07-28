@@ -14,5 +14,5 @@ void func(NUMBER* x, NUMBER* y) {
   for(int i = 0; i < 10; ++i) {
     y[i] = x[i];
   }
-  medi::TAMPI_Alltoall<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, 5, MPI_COMM_WORLD);
+  medi::TAMPI_Alltoall(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD);
 }

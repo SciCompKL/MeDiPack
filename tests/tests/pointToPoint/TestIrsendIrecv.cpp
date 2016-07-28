@@ -16,9 +16,9 @@ void func(NUMBER* x, NUMBER* y) {
   medi::TAMPI_Request request;
   if(world_rank == 0) {
     usleep(250000); // sleep for a quarter second
-    medi::TAMPI_Irsend<MPI_NUMBER>(x, 10, 1, 42, TAMPI_COMM_WORLD, &request);
+    medi::TAMPI_Irsend(x, 10, mpiNumberType, 1, 42, TAMPI_COMM_WORLD, &request);
   } else {
-    medi::TAMPI_Irecv<MPI_NUMBER>(y, 10, 0, 42, TAMPI_COMM_WORLD, &request);
+    medi::TAMPI_Irecv(y, 10, mpiNumberType, 0, 42, TAMPI_COMM_WORLD, &request);
   }
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);

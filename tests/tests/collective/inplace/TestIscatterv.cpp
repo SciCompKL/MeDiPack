@@ -15,9 +15,9 @@ void func(NUMBER* x, NUMBER* y) {
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
   if(0 == world_rank) {
-    medi::TAMPI_Iscatterv<MPI_NUMBER, MPI_NUMBER>(x, counts, displs, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Iscatterv(x, counts, displs, mpiNumberType, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
-    medi::TAMPI_Iscatterv<MPI_NUMBER, MPI_NUMBER>(x, counts, displs, y, 10, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Iscatterv(x, counts, displs, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);

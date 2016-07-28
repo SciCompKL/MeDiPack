@@ -16,8 +16,8 @@ void func(NUMBER* x, NUMBER* y) {
   TAMPI_Buffer_attach(buf, size);
 
   if(world_rank == 0) {
-    medi::TAMPI_Bsend<MPI_NUMBER>(x, 10, 1, 42, TAMPI_COMM_WORLD);
+    medi::TAMPI_Bsend(x, 10, mpiNumberType, 1, 42, TAMPI_COMM_WORLD);
   } else {
-    medi::TAMPI_Recv<MPI_NUMBER>(y, 10, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
+    medi::TAMPI_Recv(y, 10, mpiNumberType, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
   }
 }

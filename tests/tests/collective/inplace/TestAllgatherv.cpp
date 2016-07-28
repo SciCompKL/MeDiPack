@@ -17,5 +17,5 @@ void func(NUMBER* x, NUMBER* y) {
   }
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
-  medi::TAMPI_Allgatherv<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, counts, displs, MPI_COMM_WORLD);
+  medi::TAMPI_Allgatherv(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD);
 }

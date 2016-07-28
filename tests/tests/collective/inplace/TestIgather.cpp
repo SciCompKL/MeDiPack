@@ -16,9 +16,9 @@ void func(NUMBER* x, NUMBER* y) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::TAMPI_Igather<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, 10, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Igather(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
-    medi::TAMPI_Igather<MPI_NUMBER, MPI_NUMBER>(x, 10, y, 10, 0, MPI_COMM_WORLD, &request);
+    medi::TAMPI_Igather(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);

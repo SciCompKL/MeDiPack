@@ -14,5 +14,5 @@ void func(NUMBER* x, NUMBER* y) {
   for(int i = 0; i < 10; ++i) {
     y[i] = x[i];
   }
-  medi::TAMPI_Bcast<MPI_NUMBER>(y, 10, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Bcast(y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
 }

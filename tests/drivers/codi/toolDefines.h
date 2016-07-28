@@ -10,3 +10,4 @@ typedef codi::RealReverse NUMBER;
 
 #define TOOL CoDiPackTool<NUMBER>
 typedef medi::DefaultDataType<TOOL> MPI_NUMBER;
+extern MPI_NUMBER mpiNumberType;

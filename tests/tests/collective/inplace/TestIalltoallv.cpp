@@ -17,7 +17,7 @@ void func(NUMBER* x, NUMBER* y) {
   medi::TAMPI_Request request;
   int counts[2] = {5, 5};
   int displs[2] = {0, 5};
-  medi::TAMPI_Ialltoallv<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), NULL, NULL, y, counts, displs, MPI_COMM_WORLD, &request);
+  medi::TAMPI_Ialltoallv(static_cast<NUMBER*>(TAMPI_IN_PLACE), NULL, NULL, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);
 }

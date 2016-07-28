@@ -13,5 +13,5 @@ void func(NUMBER* x, NUMBER* y) {
 
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
-  medi::TAMPI_Gatherv<MPI_NUMBER, MPI_NUMBER>(x, 10, y, counts, displs, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Gatherv(x, 10, mpiNumberType, y, counts, displs, mpiNumberType, 0, MPI_COMM_WORLD);
 }

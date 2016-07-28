@@ -16,5 +16,5 @@ void func(NUMBER* x, NUMBER* y) {
     y[i + offset] = x[i];
   }
 
-  medi::TAMPI_Allgather<MPI_NUMBER, MPI_NUMBER>(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, y, 10, MPI_COMM_WORLD);
+  medi::TAMPI_Allgather(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, MPI_COMM_WORLD);
 }

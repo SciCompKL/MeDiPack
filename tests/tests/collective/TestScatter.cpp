@@ -11,5 +11,5 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
-  medi::TAMPI_Scatter<MPI_NUMBER, MPI_NUMBER>(x, 10, y, 10, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Scatter(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
 }

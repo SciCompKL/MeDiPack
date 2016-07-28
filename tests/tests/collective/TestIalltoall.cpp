@@ -12,7 +12,7 @@ void func(NUMBER* x, NUMBER* y) {
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
   medi::TAMPI_Request request;
-  medi::TAMPI_Ialltoall<MPI_NUMBER, MPI_NUMBER>(x, 5, y, 5, MPI_COMM_WORLD, &request);
+  medi::TAMPI_Ialltoall(x, 5, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);
 }

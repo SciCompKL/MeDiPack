@@ -13,5 +13,5 @@ void func(NUMBER* x, NUMBER* y) {
 
   int counts[2] = {5, 5};
   int displs[2] = {0, 5};
-  medi::TAMPI_Alltoallv<MPI_NUMBER, MPI_NUMBER>(x, counts, displs, y, counts, displs, MPI_COMM_WORLD);
+  medi::TAMPI_Alltoallv(x, counts, displs, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD);
 }

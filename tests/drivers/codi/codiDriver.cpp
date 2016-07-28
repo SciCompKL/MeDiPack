@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 
+MPI_NUMBER mpiNumberType;
+
 int main(int nargs, char** args) {
 
   TAMPI_Init(&nargs, &args);

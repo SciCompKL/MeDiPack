@@ -12,8 +12,8 @@ void func(NUMBER* x, NUMBER* y) {
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
   if(world_rank == 0) {
-    medi::TAMPI_Send<MPI_NUMBER>(x, 10, 1, 42, TAMPI_COMM_WORLD);
+    medi::TAMPI_Send(x, 10, mpiNumberType, 1, 42, TAMPI_COMM_WORLD);
   } else {
-    medi::TAMPI_Recv<MPI_NUMBER>(y, 10, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
+    medi::TAMPI_Recv(y, 10, mpiNumberType, 0, 42, TAMPI_COMM_WORLD, TAMPI_STATUS_IGNORE);
   }
 }

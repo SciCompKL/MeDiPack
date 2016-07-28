@@ -14,9 +14,9 @@ void func(NUMBER* x, NUMBER* y) {
   medi::TAMPI_Request request[10];
   for(int i = 0; i < 10; ++i) {
     if(world_rank == 0) {
-      medi::TAMPI_Isend<MPI_NUMBER>(&x[i], 1, 1, 42 + i, TAMPI_COMM_WORLD, &request[i]);
+      medi::TAMPI_Isend(&x[i], 1, mpiNumberType, 1, 42 + i, TAMPI_COMM_WORLD, &request[i]);
     } else {
-      medi::TAMPI_Irecv<MPI_NUMBER>(&y[i], 1, 0, 42 + i, TAMPI_COMM_WORLD, &request[i]);
+      medi::TAMPI_Irecv(&y[i], 1, mpiNumberType, 0, 42 + i, TAMPI_COMM_WORLD, &request[i]);
     }
   }
 

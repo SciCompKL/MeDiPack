@@ -12,11 +12,11 @@ void func(NUMBER* x, NUMBER* y) {
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
   if(0 == world_rank) {
-    medi::TAMPI_Scatter<MPI_NUMBER, MPI_NUMBER>(x, 10, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, 0, MPI_COMM_WORLD);
+    medi::TAMPI_Scatter(x, 10, mpiNumberType, static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD);
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
   } else {
-    medi::TAMPI_Scatter<MPI_NUMBER, MPI_NUMBER>(x, 10, y, 10, 0, MPI_COMM_WORLD);
+    medi::TAMPI_Scatter(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   }
 }

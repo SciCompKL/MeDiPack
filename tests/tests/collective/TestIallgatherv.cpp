@@ -14,7 +14,7 @@ void func(NUMBER* x, NUMBER* y) {
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
   medi::TAMPI_Request request;
-  medi::TAMPI_Iallgatherv<MPI_NUMBER, MPI_NUMBER>(x, 10, y, counts, displs, MPI_COMM_WORLD, &request);
+  medi::TAMPI_Iallgatherv(x, 10, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);
 }

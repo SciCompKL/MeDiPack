@@ -11,5 +11,5 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
 
-  medi::TAMPI_Allgather<MPI_NUMBER, MPI_NUMBER>(x, 10, y, 10, MPI_COMM_WORLD);
+  medi::TAMPI_Allgather(x, 10, mpiNumberType, y, 10, mpiNumberType, MPI_COMM_WORLD);
 }

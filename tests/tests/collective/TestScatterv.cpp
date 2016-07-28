@@ -13,5 +13,5 @@ void func(NUMBER* x, NUMBER* y) {
 
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
-  medi::TAMPI_Scatterv<MPI_NUMBER, MPI_NUMBER>(x, counts, displs, y, 10, 0, MPI_COMM_WORLD);
+  medi::TAMPI_Scatterv(x, counts, displs, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
 }
