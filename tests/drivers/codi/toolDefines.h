@@ -9,5 +9,5 @@ typedef codi::RealReverse NUMBER;
 #include "../globalDefines.h"
 
 #define TOOL CoDiPackTool<NUMBER>
-typedef medi::DefaultDataType<TOOL> MPI_NUMBER;
-extern MPI_NUMBER mpiNumberType;
+typedef medi::MpiTypeDefault<TOOL> MPI_NUMBER;
+extern MPI_NUMBER* mpiNumberType;

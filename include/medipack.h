@@ -1,11 +1,11 @@
 #pragma once
 
+
 #include <mpi.h>
-#include <codi.hpp>
 
-#define MEDI_UNUSED(name) (void)(name)
-#define MEDI_CHECK_ERROR(expr) (expr)
-
+#include "macros.h"
+#include "mpiTypeInterface.hpp"
+#include "typeDefinitions.h"
 
 namespace medi {
 
@@ -22,12 +22,7 @@ namespace medi {
 
   typedef MPI_Comm TAMPI_Comm;
   typedef MPI_Status TAMPI_Status;
-
-  struct HandleBase;
-  typedef void (*ReverseFunction)(HandleBase* h);
-  typedef void (*ContinueFunction)(HandleBase* h);
-  typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
-  typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
+  typedef MpiTypeInterface* TAMPI_Datatype;
 
   static void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
   static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
@@ -132,12 +127,6 @@ namespace medi {
       linearDispls[i] = linearCounts[i - 1] +  linearDispls[i - 1];
     }
   }
-
-  struct HandleBase {
-    ReverseFunction func;
-
-    virtual ~HandleBase() {}
-  };
 
   inline int getCommRank(MPI_Comm comm) {
     int rank;
@@ -309,75 +298,4 @@ namespace medi {
   };
 
   template<typename T> MPI_Datatype PassiveTool<T>::MPIType;
-
-  template<typename ADTool>
-  struct DefaultDataType {
-    typedef typename ADTool::Type Type;
-    typedef typename ADTool::AdjointType AdjointType;
-    typedef typename ADTool::PassiveType PassiveType;
-    typedef typename ADTool::IndexType IndexType;
-
-    typedef ADTool Tool;
-
-    typedef typename ADTool::ModifiedType ModifiedType;
-    typedef typename ADTool::ModifiedNested ModifiedNested;
-
-    const static int IndicesPerElement = 1;
-
-    const static bool IS_RequiresModifiedBuffer = ADTool::IS_RequiresModifiedBuffer;
-
-    static inline void copyIntoModifiedBuffer(const Type* buf, ModifiedType* bufMod, int elements) {
-      if(ADTool::IS_RequiresModifiedBuffer) {
-        for(int i = 0; i < elements; ++i) {
-          ADTool::setIntoModifyBuffer(bufMod[i], buf[i]);
-        }
-      }
-    }
-
-    static inline void copyFromModifiedBuffer(Type* buf, const ModifiedType* bufMod, int elements) {
-      if(ADTool::IS_RequiresModifiedBuffer) {
-        for(int i = 0; i < elements; ++i) {
-          ADTool::getFromModifyBuffer(bufMod[i], buf[i]);
-        }
-      }
-    }
-
-    static inline void getIndices(const Type* buf, IndexType* indices, int elements) {
-      for(int i = 0; i < elements; ++i) {
-        indices[i] = ADTool::getIndex(buf[i]);
-      }
-    }
-
-    static inline void registerValue(Type* buf, IndexType* indices, int elements) {
-      for(int i = 0; i < elements; ++i) {
-        indices[i] = ADTool::registerValue(buf[i]);;
-      }
-    }
-
-    static inline void clearIndices(Type* buf, int elements) {
-      for(int i = 0; i < elements; ++i) {
-        ADTool::clearIndex(buf[i]);
-      }
-    }
-
-    static inline void getValues(const Type* buf, int count, PassiveType* &primals) {
-      primals = new PassiveType[count];
-      for(int pos = 0; pos < count; ++pos) {
-        primals[pos] = ADTool::getValue(buf[pos]);
-      }
-    }
-
-    static inline void getAdjoints(const int* indices, int count, AdjointType* adjoints) {
-      for(int pos = 0; pos < count; ++pos) {
-        adjoints[pos] = ADTool::getAdjoint(indices[pos]);
-      }
-    }
-
-    static inline void updateAdjoints(const int* indices, int count, const AdjointType* adjoints) {
-      for(int pos = 0; pos < count; ++pos) {
-        ADTool::updateAdjoint(indices[pos], adjoints[pos]);
-      }
-    }
-
-  };
 }

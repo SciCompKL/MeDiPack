@@ -37,19 +37,16 @@ for functions.function as curFunction
 # build the definitions for the templates
  curFunction.tplDef = ""
  curFunction.tplArg = ""
- curFunction.tplArgMod = ""
  curFunction.tplEmpty = ""
  for curFunction.type
    type.tplName = "$(type.name:upper)"
    curFunction.tplDef += "typename $(type.tplName)"
    curFunction.tplArg += "$(type.tplName)"
-   curFunction.tplArgMod += "typename $(type.tplName)::ModifiedNested"
    curFunction.tplEmpty += "EmptyDataType"
 
    comma = last()?? "" ? ", "
    curFunction.tplDef += comma
    curFunction.tplArg += comma
-   curFunction.tplArgMod += comma
    curFunction.tplEmpty += comma
  endfor
 
@@ -86,31 +83,29 @@ for functions.function as curFunction
    define handle.noarg = 1
  endnew
  for curFunction. as item where defined(item.arg)
-   if(name(item) <> "type")  # exclude the types because they are handled as templates
-     constMod = defined(item.const) ?? "const " ? ""
-     if(name(item) =  "recv" | name(item) =  "send")
-       addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
-       addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
-       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)TotalSize", "int")
-       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
-       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
-       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
-       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
-       if(defined(item.displs))
-         addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Count", "int*")
-         addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Displs", "int*")
-         addHandleData(curFunction->primalHandle, 1, 0, "$(item.displs)Mod", "const int*")
-       else
-         addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Count", "int")
-       endif
-     elsif(name(item) = "request")
-       addHandleData(curFunction->primalHandle, 0, 0, "$(item.name)", "$(item.taType)")
-       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Reverse", "TAMPI_Request")
+   constMod = defined(item.const) ?? "const " ? ""
+   if(name(item) =  "recv" | name(item) =  "send")
+     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
+     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
+     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)TotalSize", "int")
+     addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
+     addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     if(defined(item.displs))
+       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Count", "int*")
+       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Displs", "int*")
+       addHandleData(curFunction->primalHandle, 1, 0, "$(item.displs)Mod", "const int*")
      else
-       # add other items to both handles
-       addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
-       addHandleData(curFunction->reverseHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
+       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Count", "int")
      endif
+   elsif(name(item) = "request")
+     addHandleData(curFunction->primalHandle, 0, 0, "$(item.name)", "$(item.taType)")
+     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Reverse", "TAMPI_Request")
+   else
+     # add other items to both handles
+     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
+     addHandleData(curFunction->reverseHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
    endif
  endfor
  # also add the async handle to the primal handle
@@ -124,7 +119,7 @@ for functions.function as curFunction
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
    elsif(name(item) = "type")
-     curFunction.argDef += "$(item.tplName) $(item.name)"
+     curFunction.argDef += "$(item.tplName)* $(item.name)"
    else
      curFunction.argDef += "$(item.taType) $(item.name)"
    endif
@@ -137,7 +132,7 @@ for functions.function as curFunction
  curFunction.argReg = ""
  for curFunction. as item where defined(item.arg)
    if(name(item) = "type")
-     curFunction.argReg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
+     curFunction.argReg += "$(item.name)->getMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
      curFunction.argReg += "$(item.name).primalFunction"    # get the regular mpi type
    elsif(name(item) = "request")
@@ -154,7 +149,7 @@ for functions.function as curFunction
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "type")
-     curFunction.argArg += "$(item.tplName)::Tool::MPIType"    # get the regular mpi type
+     curFunction.argArg += "$(item.name)->getMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
      curFunction.argArg += "$(item.name).modifiedPrimalFunction"
    elsif(name(item) = "displs")
@@ -196,10 +191,10 @@ for functions.function as curFunction
  endfor
 
  # define the ad type that is used in this function
- curFunction.adType = "$(curFunction->type.tplName)::Tool"
+ curFunction.adType = "$(curFunction->type.name)->getADTool()"
 
  # define the main type that is used in this function
- curFunction.mainType = "$(curFunction->type.tplName)"
+ curFunction.mainType = "$(curFunction->type.name)"
 endfor
 
 function startRoot(buffer)
@@ -235,9 +230,9 @@ endfunction
 function createBufferAccessLogic(buffer, modifiedCheck, access)
   startRoot(my.buffer)
   if(1 = my.modifiedCheck)
->  if($(my.buffer.typeName)::IS_RequiresModifiedBuffer) {
+>  if($(my.buffer.type)->isModifiedBufferRequired()) {
   elsif(-1 = my.modifiedCheck)
->  if(!$(my.buffer.typeName)::IS_RequiresModifiedBuffer) {
+>  if(!$(my.buffer.type)->isModifiedBufferRequired()) {
   endif
      if(defined(my.buffer.inplace))
 >      if(TAMPI_IN_PLACE != $(my.buffer.name)) {
@@ -304,7 +299,7 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
     endif
 >   allocateReverseBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)PrimalsReverse, h->$(my.buffer.name)Count, h->$(my.buffer.name)TotalSize $(allMul), $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
     if(1 = my.isRecv)
->     $(my.buffer.typeName)::getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
+>     h->$(my.buffer.type)->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
 >
       if(defined(my.curFunction->operator))
 >       h->$(my.curFunction->operator.name).preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
@@ -325,7 +320,7 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
       if(defined(my.buffer.all))
 >       combineAdjoints(h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints, getCommSize(h->$(my.buffer.all)));
       endif
->     $(my.buffer.typeName)::updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
+>     h->$(my.buffer.type)->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
     endif
 >   deleteReverseBuffer(h->$(my.buffer.name)Adjoints , h->$(my.buffer.name)PrimalsReverse, $(primalRequired));
   endRootReverse(my.buffer)
@@ -334,18 +329,22 @@ endfunction
 # define function for primal extraction
 function createPrimalExtraction(buffer)
   startRoot(my.buffer)
->   const typename $(my.buffer.typeName)::Type* tempBuf = $(my.buffer.name);
+>   h->$(my.Buffer.name)Primals = new typename $(my.buffer.typeName)::PassiveType[$(my.buffer.count)];
     if(defined(my.buffer.inplace))
->     if(MPI_IN_PLACE == tempBuf) {
->       tempBuf = $(my.buffer.inplace);
+>     if(MPI_IN_PLACE != $(my.buffer.name)) {
+    endif
+>   $(my.buffer.type)->getValues($(my.buffer.name), h->$(my.Buffer.name)Primals, $(my.buffer.count));
+    if(defined(my.buffer.inplace))
+>     } else {
+        inplaceBuffer = my.buffer->inplaceBuffer
+>       $(inplaceBuffer.type)->getValues($(inplaceBuffer.name), h->$(my.Buffer.name)Primals, $(inplaceBuffer.count));
 >     }
     endif
->   $(my.buffer.typeName)::getValues(tempBuf, $(my.buffer.count), h->$(my.Buffer.name)Primals);
   endRoot(my.buffer)
 endfunction
 
-function outputStatement(statement, typeName, name, pos, linPos, startLinPos, count)
-> $(string.replace(my.statement, "$typeName$|$(my.typeName),$name$|$(my.name),$pos$|$(my.pos),$linPos$|$(my.linPos),$startLinPos$|$(my.startLinPos),$curCount$|$(my.count)"))
+function outputStatement(statement, type, name, pos, linPos, startLinPos, count)
+> $(string.replace(my.statement, "$type$|$(my.type),$name$|$(my.name),$pos$|$(my.pos),$linPos$|$(my.linPos),$startLinPos$|$(my.startLinPos),$curCount$|$(my.count)"))
 endfunction
 
 #create a loop around a statement
@@ -355,12 +354,12 @@ function generateLoop(buffer, statement)
       pos = "$(my.buffer.displs)[i]"
       linPos = "$(my.buffer.displs)Mod[i]"
       curCount = "$(my.buffer.count)[i]"
-      outputStatement(my.statement, my.buffer.typeName, my.buffer.name, pos, linPos, linPos, curCount)
+      outputStatement(my.statement, my.buffer.type, my.buffer.name, pos, linPos, linPos, curCount)
 >   }
   elsif(defined(my.buffer.ranks))
-    outputStatement(my.statement, my.buffer.typeName, my.buffer.name, "0", "0", "0", "$(my.buffer.count) * getCommSize($(my.buffer.ranks))")
+    outputStatement(my.statement, my.buffer.type, my.buffer.name, "0", "0", "0", "$(my.buffer.count) * getCommSize($(my.buffer.ranks))")
   else
-    outputStatement(my.statement, my.buffer.typeName, my.buffer.name, "0", "0", "0", "$(my.buffer.count)")
+    outputStatement(my.statement, my.buffer.type, my.buffer.name, "0", "0", "0", "$(my.buffer.count)")
   endif
 endfunction
 
@@ -376,12 +375,12 @@ function generateInplaceLoop(buffer, inplaceBuffer, statement)
       pos = "$(my.inplaceBuffer.displs)[rank]"
       linPos = "$(my.inplaceBuffer.displs)Mod[rank]"
       curCount = "$(my.inplaceBuffer.count)[rank]"
-      outputStatement(my.statement, my.inplaceBuffer.typeName, my.inplaceBuffer.name, pos, linPos, "0", curCount)
+      outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, pos, linPos, "0", curCount)
 >   }
   elsif(defined(my.inplaceBuffer.ranks))
      pos = "$(my.inplaceBuffer.count) * getCommRank($(my.inplaceBuffer.ranks))"
      curCount = "$(my.inplaceBuffer.count)"
-    outputStatement(my.statement, my.inplaceBuffer.typeName, my.inplaceBuffer.name, pos, pos, "0", curCount)
+    outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, pos, pos, "0", curCount)
   else
     generateLoop(my.inplaceBuffer, my.statement)
   endif
@@ -407,7 +406,7 @@ function addPrimalAsyncSplit(curFunction)
 >      // create adjoint wait
 >      if(NULL != h) {
 >        WaitHandle* waitH = new WaitHandle((ContinueFunction)TAMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
->        $(my.curFunction.adType)::addToolAction(waitH);
+>        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
 >
@@ -417,17 +416,19 @@ function addPrimalAsyncSplit(curFunction)
 >  template<$(my.curFunction.tplDef)>
 >  int TAMPI_$(my.curFunction.name)_finish(HandleBase* handle) {
 >    int rStatus = 0;
->    if($(my.curFunction.adType)::IS_ActiveType) {
->      $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = static_cast<$(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>*>(handle);
-#      unpack the arguments (buffers are accessed directly)
-       for my.curFunction->primalHandle. as item
->        $(item.type) $(item.name) = asyncHandle->$(item.name);
-       endfor
-       for my.curFunction->primalHandle. as item
->        MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
-       endfor
 >
->      delete asyncHandle;
+>    $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = static_cast<$(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>*>(handle);
+#    unpack the arguments (buffers are accessed directly)
+     for my.curFunction->primalHandle. as item
+>      $(item.type) $(item.name) = asyncHandle->$(item.name);
+     endfor
+     for my.curFunction->primalHandle. as item
+>      MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
+     endfor
+>
+>    delete asyncHandle;
+>
+>    if($(my.curFunction.adType).isActiveType()) {
 >
   endif
 endfunction
@@ -526,7 +527,7 @@ namespace medi {
   template<$(curFunction.tplDef)>
   int TAMPI_$(curFunction.name)($(curFunction.argDef)) {
     int rStatus;
-    if(!$(curFunction.adType)::IS_ActiveType) {
+    if(!$(curFunction.adType).isActiveType()) {
       // call the regular function if the type is not active
       rStatus = $(curFunction.mpiName)($(curFunction.argReg));
     } else {
@@ -534,10 +535,10 @@ namespace medi {
       // the type is an AD type so handle the buffers
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
       // the handle is created if a reverse action should be recorded, h != NULL => tape is active
-      if($(curFunction.adType)::isHandleRequired()) {
+      if($(curFunction.adType).isHandleRequired()) {
         h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
-      $(curFunction.adType)::startAssembly(h);
+      $(curFunction.adType).startAssembly(h);
 .
 .-    if there is an operator in the arguments the primals might need to be extracted
 .     for curFunction.operator
@@ -555,7 +556,7 @@ namespace medi {
         int $(item.name)TotalSize = 0;
         if(NULL != $(item.name)) {
           $(item.name)TotalSize = computeDisplacementsTotalSize($(item.counts), getCommSize($(item.ranks)));
-          if($(curFunction.mainType)::IS_RequiresModifiedBuffer) {
+          if($(curFunction.mainType)->isModifiedBufferRequired()) {
             $(item.name)Mod = createLinearDisplacements($(item.counts), getCommSize($(item.ranks)));
           }
         }
@@ -575,7 +576,7 @@ namespace medi {
 .           if(defined(item.inplace))
 .             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
 .           endif
-            if($(item.typeName)::IS_RequiresModifiedBuffer $(inplace)) {
+            if($(item.type)->isModifiedBufferRequired() $(inplace)) {
               $(item.name)Mod = new typename $(item.typeName)::ModifiedType[$(item.name)Elements];
             } else {
               $(item.name)Mod = reinterpret_cast<typename $(item.typeName)::ModifiedType*>(const_cast<typename $(item.typeName)::Type*>($(item.name)));
@@ -587,7 +588,7 @@ namespace medi {
 .-    copy the data into the modified buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) = "send")
-.         createBufferAccessLogic(item, 1, "$typeName$::copyIntoModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.         createBufferAccessLogic(item, 1, "$type$->copyIntoModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
 .       endif
 .     endfor
 
@@ -602,25 +603,25 @@ namespace medi {
                 if(TAMPI_IN_PLACE != $(item.name)) {
 .             endif
 .             if(defined(item.displs))
-                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.typeName)::IndicesPerElement);
+                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type)->getValuesPerElement($(item.name)));
 .             else
-                h->$(item.name)Count = $(item.count) * $(item.typeName)::IndicesPerElement;
+                h->$(item.name)Count = $(item.count) * $(item.type)->getValuesPerElement($(item.name));
 .             endif
 .             if(defined(item.inplace))
 .               inplaceBuffer = item->inplaceBuffer
                 } else {
 .                if(defined(inplaceBuffer.displs))
 .                  if(defined(item.displs))
-                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.typeName)::IndicesPerElement);
+                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type)->getValuesPerElement($(item.name)));
 .                  else
-                     h->$(item.name)Count = $(inplaceBuffer.count)[getCommRank(comm)] * $(inplaceBuffer.typeName)::IndicesPerElement;
+                     h->$(item.name)Count = $(inplaceBuffer.count)[getCommRank(comm)] * $(inplaceBuffer.type)->getValuesPerElement($(item.name));
 .                  endif
 .                else
-                   h->$(item.name)Count = $(inplaceBuffer.count) * $(inplaceBuffer.typeName)::IndicesPerElement;
+                   h->$(item.name)Count = $(inplaceBuffer.count) * $(inplaceBuffer.type)->getValuesPerElement($(item.name));
 .                endif
                 }
 .             endif
-              h->$(item.name)TotalSize = $(item.name)Elements * $(item.typeName)::IndicesPerElement;
+              h->$(item.name)TotalSize = $(item.name)Elements * $(item.type)->getValuesPerElement($(item.name));
               h->$(item.name)Indices = new typename $(item.typeName)::IndexType[h->$(item.name)TotalSize];
 .           endRoot(item)
 .         endif
@@ -629,13 +630,13 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "send")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$typeName$::getIndices(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->getIndices(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
 .         endif
 .       endfor
 
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
-.           createBufferAccessLogic(item, -1, "$typeName$::clearIndices(&$name$[$pos$], $curCount$);")
+.           createBufferAccessLogic(item, -1, "$type$->clearIndices(&$name$[$pos$], $curCount$);")
 .         endif
 .       endfor
 
@@ -649,12 +650,12 @@ namespace medi {
 .
 .     addPrimalAsyncSplit(curFunction)
 .
-      $(curFunction.adType)::addToolAction(h);
+      $(curFunction.adType).addToolAction(h);
 
 .-    copy the data from the modified buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv")
-.         createBufferAccessLogic(item, 1, "$typeName$::copyFromModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.         createBufferAccessLogic(item, 1, "$type$->copyFromModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
 .       endif
 .     endfor
 
@@ -663,7 +664,7 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$typeName$::registerValue(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->registerValue(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
 .         endif
 .       endfor
       }
@@ -677,11 +678,11 @@ namespace medi {
         }
 .     endfor
 
-      $(curFunction.adType)::stopAssembly(h);
+      $(curFunction.adType).stopAssembly(h);
 .
 .-    delete the linear displacements
 .     for curFunction.displs as item
-        if($(curFunction.mainType)::IS_RequiresModifiedBuffer) {
+        if($(curFunction.mainType)->isModifiedBufferRequired()) {
           delete [] $(item.name)Mod;
         }
 .     endfor
@@ -694,7 +695,7 @@ namespace medi {
 .           if(defined(item.inplace))
 .             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
 .           endif
-            if($(item.typeName)::IS_RequiresModifiedBuffer $(inplace)) {
+            if($(item.type)->isModifiedBufferRequired() $(inplace)) {
               delete [] $(item.name)Mod;
             }
 .         endRoot(item)

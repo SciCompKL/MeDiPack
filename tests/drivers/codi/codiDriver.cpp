@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-MPI_NUMBER mpiNumberType;
+MPI_NUMBER* mpiNumberType;
 
 int main(int nargs, char** args) {
 
@@ -16,6 +16,8 @@ int main(int nargs, char** args) {
 
 
   TOOL::init();
+
+  mpiNumberType = new MPI_NUMBER();
 
   int evalPoints = getEvalPointsCount();
   int inputs = getInputCount();
@@ -78,6 +80,8 @@ int main(int nargs, char** args) {
 
   delete [] y;
   delete [] x;
+
+  delete mpiNumberType;
 
   TOOL::finalize();
   TAMPI_Finalize();

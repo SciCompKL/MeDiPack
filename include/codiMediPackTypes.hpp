@@ -2,6 +2,8 @@
 
 #include "medipack.h"
 
+#include "adToolInterface.h"
+
 template <typename T>
 void codiModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
@@ -106,7 +108,7 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
 }
 
 template<typename CoDiType>
-struct CoDiPackTool {
+struct CoDiPackTool : public medi::ADToolInterface {
   typedef CoDiType Type;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
@@ -194,22 +196,26 @@ struct CoDiPackTool {
     finalizeTypes();
   }
 
-  static bool isHandleRequired() {
+  inline bool isActiveType() const {
+    return true;
+  }
+
+  inline  bool isHandleRequired() const {
     return Type::getGlobalTape().isActive();
   }
 
-  static inline void startAssembly(medi::HandleBase* h) {
+  inline void startAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
 
   }
 
-  static inline void addToolAction(medi::HandleBase* h) {
+  inline void addToolAction(medi::HandleBase* h) {
     if(NULL != h) {
       Type::getGlobalTape().pushExternalFunctionHandle(callFunc, h, deleteFunc);
     }
   }
 
-  static inline void stopAssembly(medi::HandleBase* h) {
+  inline void stopAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
   }
 

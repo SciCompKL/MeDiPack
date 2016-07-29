@@ -54,7 +54,7 @@ BASIC_TESTS = $(TESTS)
 # DRIVER:         The special flags for this driver. It needs to be defined inside the build rule.
 # The other lines create the rules and dependencies to run the tests for this driver.
 
-# Driver for RealForward
+# Driver for RealReverse
 DRIVER_NAME  := CoDi
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi

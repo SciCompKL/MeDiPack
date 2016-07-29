@@ -6,10 +6,10 @@
 namespace medi {
 
   template<typename DATATYPE>
-  int TAMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE datatype, int root, TAMPI_Comm comm);
+  int TAMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE* datatype, int root, TAMPI_Comm comm);
 
   template<typename DATATYPE>
-  inline int TAMPI_Bcast(typename DATATYPE::Type* buffer, int count, DATATYPE datatype, int root, TAMPI_Comm comm) {
+  inline int TAMPI_Bcast(typename DATATYPE::Type* buffer, int count, DATATYPE* datatype, int root, TAMPI_Comm comm) {
     return TAMPI_Bcast_wrap<DATATYPE>(static_cast<typename DATATYPE::Type*>(TAMPI_IN_PLACE), buffer, count, datatype, root, comm);
   }
 
@@ -64,12 +64,12 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int TAMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, int root, TAMPI_Comm comm);
+  int TAMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm);
   template<typename SENDTYPE, typename RECVTYPE>
-  int TAMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE recvtype, int root, TAMPI_Comm comm);
+  int TAMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm);
 
   template<typename DATATYPE>
-  inline int TAMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, int root, TAMPI_Comm comm) {
+  inline int TAMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm) {
     if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
       return TAMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm);
     } else {
@@ -95,12 +95,12 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int TAMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request);
+  int TAMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request);
   template<typename SENDTYPE, typename RECVTYPE>
-  int TAMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request);
+  int TAMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request);
 
   template<typename DATATYPE>
-  inline int TAMPI_Ireduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  inline int TAMPI_Ireduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
     if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
       return TAMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm, request);
     } else {
@@ -138,11 +138,11 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int TAMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, TAMPI_Comm comm);
+  int TAMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm);
   template<typename SENDTYPE, typename RECVTYPE>
-  int TAMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE recvtype, TAMPI_Comm comm);
+  int TAMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm);
   template<typename DATATYPE>
-  inline int TAMPI_Allreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, TAMPI_Comm comm) {
+  inline int TAMPI_Allreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm) {
     if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
       return TAMPI_Allreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm);
     } else {
@@ -164,11 +164,11 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int TAMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request);
+  int TAMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request);
   template<typename SENDTYPE, typename RECVTYPE>
-  int TAMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE recvtype, TAMPI_Comm comm, TAMPI_Request* request);
+  int TAMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm, TAMPI_Request* request);
   template<typename DATATYPE>
-  inline int TAMPI_Iallreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE datatype, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
+  inline int TAMPI_Iallreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
     if(op.hasAdjoint || !DATATYPE::Tool::IS_ActiveType) {
       return TAMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm, request);
     } else {
