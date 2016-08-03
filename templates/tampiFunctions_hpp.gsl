@@ -85,34 +85,34 @@ for functions.function as curFunction
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
    if(name(item) =  "recv" | name(item) =  "send")
-     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
-     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
-     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)TotalSize", "int")
-     addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
-     addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
-     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
-     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
+     addHandleData(curFunction->primalHandle, 1, "", "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)TotalSize", "int")
+     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
+     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
      if(defined(item.displs))
-       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Count", "int*")
-       addHandleData(curFunction->reverseHandle, 0, 1, "$(item.name)Displs", "int*")
-       addHandleData(curFunction->primalHandle, 1, 0, "$(item.displs)Mod", "const int*")
+       addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
+       addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Displs;", "$(item.name)Displs", "int*")
+       addHandleData(curFunction->primalHandle, 1, "", "$(item.displs)Mod", "const int*")
      else
-       addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Count", "int")
+       addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Count", "int")
      endif
    elsif(name(item) = "request")
-     addHandleData(curFunction->primalHandle, 0, 0, "$(item.name)", "$(item.taType)")
-     addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Reverse", "TAMPI_Request")
+     addHandleData(curFunction->primalHandle, 0, "", "$(item.name)", "$(item.taType)")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Reverse", "TAMPI_Request")
    elsif(name(item) = "type")
-     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.tplName)*")
-     addHandleData(curFunction->reverseHandle, 1, 0, "$(item.name)", "$(constMod) $(item.tplName)*")
+     addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
+     addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
    else
      # add other items to both handles
-     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
-     addHandleData(curFunction->reverseHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
+     addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.taType)")
+     addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.taType)")
    endif
  endfor
  # also add the async handle to the primal handle
- addHandleData(curFunction->primalHandle, 1, 0, "h", "$(curFunction.handleName)<$(curFunction.tplArg)>*")
+ addHandleData(curFunction->primalHandle, 1, "", "h", "$(curFunction.handleName)<$(curFunction.tplArg)>*")
 
 #build the argument lists and the list for the handles
  curFunction.argDef = ""
@@ -467,9 +467,9 @@ namespace medi {
 
     ~$(curFunction.handleName) () {
 .     for curFunction->reverseHandle. as item
-.       if(1 = item.del)
+.       if("" <> item.del)
           if(NULL != $(item.name)) {
-            delete [] $(item.name);
+            $(item.del)
             $(item.name) = NULL;
           }
 .       endif
