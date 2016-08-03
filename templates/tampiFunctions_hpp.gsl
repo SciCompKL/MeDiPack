@@ -64,7 +64,7 @@ for functions.function as curFunction
        if(defined(item.displs))
          curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        else
-         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, $(item.name)Size, $(item.name)Type"    # append adjoint and primal buffer and the byte size
+         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        endif
      elsif(name(item) = "request")
        curFunction.argRev += "&h->$(item.name)Reverse"
@@ -102,6 +102,9 @@ for functions.function as curFunction
    elsif(name(item) = "request")
      addHandleData(curFunction->primalHandle, 0, 0, "$(item.name)", "$(item.taType)")
      addHandleData(curFunction->reverseHandle, 0, 0, "$(item.name)Reverse", "TAMPI_Request")
+   elsif(name(item) = "type")
+     addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.tplName)*")
+     addHandleData(curFunction->reverseHandle, 1, 0, "$(item.name)", "$(constMod) $(item.tplName)*")
    else
      # add other items to both handles
      addHandleData(curFunction->primalHandle, 1, 0, "$(item.name)", "$(constMod) $(item.taType)")
@@ -290,22 +293,19 @@ endfunction
 function createBufferReverseSetup(buffer, curFunction, isRecv)
 > h->$(my.buffer.name)Adjoints = NULL;
 > h->$(my.buffer.name)PrimalsReverse = NULL;
-> int $(my.buffer.name)Size = 0;
 > MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRootReverse(my.buffer)
     allMul = ""
     if(defined(my.buffer.all))
       allMul = "* getCommSize(h->$(my.buffer.all))"
     endif
->   allocateReverseBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)PrimalsReverse, h->$(my.buffer.name)Count, h->$(my.buffer.name)TotalSize $(allMul), $(primalRequired), $(my.buffer.name)Size, $(my.buffer.name)Type);
+>   h->$(my.buffer.type)->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
     if(1 = my.isRecv)
->     h->$(my.buffer.type)->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
+>     // Adjoint buffers are always linear in space so we can accesses them in one sweep
+>     h->$(my.buffer.type)->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
 >
       if(defined(my.curFunction->operator))
 >       h->$(my.curFunction->operator.name).preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
->       if($(primalRequired)) {
->         copyPrimals(h->$(my.buffer.name)PrimalsReverse, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
->       }
       endif
     endif
   endRootReverse(my.buffer)
@@ -314,30 +314,32 @@ endfunction
 function createBufferReverseCleanup(buffer, curFunction, isSend)
   startRootReverse(my.buffer)
     if(1 = my.isSend)
+      if(defined(my.buffer.all))
+>       h->$(my.buffer.type)->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
+      endif
       if(defined(my.curFunction->operator))
 >       h->$(my.curFunction->operator.name).postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)PrimalsReverse, h->$(my.buffer.name)TotalSize);
       endif
-      if(defined(my.buffer.all))
->       combineAdjoints(h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints, getCommSize(h->$(my.buffer.all)));
-      endif
->     h->$(my.buffer.type)->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, h->$(my.buffer.name)Adjoints);
+>     // Adjoint buffers are always linear in space so we can accesses them in one sweep
+>     h->$(my.buffer.type)->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
     endif
->   deleteReverseBuffer(h->$(my.buffer.name)Adjoints , h->$(my.buffer.name)PrimalsReverse, $(primalRequired));
+>   h->$(my.buffer.type)->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
   endRootReverse(my.buffer)
 endfunction
 
 # define function for primal extraction
 function createPrimalExtraction(buffer)
   startRoot(my.buffer)
->   h->$(my.Buffer.name)Primals = new typename $(my.buffer.typeName)::PassiveType[$(my.buffer.count)];
+>   h->$(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)Primals, $(my.buffer.count));
     if(defined(my.buffer.inplace))
 >     if(MPI_IN_PLACE != $(my.buffer.name)) {
     endif
->   $(my.buffer.type)->getValues($(my.buffer.name), h->$(my.Buffer.name)Primals, $(my.buffer.count));
+    # TODO: add proper loop creation
+>   $(my.buffer.type)->getValues($(my.buffer.name), 0, h->$(my.Buffer.name)Primals, 0, $(my.buffer.count));
     if(defined(my.buffer.inplace))
 >     } else {
         inplaceBuffer = my.buffer->inplaceBuffer
->       $(inplaceBuffer.type)->getValues($(inplaceBuffer.name), h->$(my.Buffer.name)Primals, $(inplaceBuffer.count));
+>       $(inplaceBuffer.type)->getValues($(inplaceBuffer.name), 0, h->$(my.Buffer.name)Primals, 0, $(inplaceBuffer.count));
 >     }
     endif
   endRoot(my.buffer)
@@ -577,7 +579,7 @@ namespace medi {
 .             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
 .           endif
             if($(item.type)->isModifiedBufferRequired() $(inplace)) {
-              $(item.name)Mod = new typename $(item.typeName)::ModifiedType[$(item.name)Elements];
+              $(item.type)->createModifiedTypeBuffer($(item.name)Mod, $(item.name)Elements);
             } else {
               $(item.name)Mod = reinterpret_cast<typename $(item.typeName)::ModifiedType*>(const_cast<typename $(item.typeName)::Type*>($(item.name)));
             }
@@ -588,7 +590,7 @@ namespace medi {
 .-    copy the data into the modified buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) = "send")
-.         createBufferAccessLogic(item, 1, "$type$->copyIntoModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.         createBufferAccessLogic(item, 1, "$type$->copyIntoModifiedBuffer($name$, $pos$, $name$Mod, $linPos$, $curCount$);")
 .       endif
 .     endfor
 
@@ -622,7 +624,7 @@ namespace medi {
                 }
 .             endif
               h->$(item.name)TotalSize = $(item.name)Elements * $(item.type)->getValuesPerElement($(item.name));
-              h->$(item.name)Indices = new typename $(item.typeName)::IndexType[h->$(item.name)TotalSize];
+              $(item.type)->createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
 .           endRoot(item)
 .         endif
 .       endfor
@@ -630,13 +632,13 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "send")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$type$->getIndices(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->getIndices($name$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
 .         endif
 .       endfor
 
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
-.           createBufferAccessLogic(item, -1, "$type$->clearIndices(&$name$[$pos$], $curCount$);")
+.           createBufferAccessLogic(item, -1, "$type$->clearIndices($name$, $pos$, $curCount$);")
 .         endif
 .       endfor
 
@@ -655,7 +657,7 @@ namespace medi {
 .-    copy the data from the modified buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv")
-.         createBufferAccessLogic(item, 1, "$type$->copyFromModifiedBuffer(&$name$[$pos$], &$name$Mod[$linPos$], $curCount$);")
+.         createBufferAccessLogic(item, 1, "$type$->copyFromModifiedBuffer($name$, $pos$, $name$Mod, $linPos$, $curCount$);")
 .       endif
 .     endfor
 
@@ -664,7 +666,7 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$type$->registerValue(&$name$[$pos$], &h->$(item.name)Indices[$startLinPos$], $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->registerValue($name$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
 .         endif
 .       endfor
       }
@@ -696,7 +698,7 @@ namespace medi {
 .             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
 .           endif
             if($(item.type)->isModifiedBufferRequired() $(inplace)) {
-              delete [] $(item.name)Mod;
+              $(item.type)->deleteModifiedTypeBuffer($(item.name)Mod);
             }
 .         endRoot(item)
 .       endif

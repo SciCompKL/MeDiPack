@@ -274,7 +274,7 @@ namespace medi {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Bcast(recvbufAdjoints, recvbufSize, recvbufType, root, comm);
-      deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
+      // TODO: add proper delete here: deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
       sendbufAdjoints = recvbufAdjoints;
       sendbufPrimals = recvbufPrimals;
       recvbufAdjoints = NULL;
@@ -289,7 +289,7 @@ namespace medi {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Ibcast(recvbufAdjoints, recvbufSize, recvbufType, root, comm, &request->request);
-      deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
+      // TODO: add proper delete here: deleteReverseBuffer(sendbufAdjoints, sendbufPrimals, op.requiresPrimalSend);
       sendbufAdjoints = recvbufAdjoints;
       sendbufPrimals = recvbufPrimals;
       recvbufAdjoints = NULL;

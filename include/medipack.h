@@ -24,53 +24,6 @@ namespace medi {
   typedef MPI_Status TAMPI_Status;
   typedef MpiTypeInterface* TAMPI_Datatype;
 
-  static void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
-  static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
-
-  struct TAMPI_Op {
-    /*const*/ bool requiresPrimal;
-    /*const*/ bool requiresPrimalSend;
-
-    /*const*/ MPI_Op primalFunction;
-    /*const*/ MPI_Op modifiedPrimalFunction;
-
-    /*const*/ PreAdjointOperation preAdjointOperation;
-    /*const*/ PostAdjointOperation postAdjointOperation;
-
-    bool hasAdjoint;
-
-
-
-    TAMPI_Op() :
-      requiresPrimal(false),
-      requiresPrimalSend(false),
-      primalFunction(MPI_SUM),
-      modifiedPrimalFunction(MPI_SUM),
-      preAdjointOperation(noPreAdjointOperation),
-      postAdjointOperation(noPostAdjointOperation),
-      hasAdjoint(false) {}
-
-    void init(const bool requiresPrimal, const bool requiresPrimalSend, MPI_Op primalFunction, MPI_Op modifiedPrimalFunction, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) {
-      this->requiresPrimal = requiresPrimal;
-      this->requiresPrimalSend = requiresPrimalSend;
-      this->primalFunction = primalFunction;
-      this->modifiedPrimalFunction = modifiedPrimalFunction;
-      this->preAdjointOperation = preAdjointOperation;
-      this->postAdjointOperation = postAdjointOperation;
-      this->hasAdjoint = true;
-    }
-
-    void init(MPI_Op primalFunction) {
-      this->requiresPrimal = false;
-      this->requiresPrimalSend = false;
-      this->primalFunction = primalFunction;
-      this->modifiedPrimalFunction = MPI_SUM;
-      this->preAdjointOperation = noPreAdjointOperation;
-      this->postAdjointOperation = noPostAdjointOperation;
-      this->hasAdjoint = false;
-    }
-  };
-
   struct LinearDisplacements {
       int* displs;
       int* counts;
@@ -140,59 +93,6 @@ namespace medi {
     MEDI_CHECK_ERROR(MPI_Comm_size(comm, &size));
 
     return size;
-  }
-
-  template<typename AT, typename PT>
-  inline void allocateReverseBuffer(AT* &adjoints, PT* &primals, int count, int totalSize, bool allocatePrimals, int &bufferSize, MPI_Datatype& mpiType) {
-    if(allocatePrimals) {
-      // create both buffers as a single array and set the pointers accordingly
-      bufferSize = (sizeof(AT) + sizeof(PT)) * count;
-      char* buffer = new char[(sizeof(AT) + sizeof(PT)) * totalSize];
-      adjoints = reinterpret_cast<AT*>(buffer);
-      primals = reinterpret_cast<PT*>(buffer + sizeof(AT) * totalSize);
-      mpiType = MPI_BYTE;
-    } else {
-      // only create the adjoint buffer
-      bufferSize = count;
-      adjoints = new AT[totalSize];
-      primals = NULL;
-      mpiType = MPI_DOUBLE;
-    }
-  }
-
-  template<typename AT, typename PT>
-  inline void allocateReverseBuffer(AT* &adjoints, PT* &primals, int* counts, int totalSize, bool allocatePrimals, int &bufferSize, MPI_Datatype& mpiType) {
-    adjoints = new AT[totalSize];
-    primals = NULL;
-    mpiType = MPI_DOUBLE;
-  }
-
-  template<typename AT>
-  inline void combineAdjoints(int count, AT* &adjoints, int ranks) {
-    for(int curRank = 1; curRank < ranks; ++curRank) {
-      for(int curPos = 0; curPos < count; ++curPos) {
-        adjoints[curPos] += adjoints[count * curRank + curPos];
-      }
-    }
-  }
-
-
-  template<typename AT, typename PT>
-  inline void deleteReverseBuffer(AT* &adjoints, PT* &primals, bool allocatePrimals) {
-    if(NULL != adjoints) {
-      if(allocatePrimals) {
-        // create both buffers as a single array and set the pointers accordingly
-        char* buffer = reinterpret_cast<char*>(adjoints);
-        delete [] buffer;
-        adjoints = NULL;
-        primals = NULL;
-      } else {
-        // only create the adjoint buffer
-        delete [] adjoints;
-        adjoints = NULL;
-        primals = NULL;
-      }
-    }
   }
 
   template<typename T>
