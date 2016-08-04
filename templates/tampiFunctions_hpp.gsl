@@ -62,9 +62,9 @@ for functions.function as curFunction
    if(name(item) <> "type")  # exclude the types because they are handled as templates
      if(name(item) =  "recv" | name(item) =  "send")
        if(defined(item.displs))
-         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
+         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        else
-         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)PrimalsReverse, h->$(item.name)Count, $(item.name)Type"    # append adjoint and primal buffer and the byte size
+         curFunction.argRev += "h->$(item.name)Adjoints,  h->$(item.name)Count, $(item.name)Type"    # append adjoint and primal buffer and the byte size
        endif
      elsif(name(item) = "request")
        curFunction.argRev += "&h->$(item.name)Reverse"
@@ -91,7 +91,6 @@ for functions.function as curFunction
      addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
      addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)PrimalsReverse", "/* required for async */ typename $(item.typeName)::PassiveType*")
      if(defined(item.displs))
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Displs;", "$(item.name)Displs", "int*")
@@ -291,8 +290,7 @@ function createBufferElementsComputation(buffer)
 endfunction
 
 function createBufferReverseSetup(buffer, curFunction, isRecv)
-> h->$(my.buffer.name)Adjoints = NULL;
-> h->$(my.buffer.name)PrimalsReverse = NULL;
+> h->$(my.buffer.name)Adjoints = nullptr;
 > MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRootReverse(my.buffer)
     allMul = ""
@@ -318,9 +316,11 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
 >       h->$(my.buffer.type)->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
       endif
       if(defined(my.curFunction->operator))
->       h->$(my.curFunction->operator.name).postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)PrimalsReverse, h->$(my.buffer.name)TotalSize);
+>       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
+>       // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
+>       h->$(my.curFunction->operator.name).postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize);
       endif
->     // Adjoint buffers are always linear in space so we can accesses them in one sweep
+>     // Adjoint buffers are always linear in space so they can be accessed in one sweep
 >     h->$(my.buffer.type)->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
     endif
 >   h->$(my.buffer.type)->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
@@ -330,7 +330,7 @@ endfunction
 # define function for primal extraction
 function createPrimalExtraction(buffer)
   startRoot(my.buffer)
->   h->$(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)Primals, $(my.buffer.count));
+>   $(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)Primals, $(my.buffer.count));
     if(defined(my.buffer.inplace))
 >     if(MPI_IN_PLACE != $(my.buffer.name)) {
     endif
@@ -406,7 +406,7 @@ function addPrimalAsyncSplit(curFunction)
 >      $(my.curFunction.async)->func = (ContinueFunction)TAMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
 >
 >      // create adjoint wait
->      if(NULL != h) {
+>      if(nullptr != h) {
 >        WaitHandle* waitH = new WaitHandle((ContinueFunction)TAMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
@@ -468,9 +468,9 @@ namespace medi {
     ~$(curFunction.handleName) () {
 .     for curFunction->reverseHandle. as item
 .       if("" <> item.del)
-          if(NULL != $(item.name)) {
+          if(nullptr != $(item.name)) {
             $(item.del)
-            $(item.name) = NULL;
+            $(item.name) = nullptr;
           }
 .       endif
 .     endfor
@@ -491,12 +491,6 @@ namespace medi {
   void TAMPI_$(curFunction.name)_b(HandleBase* handle) {
     $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
 
-.-  check here if an operator exists and set the parameter for the create function
-.   primalRequired = "false"
-.   if(defined(curFunction->operator))
-.     primalRequired = "h->$(curFunction->operator.name).requiresPrimalSend"
-.   endif
-.
 .   for curFunction.recv
 .     createBufferReverseSetup(recv, curFunction, 1)
 .   endfor
@@ -535,8 +529,8 @@ namespace medi {
     } else {
 
       // the type is an AD type so handle the buffers
-      $(curFunction.handleName)<$(curFunction.tplArg)>* h = NULL;
-      // the handle is created if a reverse action should be recorded, h != NULL => tape is active
+      $(curFunction.handleName)<$(curFunction.tplArg)>* h = nullptr;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
       if($(curFunction.adType).isHandleRequired()) {
         h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
@@ -545,7 +539,7 @@ namespace medi {
 .-    if there is an operator in the arguments the primals might need to be extracted
 .     for curFunction.operator
         // extract the primal values for the operator if required
-        if(NULL != h && op.requiresPrimal) {
+        if(nullptr != h && op.requiresPrimal) {
 .         for curFunction.send
 .           createPrimalExtraction(send)
 .         endfor
@@ -556,7 +550,7 @@ namespace medi {
 .     for curFunction.displs as item
         const int* $(item.name)Mod = $(item.name);
         int $(item.name)TotalSize = 0;
-        if(NULL != $(item.name)) {
+        if(nullptr != $(item.name)) {
           $(item.name)TotalSize = computeDisplacementsTotalSize($(item.counts), getCommSize($(item.ranks)));
           if($(curFunction.mainType)->isModifiedBufferRequired()) {
             $(item.name)Mod = createLinearDisplacements($(item.counts), getCommSize($(item.ranks)));
@@ -567,7 +561,7 @@ namespace medi {
 .-    create the buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv" | name(item) =  "send")
-          typename $(item.typeName)::ModifiedType* $(item.name)Mod = NULL;
+          typename $(item.typeName)::ModifiedType* $(item.name)Mod = nullptr;
           int $(item.name)Elements = 0;
 
 .         startRoot(item)
@@ -594,7 +588,7 @@ namespace medi {
 .       endif
 .     endfor
 
-      if(NULL != h) {
+      if(nullptr != h) {
         // gather the information for the reverse sweep
 
         // create the index buffers
@@ -661,7 +655,7 @@ namespace medi {
 .       endif
 .     endfor
 
-      if(NULL != h) {
+      if(nullptr != h) {
         // handle the recv buffers
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
@@ -673,7 +667,7 @@ namespace medi {
 .
 .     for curFunction.operator
         // extract the primal values for the operator if required
-        if(NULL != h && op.requiresPrimal) {
+        if(nullptr != h && op.requiresPrimal) {
 .       for curFunction.recv
 .         createPrimalExtraction(recv)
 .       endfor
