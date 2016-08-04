@@ -30,7 +30,7 @@ namespace medi {
       Tool adTool;
 
       MpiTypeDefault() :
-        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, PassiveType, AdjointType, IndexType>(Tool::MPIType),
+        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, PassiveType, AdjointType, IndexType>(Tool::MpiType, Tool::ModifiedMpiType, Tool::AdjointMpiType),
         adTool() {}
 
       Tool& getADTool() {

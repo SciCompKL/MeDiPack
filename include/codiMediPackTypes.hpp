@@ -118,15 +118,13 @@ struct CoDiPackTool : public medi::ADToolInterface {
   const static bool IS_ActiveType = true;
   const static bool IS_RequiresModifiedBuffer = false;
 
-  static MPI_Datatype MPIType;
+  static MPI_Datatype MpiType;
+  static MPI_Datatype ModifiedMpiType;
+  static MPI_Datatype AdjointMpiType;
   static medi::TAMPI_Op OP_ADD;
   static medi::TAMPI_Op OP_MUL;
   static medi::TAMPI_Op OP_MIN;
   static medi::TAMPI_Op OP_MAX;
-
-  public:
-  typedef medi::PassiveDataType<Type> ModifiedNested;
-
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -134,9 +132,11 @@ struct CoDiPackTool : public medi::ADToolInterface {
     int blockLength[2] = {1,1};
     MPI_Aint displacements[2] = {0, sizeof(double)};
     MPI_Datatype types[2] = {MPI_DOUBLE, MPI_INT};
-    MPI_Type_create_struct(2, blockLength, displacements, types, &MPIType);
-    MPI_Type_commit(&MPIType);
-    medi::PassiveTool<ModifiedType>::init(MPIType);
+    MPI_Type_create_struct(2, blockLength, displacements, types, &MpiType);
+    MPI_Type_commit(&MpiType);
+
+    ModifiedMpiType = MpiType;
+    AdjointMpiType = MPI_DOUBLE;
   }
 
   static void initOperator(medi::TAMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
@@ -188,7 +188,7 @@ struct CoDiPackTool : public medi::ADToolInterface {
   }
 
   static void finalizeTypes() {
-    MPI_Type_free(&MPIType);
+    MPI_Type_free(&MpiType);
   }
 
   static void finalize() {
@@ -276,7 +276,9 @@ struct CoDiPackTool : public medi::ADToolInterface {
   }
 };
 
-template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MPIType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::ModifiedMpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::AdjointMpiType;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL;
 template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN;

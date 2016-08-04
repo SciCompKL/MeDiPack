@@ -59,21 +59,19 @@ for functions.function as curFunction
  curFunction.argRev = ""
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
-   if(name(item) <> "type")  # exclude the types because they are handled as templates
-     if(name(item) =  "recv" | name(item) =  "send")
-       if(defined(item.displs))
-         curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count, h->$(item.name)Displs, $(item.name)Type"    # append adjoint and primal buffer and the byte size
-       else
-         curFunction.argRev += "h->$(item.name)Adjoints,  h->$(item.name)Count, $(item.name)Type"    # append adjoint and primal buffer and the byte size
-       endif
-     elsif(name(item) = "request")
-       curFunction.argRev += "&h->$(item.name)Reverse"
+   if(name(item) =  "recv" | name(item) =  "send")
+     if(defined(item.displs))
+       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count, h->$(item.name)Displs"    # append adjoint and primal buffer and the byte size
      else
-       curFunction.argRev += "h->$(item.name)"
+       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count"    # append adjoint and primal buffer and the byte size
      endif
-     comma = last()?? "" ? ", "
-     curFunction.argRev += comma
+   elsif(name(item) = "request")
+     curFunction.argRev += "&h->$(item.name)Reverse"
+   else
+     curFunction.argRev += "h->$(item.name)"
    endif
+   comma = last()?? "" ? ", "
+   curFunction.argRev += comma
  endfor
 
  new curFunction.primalHandle as handle
@@ -151,7 +149,7 @@ for functions.function as curFunction
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "type")
-     curFunction.argArg += "$(item.name)->getMpiType()"    # get the regular mpi type
+     curFunction.argArg += "$(item.name)->getModifiedMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
      curFunction.argArg += "$(item.name).modifiedPrimalFunction"
    elsif(name(item) = "displs")
@@ -291,7 +289,6 @@ endfunction
 
 function createBufferReverseSetup(buffer, curFunction, isRecv)
 > h->$(my.buffer.name)Adjoints = nullptr;
-> MPI_Datatype $(my.buffer.name)Type = MPI_DOUBLE;
   startRootReverse(my.buffer)
     allMul = ""
     if(defined(my.buffer.all))

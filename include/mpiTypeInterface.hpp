@@ -11,6 +11,8 @@ namespace medi {
 
       //TODO: add modified type
       MPI_Datatype mpiType;
+      MPI_Datatype modifiedMpiType;
+      MPI_Datatype adjointMpiType;
     public:
 
       typedef void Type;
@@ -19,13 +21,23 @@ namespace medi {
       typedef void PassiveType;
       typedef void IndexType;
 
-      MpiTypeInterface(MPI_Datatype mpiType) :
-        mpiType(mpiType) {}
+      MpiTypeInterface(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType, MPI_Datatype adjointMpiType) :
+        mpiType(mpiType),
+        modifiedMpiType(modifiedMpiType),
+        adjointMpiType(adjointMpiType) {}
 
       virtual ~MpiTypeInterface() {}
 
       MPI_Datatype getMpiType() const {
         return mpiType;
+      }
+
+      MPI_Datatype getModifiedMpiType() const {
+        return modifiedMpiType;
+      }
+
+      MPI_Datatype getAdjointMpiType() const {
+        return adjointMpiType;
       }
 
       virtual bool isModifiedBufferRequired() const = 0;
@@ -85,8 +97,8 @@ namespace medi {
   class MpiTypeBase : public MpiTypeInterface {
     public:
 
-      MpiTypeBase(MPI_Datatype mpiType) :
-        MpiTypeInterface(mpiType) {}
+      MpiTypeBase(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType, MPI_Datatype adjointMpiType) :
+        MpiTypeInterface(mpiType, modifiedMpiType, adjointMpiType) {}
 
       int getValuesPerElement(const void* buf) const {
         return cast().getValuesPerElement(castBuffer<TypeB>(buf));
