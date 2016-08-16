@@ -1,7 +1,7 @@
 #pragma once
 
 #include "medipack.h"
-#include "tampi/async.hpp"
+#include "ampi/async.hpp"
 
 namespace medi {
 

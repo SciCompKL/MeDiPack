@@ -451,7 +451,7 @@ endfunction
 
 #include "../include/medipack.h"
 #include "../include/reverseFunctions.hpp"
-#include "../include/tampi/async.hpp"
+#include "../include/ampi/async.hpp"
 
 namespace medi {
 .for functions.function as curFunction
