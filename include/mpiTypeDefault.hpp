@@ -7,7 +7,7 @@
 namespace medi {
 
   template<typename ADTool>
-  class MpiTypeDefault
+  class MpiTypeDefault final
       : public MpiTypeBase<
           MpiTypeDefault<ADTool>,
           typename ADTool::Type,

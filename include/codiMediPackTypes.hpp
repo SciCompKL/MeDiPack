@@ -108,7 +108,7 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
 }
 
 template<typename CoDiType>
-struct CoDiPackTool : public medi::ADToolInterface {
+struct CoDiPackTool final : public medi::ADToolInterface {
   typedef CoDiType Type;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
