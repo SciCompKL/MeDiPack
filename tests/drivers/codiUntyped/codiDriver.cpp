@@ -7,12 +7,12 @@ MPI_NUMBER* mpiNumberType;
 
 int main(int nargs, char** args) {
 
-  TAMPI_Init(&nargs, &args);
+  AMPI_Init(&nargs, &args);
 
   int world_rank;
-  TAMPI_Comm_rank(TAMPI_COMM_WORLD, &world_rank);
+  AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
   int world_size;
-  TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
+  AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
 
   TOOL::init();
@@ -84,7 +84,7 @@ int main(int nargs, char** args) {
   delete mpiNumberType;
 
   TOOL::finalize();
-  TAMPI_Finalize();
+  AMPI_Finalize();
 }
 
 #include <tampi/async.cpp>

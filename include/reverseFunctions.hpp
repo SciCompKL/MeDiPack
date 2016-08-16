@@ -6,69 +6,69 @@
 namespace medi {
 
   template<typename DATATYPE>
-  void TAMPI_Send_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm) {
+  void AMPI_Send_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Isend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Isend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, &request->request);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Bsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm) {
+  void AMPI_Bsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Ibsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Ibsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, &request->request);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Ssend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm) {
+  void AMPI_Ssend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Issend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Issend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, &request->request);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Rsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm) {
+  void AMPI_Rsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Irsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Irsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getAdjointMpiType(), dest, tag, comm, &request->request);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, TAMPI_Comm comm, TAMPI_Status* status) {
+  void AMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status) {
     MEDI_UNUSED(count);
     MEDI_UNUSED(status);
     MPI_Send(bufAdjoints, bufSize, datatype->getAdjointMpiType(), src, tag, comm);
   }
 
   template<typename DATATYPE>
-  void TAMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Isend(bufAdjoints, bufSize, datatype->getAdjointMpiType(), src, tag, comm, &request->request);
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Sendrecv_adj(typename SENDTYPE::AdjointType* sendbuf, int sendbufSize, int sendcount, SENDTYPE* sendtype, int dest, int sendtag,
-                     typename RECVTYPE::AdjointType* recvbuf, int recvbufSize, int recvcount, RECVTYPE* recvtype, int source, int recvtag, TAMPI_Comm comm, TAMPI_Status*  status) {
+  void AMPI_Sendrecv_adj(typename SENDTYPE::AdjointType* sendbuf, int sendbufSize, int sendcount, SENDTYPE* sendtype, int dest, int sendtag,
+                     typename RECVTYPE::AdjointType* recvbuf, int recvbufSize, int recvcount, RECVTYPE* recvtype, int source, int recvtag, AMPI_Comm comm, AMPI_Status*  status) {
 
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
@@ -76,14 +76,14 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Bcast_wrap_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, int root, TAMPI_Comm comm) {
+  void AMPI_Bcast_wrap_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(count);
 
     MPI_Gather(recvbufAdjoints, recvbufSize, datatype->getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getAdjointMpiType(), root, comm);
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm) {
+  void AMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -91,7 +91,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Iscatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Iscatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -99,7 +99,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Scatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm) {
+  void AMPI_Scatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -107,7 +107,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Iscatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Iscatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -115,7 +115,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Gather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm) {
+  void AMPI_Gather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -123,7 +123,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Igather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Igather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -131,7 +131,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, TAMPI_Comm comm) {
+  void AMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -140,7 +140,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -149,7 +149,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Allgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm) {
+  void AMPI_Allgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -157,7 +157,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Iallgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm, TAMPI_Request* request ) {
+  void AMPI_Iallgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request ) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -165,7 +165,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Allgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, TAMPI_Comm comm) {
+  void AMPI_Allgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -176,7 +176,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Iallgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Iallgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -188,7 +188,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Alltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm) {
+  void AMPI_Alltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -196,7 +196,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Ialltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Ialltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -204,7 +204,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, TAMPI_Comm comm) {
+  void AMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcounts);
     MEDI_UNUSED(sdispls);
     MEDI_UNUSED(recvcounts);
@@ -214,7 +214,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  void TAMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcounts);
     MEDI_UNUSED(sdispls);
     MEDI_UNUSED(recvcounts);
@@ -224,7 +224,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Reduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm) {
+  void AMPI_Reduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Bcast(recvbufAdjoints, recvbufSize, datatype->getAdjointMpiType(), root, comm);
@@ -237,7 +237,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Ireduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, TAMPI_Op op, int root, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Ireduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Ibcast(recvbufAdjoints, recvbufSize, datatype->getAdjointMpiType(), root, comm, &request->request);
@@ -250,7 +250,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Allreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm) {
+  void AMPI_Allreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     MEDI_UNUSED(op);
     MEDI_UNUSED(count);
 
@@ -258,7 +258,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  void TAMPI_Iallreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, TAMPI_Op op, TAMPI_Comm comm, TAMPI_Request* request) {
+  void AMPI_Iallreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(op);
     MEDI_UNUSED(count);
 

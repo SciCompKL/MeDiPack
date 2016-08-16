@@ -2,7 +2,7 @@
 .template 0
 
 function modifyTypeName(type)
-  return string.replace(my.type, "MPI_|TAMPI_")
+  return string.replace(my.type, "MPI_|AMPI_")
 endfunction
 
 function addHandleData(handle, pack, del, name, type)
@@ -16,8 +16,8 @@ endfunction
 
 for functions.function as curFunction
  #generate the constants for each function
- curFunction.handleName = "TAMPI_$(curFunction.name)_AdjointHandle"
- curFunction.asyncHandleName = "TAMPI_$(curFunction.name)_AsyncHandle"
+ curFunction.handleName = "AMPI_$(curFunction.name)_AdjointHandle"
+ curFunction.asyncHandleName = "AMPI_$(curFunction.name)_AsyncHandle"
  if(!defined(curFunction.mpiName))
   curFunction.mpiName = "MPI_$(curFunction.name)"
  endif
@@ -50,7 +50,7 @@ for functions.function as curFunction
    curFunction.tplEmpty += comma
  endfor
 
-# build the TAMPI names for all arguments
+# build the AMPI names for all arguments
  for curFunction. as item
    item.taType = modifyTypeName(item.type)
  endfor
@@ -98,7 +98,7 @@ for functions.function as curFunction
      endif
    elsif(name(item) = "request")
      addHandleData(curFunction->primalHandle, 0, "", "$(item.name)", "$(item.taType)")
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Reverse", "TAMPI_Request")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Reverse", "AMPI_Request")
    elsif(name(item) = "type")
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
      addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
@@ -235,7 +235,7 @@ function createBufferAccessLogic(buffer, modifiedCheck, access)
 >  if(!$(my.buffer.type)->isModifiedBufferRequired()) {
   endif
      if(defined(my.buffer.inplace))
->      if(TAMPI_IN_PLACE != $(my.buffer.name)) {
+>      if(AMPI_IN_PLACE != $(my.buffer.name)) {
      endif
      generateLoop(my.buffer, my.access)
      if(defined(my.buffer.inplace))
@@ -253,7 +253,7 @@ endfunction
 
 function createBufferElementsComputation(buffer)
   if(defined(my.buffer.inplace))
->   if(TAMPI_IN_PLACE != $(my.buffer.name)) {
+>   if(AMPI_IN_PLACE != $(my.buffer.name)) {
   endif
 # the buffer is defined
   if(defined(my.buffer.displs))
@@ -400,11 +400,11 @@ function addPrimalAsyncSplit(curFunction)
 >      $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = new $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>();
        packHandle(my.curFunction->primalHandle, "asyncHandle")
 >      $(my.curFunction.async)->handle = asyncHandle;
->      $(my.curFunction.async)->func = (ContinueFunction)TAMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
+>      $(my.curFunction.async)->func = (ContinueFunction)AMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
 >
 >      // create adjoint wait
 >      if(nullptr != h) {
->        WaitHandle* waitH = new WaitHandle((ContinueFunction)TAMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
+>        WaitHandle* waitH = new WaitHandle((ContinueFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
@@ -413,7 +413,7 @@ function addPrimalAsyncSplit(curFunction)
 >  }
 >
 >  template<$(my.curFunction.tplDef)>
->  int TAMPI_$(my.curFunction.name)_finish(HandleBase* handle) {
+>  int AMPI_$(my.curFunction.name)_finish(HandleBase* handle) {
 >    int rStatus = 0;
 >
 >    $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = static_cast<$(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>*>(handle);
@@ -437,7 +437,7 @@ function addReverseAsyncSplit(curFunction)
 >  }
 >
 >  template<$(my.curFunction.tplDef)>
->  void TAMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
+>  void AMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
 >
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
 >    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
@@ -485,7 +485,7 @@ namespace medi {
 
 .- create the reverse function
   template<$(curFunction.tplDef)>
-  void TAMPI_$(curFunction.name)_b(HandleBase* handle) {
+  void AMPI_$(curFunction.name)_b(HandleBase* handle) {
     $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
 
 .   for curFunction.recv
@@ -496,7 +496,7 @@ namespace medi {
 .     createBufferReverseSetup(send, curFunction, 0)
 .   endfor
 
-    TAMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
+    AMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
 .   addReverseAsyncSplit(curFunction)
 .   for curFunction.send
@@ -511,14 +511,14 @@ namespace medi {
 .--- predefine the async function
 . if(defined(curFunction.async))
     template<$(curFunction.tplDef)>
-    int TAMPI_$(curFunction.name)_finish(HandleBase* handle);
+    int AMPI_$(curFunction.name)_finish(HandleBase* handle);
 . endif
 .
 .-------------------------------------------------------------------------
 .- create the primal function
 .-------------------------------------------------------------------------
   template<$(curFunction.tplDef)>
-  int TAMPI_$(curFunction.name)($(curFunction.argDef)) {
+  int AMPI_$(curFunction.name)($(curFunction.argDef)) {
     int rStatus;
     if(!$(curFunction.adType).isActiveType()) {
       // call the regular function if the type is not active
@@ -567,7 +567,7 @@ namespace medi {
 
 .           inplace = ""
 .           if(defined(item.inplace))
-.             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
+.             inplace = " && !(AMPI_IN_PLACE == $(item.name))"
 .           endif
             if($(item.type)->isModifiedBufferRequired() $(inplace)) {
               $(item.type)->createModifiedTypeBuffer($(item.name)Mod, $(item.name)Elements);
@@ -593,7 +593,7 @@ namespace medi {
 .         if(name(item) =  "send" | name(item) =  "recv")
 .           startRoot(item)
 .             if(defined(item.inplace))
-                if(TAMPI_IN_PLACE != $(item.name)) {
+                if(AMPI_IN_PLACE != $(item.name)) {
 .             endif
 .             if(defined(item.displs))
                 createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type)->getValuesPerElement($(item.name)));
@@ -634,7 +634,7 @@ namespace medi {
 .       endfor
 
         // pack all the variables in the handle
-        h->func = TAMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
+        h->func = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
       }
@@ -686,7 +686,7 @@ namespace medi {
 .         startRoot(item)
 .           inplace = ""
 .           if(defined(item.inplace))
-.             inplace = " && !(TAMPI_IN_PLACE == $(item.name))"
+.             inplace = " && !(AMPI_IN_PLACE == $(item.name))"
 .           endif
             if($(item.type)->isModifiedBufferRequired() $(inplace)) {
               $(item.type)->deleteModifiedTypeBuffer($(item.name)Mod);

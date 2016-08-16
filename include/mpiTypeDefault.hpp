@@ -87,7 +87,7 @@ namespace medi {
         }
       }
 
-      inline void performReduce(Type* buf, Type* target, int count, TAMPI_Op op, int ranks) const {
+      inline void performReduce(Type* buf, Type* target, int count, AMPI_Op op, int ranks) const {
         for(int j = 1; j < ranks; ++j) {
           MPI_Reduce_local(&buf[j * count], buf, count, this->getMpiType(), op.primalFunction);
         }

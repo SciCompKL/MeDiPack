@@ -7,19 +7,19 @@ SEEDS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.
 
 void func(NUMBER* x, NUMBER* y) {
   int world_rank;
-  TAMPI_Comm_rank(TAMPI_COMM_WORLD, &world_rank);
+  AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
   int world_size;
-  TAMPI_Comm_size(TAMPI_COMM_WORLD, &world_size);
+  AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-  medi::TAMPI_Request request;
+  medi::AMPI_Request request;
   if(0 == world_rank) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::TAMPI_Igather(static_cast<NUMBER*>(TAMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Igather(static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
-    medi::TAMPI_Igather(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Igather(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }
 
-  medi::TAMPI_Wait(&request, TAMPI_STATUS_IGNORE);
+  medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }

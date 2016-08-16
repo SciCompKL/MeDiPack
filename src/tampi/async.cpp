@@ -1,5 +1,5 @@
 #include "../../include/tampi/async.hpp"
 
 namespace medi {
-  const TAMPI_Request TAMPI_REQUEST_NULL;
+  const AMPI_Request AMPI_REQUEST_NULL;
 }

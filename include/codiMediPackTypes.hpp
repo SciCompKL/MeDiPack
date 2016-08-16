@@ -121,10 +121,10 @@ struct CoDiPackTool final : public medi::ADToolInterface {
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
-  static medi::TAMPI_Op OP_ADD;
-  static medi::TAMPI_Op OP_MUL;
-  static medi::TAMPI_Op OP_MIN;
-  static medi::TAMPI_Op OP_MAX;
+  static medi::AMPI_Op OP_ADD;
+  static medi::AMPI_Op OP_MUL;
+  static medi::AMPI_Op OP_MIN;
+  static medi::AMPI_Op OP_MAX;
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -139,7 +139,7 @@ struct CoDiPackTool final : public medi::ADToolInterface {
     AdjointMpiType = MPI_DOUBLE;
   }
 
-  static void initOperator(medi::TAMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
+  static void initOperator(medi::AMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
     MPI_Op modifiedTypeOperator;
     MPI_Op_create(modifiedFunc, true, &modifiedTypeOperator);
     MPI_Op valueTypeOperator;
@@ -147,7 +147,7 @@ struct CoDiPackTool final : public medi::ADToolInterface {
     op.init(requiresPrimal, requiresPrimalSend, valueTypeOperator, modifiedTypeOperator, preAdjointOperation, postAdjointOperation);
   }
 
-  static void initOperator(medi::TAMPI_Op& op, MPI_User_function* primalFunc) {
+  static void initOperator(medi::AMPI_Op& op, MPI_User_function* primalFunc) {
     MPI_Op valueTypeOperator;
     MPI_Op_create(primalFunc, true, &valueTypeOperator);
     op.init(valueTypeOperator);
@@ -279,7 +279,7 @@ struct CoDiPackTool final : public medi::ADToolInterface {
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::ModifiedMpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::AdjointMpiType;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_ADD;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MUL;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
-template<typename CoDiType> medi::TAMPI_Op CoDiPackTool<CoDiType>::OP_MAX;
+template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_ADD;
+template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MUL;
+template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
+template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MAX;

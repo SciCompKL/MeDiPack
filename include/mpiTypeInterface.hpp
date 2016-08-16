@@ -58,7 +58,7 @@ namespace medi {
 
       virtual void getValues(const void* buf, size_t bufOffset, void* primals, size_t primalOffset, int elements) const = 0;
 
-      virtual void performReduce(void* buf, void* target, int count, TAMPI_Op op, int ranks) const = 0;
+      virtual void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const = 0;
 
       virtual void getAdjoints(const void* indices, void* adjoints, int elements) const = 0;
 
@@ -128,7 +128,7 @@ namespace medi {
         cast().getValues(castBuffer<TypeB>(buf), bufOffset, castBuffer<PassiveTypeB>(primals), primalOffset, elements);
       }
 
-      void performReduce(void* buf, void* target, int count, TAMPI_Op op, int ranks) const {
+      void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const {
         cast().performReduce(castBuffer<TypeB>(buf), castBuffer<TypeB>(target), count, op, ranks);
       }
 

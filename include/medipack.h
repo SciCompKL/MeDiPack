@@ -9,20 +9,20 @@
 
 namespace medi {
 
-  #define TAMPI_COMM_WORLD MPI_COMM_WORLD
-  #define TAMPI_Comm_rank MPI_Comm_rank
-  #define TAMPI_Comm_size MPI_Comm_size
-  #define TAMPI_Init MPI_Init
-  #define TAMPI_Finalize MPI_Finalize
-  #define TAMPI_STATUS_IGNORE MPI_STATUS_IGNORE
-  #define TAMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
-  #define TAMPI_IN_PLACE MPI_IN_PLACE
-  #define TAMPI_Buffer_attach MPI_Buffer_attach
-  #define TAMPI_Buffer_detach MPI_Buffer_detach
+  #define AMPI_COMM_WORLD MPI_COMM_WORLD
+  #define AMPI_Comm_rank MPI_Comm_rank
+  #define AMPI_Comm_size MPI_Comm_size
+  #define AMPI_Init MPI_Init
+  #define AMPI_Finalize MPI_Finalize
+  #define AMPI_STATUS_IGNORE MPI_STATUS_IGNORE
+  #define AMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
+  #define AMPI_IN_PLACE MPI_IN_PLACE
+  #define AMPI_Buffer_attach MPI_Buffer_attach
+  #define AMPI_Buffer_detach MPI_Buffer_detach
 
-  typedef MPI_Comm TAMPI_Comm;
-  typedef MPI_Status TAMPI_Status;
-  typedef MpiTypeInterface* TAMPI_Datatype;
+  typedef MPI_Comm AMPI_Comm;
+  typedef MPI_Status AMPI_Status;
+  typedef MpiTypeInterface* AMPI_Datatype;
 
   struct LinearDisplacements {
       int* displs;

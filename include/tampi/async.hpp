@@ -6,7 +6,7 @@ namespace medi {
 
   typedef void (*DeleteReverseData)(void* data);
 
-  struct TAMPI_Request {
+  struct AMPI_Request {
       MPI_Request request;
       HandleBase* handle;
       ContinueFunction func;
@@ -15,7 +15,7 @@ namespace medi {
       void* reverseData;
       DeleteReverseData deleteDataFunc;
 
-      TAMPI_Request() :
+      AMPI_Request() :
         request(MPI_REQUEST_NULL),
         handle(NULL),
         func(NULL),
@@ -34,17 +34,17 @@ namespace medi {
       }
   };
 
-  inline bool operator ==(const TAMPI_Request& a, const TAMPI_Request& b) {
+  inline bool operator ==(const AMPI_Request& a, const AMPI_Request& b) {
     return a.request == b.request;
   }
 
-  inline bool operator !=(const TAMPI_Request& a, const TAMPI_Request& b) {
+  inline bool operator !=(const AMPI_Request& a, const AMPI_Request& b) {
     return a.request != b.request;
   }
 
-  extern const TAMPI_Request TAMPI_REQUEST_NULL;
+  extern const AMPI_Request AMPI_REQUEST_NULL;
 
-  inline void TAMPI_Wait_b(HandleBase* handle);
+  inline void AMPI_Wait_b(HandleBase* handle);
   struct WaitHandle : HandleBase {
       ReverseFunction finishFunc;
       HandleBase* handle;
@@ -52,24 +52,24 @@ namespace medi {
       WaitHandle(ReverseFunction finishFunc, HandleBase* handle) :
         finishFunc(finishFunc),
         handle(handle) {
-         this->func = (ReverseFunction)TAMPI_Wait_b;
+         this->func = (ReverseFunction)AMPI_Wait_b;
       }
   };
 
-  inline void TAMPI_Wait_b(HandleBase* handle) {
+  inline void AMPI_Wait_b(HandleBase* handle) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
     h->finishFunc(h->handle);
   }
 
-  inline void performReverseAction(TAMPI_Request *request) {
+  inline void performReverseAction(AMPI_Request *request) {
     request->func(request->handle);
 
     request->deleteReverseData();
-    *request = TAMPI_REQUEST_NULL;
+    *request = AMPI_REQUEST_NULL;
   }
 
-  inline MPI_Request* convertToMPI(TAMPI_Request* array, int count) {
+  inline MPI_Request* convertToMPI(AMPI_Request* array, int count) {
     MPI_Request* converted = new MPI_Request[count];
 
     for(int i = 0; i < count; ++i) {
@@ -79,8 +79,8 @@ namespace medi {
     return converted;
   }
 
-  inline int TAMPI_Wait(TAMPI_Request *request, TAMPI_Status *status) {
-    if(TAMPI_REQUEST_NULL == *request) {
+  inline int AMPI_Wait(AMPI_Request *request, AMPI_Status *status) {
+    if(AMPI_REQUEST_NULL == *request) {
       return 0;
     }
 
@@ -91,8 +91,8 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Test(TAMPI_Request *request, int* flag, TAMPI_Status *status) {
-    if(TAMPI_REQUEST_NULL == *request) {
+  inline int AMPI_Test(AMPI_Request *request, int* flag, AMPI_Status *status) {
+    if(AMPI_REQUEST_NULL == *request) {
       *flag = (int)true;
       return 0;
     }
@@ -106,18 +106,18 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Request_free(TAMPI_Request *request) {
-    if(TAMPI_REQUEST_NULL == *request) {
+  inline int AMPI_Request_free(AMPI_Request *request) {
+    if(AMPI_REQUEST_NULL == *request) {
       return 0;
     }
 
     int rStatus = MPI_Request_free(&request->request);
-    *request = TAMPI_REQUEST_NULL;
+    *request = AMPI_REQUEST_NULL;
 
     return rStatus;
   }
 
-  inline int TAMPI_Waitany(int count, TAMPI_Request* array_of_requests, int *index, TAMPI_Status *status) {
+  inline int AMPI_Waitany(int count, AMPI_Request* array_of_requests, int *index, AMPI_Status *status) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
     int rStatus = MPI_Waitany(count, array, index, status);
@@ -131,7 +131,7 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Testany(int count, TAMPI_Request* array_of_requests, int *index, int *flag, TAMPI_Status *status) {
+  inline int AMPI_Testany(int count, AMPI_Request* array_of_requests, int *index, int *flag, AMPI_Status *status) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
     int rStatus = MPI_Testany(count, array, index, flag, status);
@@ -147,13 +147,13 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Waitall(int count, TAMPI_Request* array_of_requests, TAMPI_Status* array_of_statuses) {
+  inline int AMPI_Waitall(int count, AMPI_Request* array_of_requests, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
     int rStatus = MPI_Waitall(count, array, array_of_statuses);
 
     for(int i = 0; i < count; ++i) {
-      if(TAMPI_REQUEST_NULL != array_of_requests[i]) {
+      if(AMPI_REQUEST_NULL != array_of_requests[i]) {
         performReverseAction(&array_of_requests[i]);
       }
     }
@@ -163,14 +163,14 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Testall(int count, TAMPI_Request* array_of_requests, int *flag, TAMPI_Status* array_of_statuses) {
+  inline int AMPI_Testall(int count, AMPI_Request* array_of_requests, int *flag, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
     int rStatus = MPI_Testall(count, array, flag, array_of_statuses);
 
     if(true == *flag) {
       for(int i = 0; i < count; ++i) {
-        if(TAMPI_REQUEST_NULL != array_of_requests[i]) {
+        if(AMPI_REQUEST_NULL != array_of_requests[i]) {
           performReverseAction(&array_of_requests[i]);
         }
       }
@@ -181,14 +181,14 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Waitsome(int incount, TAMPI_Request* array_of_requests, int *outcount, int* array_of_indices, TAMPI_Status* array_of_statuses) {
+  inline int AMPI_Waitsome(int incount, AMPI_Request* array_of_requests, int *outcount, int* array_of_indices, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, incount);
 
     int rStatus = MPI_Waitsome(incount, array, outcount, array_of_indices, array_of_statuses);
 
     for(int i = 0; i < *outcount; ++i) {
       int index = array_of_indices[i];
-      if(TAMPI_REQUEST_NULL != array_of_requests[index]) {
+      if(AMPI_REQUEST_NULL != array_of_requests[index]) {
         performReverseAction(&array_of_requests[index]);
       }
     }
@@ -198,14 +198,14 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Testsome(int incount, TAMPI_Request* array_of_requests, int *outcount, int* array_of_indices, TAMPI_Status* array_of_statuses) {
+  inline int AMPI_Testsome(int incount, AMPI_Request* array_of_requests, int *outcount, int* array_of_indices, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, incount);
 
     int rStatus = MPI_Testsome(incount, array, outcount, array_of_indices, array_of_statuses);
 
     for(int i = 0; i < *outcount; ++i) {
       int index = array_of_indices[i];
-      if(TAMPI_REQUEST_NULL != array_of_requests[index]) {
+      if(AMPI_REQUEST_NULL != array_of_requests[index]) {
         performReverseAction(&array_of_requests[index]);
       }
     }
@@ -215,7 +215,7 @@ namespace medi {
     return rStatus;
   }
 
-  inline int TAMPI_Request_get_status(TAMPI_Request request, int *flag, TAMPI_Status *status) {
+  inline int AMPI_Request_get_status(AMPI_Request request, int *flag, AMPI_Status *status) {
     // no handling if the request is finished because a call to any wait or test method is still expected.
     return MPI_Request_get_status(request.request, flag, status);
   }

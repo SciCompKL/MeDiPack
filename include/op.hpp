@@ -10,7 +10,7 @@ namespace medi {
   static void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
   static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
 
-  struct TAMPI_Op {
+  struct AMPI_Op {
     /*const*/ bool requiresPrimal;
     /*const*/ bool requiresPrimalSend;
 
@@ -22,7 +22,7 @@ namespace medi {
 
     bool hasAdjoint;
 
-    TAMPI_Op() :
+    AMPI_Op() :
       requiresPrimal(false),
       requiresPrimalSend(false),
       primalFunction(MPI_SUM),

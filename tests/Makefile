@@ -31,7 +31,7 @@ ifeq ($(COMPILER), gnu)
   MPIOUT ?= --output-filename $@
 endif
 ifeq ($(COMPILER), intel)
-  MPICXX ?= mpiicpc
+  MPICXX ?= mpiicpc -wd3802
   MPIRUN ?= mpiexec.hydra
   MPIOUT ?= --outfile-pattern=$@.%r
 endif
