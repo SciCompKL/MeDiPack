@@ -5,4 +5,4 @@
 #include "mpiTypeDefault.hpp"
 #include "ampi/async.hpp"
 #include "ampi/wrappers.hpp"
-#include "../generated/ampiFunctions.hpp"
+#include "../generated/medi/ampiFunctions.hpp"

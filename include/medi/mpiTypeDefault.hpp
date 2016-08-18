@@ -2,7 +2,7 @@
 
 #include "macros.h"
 #include "mpiTypeInterface.hpp"
-#include "op.hpp"
+#include "mpiOp.hpp"
 
 namespace medi {
 

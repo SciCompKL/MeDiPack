@@ -3,7 +3,7 @@
 #include <mpi.h>
 
 #include "adToolInterface.h"
-#include "op.hpp"
+#include "mpiOp.hpp"
 
 namespace medi {
   class MpiTypeInterface {

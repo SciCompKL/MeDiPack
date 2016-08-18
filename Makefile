@@ -6,14 +6,21 @@ DEF_DIR=definitions
 GEN_DIR=generated
 
 GENERATED_FILES= \
-  $(GEN_DIR)/ampiFunctions.hpp
+  $(GEN_DIR)/medi/ampiFunctions.hpp
 
 ASTYLE_FILE=template.style
 
 all: $(GENERATED_FILES)
 
 # define the dependencies for all the files
-$(GEN_DIR)/ampiFunctions.hpp: $(TEMPL_DIR)/ampiFunctions_hpp.gsl $(DEF_DIR)/mpiFunctions.xml
+$(GEN_DIR)/medi/ampiFunctions.hpp: $(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl $(DEF_DIR)/mpiFunctions.xml
+
+# directory generation rules
+$(GEN_DIR):
+	mkdir $(GEN_DIR)
+
+$(GEN_DIR)/medi:
+	mkdir $(GEN_DIR)/medi
 
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl

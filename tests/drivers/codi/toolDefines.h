@@ -1,8 +1,8 @@
 #pragma once
 
 #include <codi.hpp>
-#include <medi.hpp>
-#include <codiMediPackTypes.hpp>
+#include <medi/medi.hpp>
+#include <medi/codiMediPackTypes.hpp>
 
 typedef codi::RealReverse NUMBER;
 

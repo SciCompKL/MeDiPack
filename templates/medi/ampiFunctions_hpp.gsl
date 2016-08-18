@@ -449,9 +449,9 @@ endfunction
 .output "$(switches.arg1)"
 #pragma once
 
-#include "../include/medipack.h"
-#include "../include/reverseFunctions.hpp"
-#include "../include/ampi/async.hpp"
+#include "../../include/medi/medipack.h"
+#include "../../include/medi/reverseFunctions.hpp"
+#include "../../include/medi/ampi/async.hpp"
 
 namespace medi {
 .for functions.function as curFunction
