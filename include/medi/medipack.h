@@ -10,18 +10,32 @@
 namespace medi {
 
   #define AMPI_COMM_WORLD MPI_COMM_WORLD
-  #define AMPI_Comm_rank MPI_Comm_rank
-  #define AMPI_Comm_size MPI_Comm_size
-  #define AMPI_Init MPI_Init
-  #define AMPI_Finalize MPI_Finalize
   #define AMPI_STATUS_IGNORE MPI_STATUS_IGNORE
   #define AMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
   #define AMPI_IN_PLACE MPI_IN_PLACE
-  #define AMPI_Buffer_attach MPI_Buffer_attach
-  #define AMPI_Buffer_detach MPI_Buffer_detach
 
+  typedef int Range[3];
+
+  typedef MPI_Aint AMPI_Aint;
+  typedef MPI_Comm_errhandler_function AMPI_Comm_errhandler_function;
+  typedef MPI_Errhandler AMPI_Errhandler;
+  typedef MPI_Errhandler AMPI_Errhandler;
+  typedef MPI_File_errhandler_function AMPI_File_errhandler_function;
+  typedef MPI_File AMPI_File;
+  typedef MPI_Info AMPI_Info;
+  typedef MPI_Message AMPI_Message;
+  typedef MPI_Win_errhandler_function AMPI_Win_errhandler_function;
+  typedef MPI_Win AMPI_Win;
   typedef MPI_Comm AMPI_Comm;
   typedef MPI_Status AMPI_Status;
+  typedef MPI_Comm_copy_attr_function AMPI_Comm_copy_attr_function;
+  typedef MPI_Comm_delete_attr_function AMPI_Comm_delete_attr_function;
+  typedef MPI_Group AMPI_Group;
+  typedef MPI_Type_copy_attr_function AMPI_Type_copy_attr_function;
+  typedef MPI_Type_delete_attr_function AMPI_Type_delete_attr_function;
+  typedef MPI_Win_copy_attr_function AMPI_Win_copy_attr_function;
+  typedef MPI_Win_delete_attr_function AMPI_Win_delete_attr_function;
+
   typedef MpiTypeInterface* AMPI_Datatype;
 
   struct LinearDisplacements {

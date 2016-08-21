@@ -7,12 +7,12 @@ MPI_NUMBER* mpiNumberType;
 
 int main(int nargs, char** args) {
 
-  AMPI_Init(&nargs, &args);
+  medi::AMPI_Init(&nargs, &args);
 
   int world_rank;
-  AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
+  medi::AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
   int world_size;
-  AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
+  medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
 
   TOOL::init();
@@ -84,7 +84,7 @@ int main(int nargs, char** args) {
   delete mpiNumberType;
 
   TOOL::finalize();
-  AMPI_Finalize();
+  medi::AMPI_Finalize();
 }
 
 #include <medi/ampi/async.cpp>
