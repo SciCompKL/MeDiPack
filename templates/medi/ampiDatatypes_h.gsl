@@ -1,0 +1,33 @@
+.ignorecase = 0
+.template 0
+
+function modifyTypeName(type)
+  return string.replace(my.type, "MPI_|AMPI_")
+endfunction
+
+for datatypes.datatype
+  datatype.taType = modifyTypeName(datatype.name)
+endfor
+
+.endtemplate
+.output "$(switches.arg1)"
+#pragma once
+
+#include <complex.h>
+#include <mpi.h>
+
+#include "../../include/medi/mpiTypePassive.hpp"
+
+namespace medi {
+
+  void initTypes();
+  void finalizeTypes();
+
+.for datatypes.datatype
+  typedef MpiTypePassive<$(datatype.type)> $(datatype.taType)_Type;
+.endfor
+
+.for datatypes.datatype
+  extern $(datatype.taType)_Type* $(datatype.taType);
+.endfor
+}
