@@ -37,10 +37,10 @@
   <datatype name="MPI_CXX_FLOAT_COMPLEX" type="std::complex<float>" />
   <datatype name="MPI_CXX_DOUBLE_COMPLEX" type="std::complex<double>" />
   <datatype name="MPI_CXX_LONG_DOUBLE_COMPLEX" type="std::complex<long double>" />
-<!--  <datatype name="MPI_FLOAT_INT" type="FloatInt" /> -->
-<!--  <datatype name="MPI_DOUBLE_INT" type="DoubleInt" /> -->
-<!--  <datatype name="MPI_LONG_INT" type="LongInt" /> -->
-<!--  <datatype name="MPI_2INT" type="IntInt" /> -->
-<!--  <datatype name="MPI_SHORT_INT" type="ShortInt" /> -->
-<!--  <datatype name="MPI_LONG_DOUBLE_INT" type="LongDoubleInt" /> -->
+  <datatype name="MPI_FLOAT_INT" type="medi::FloatIntPair" />
+  <datatype name="MPI_DOUBLE_INT" type="medi::DoubleIntPair" />
+  <datatype name="MPI_LONG_INT" type="medi::LongIntPair" />
+  <datatype name="MPI_2INT" type="medi::IntIntPair" />
+  <datatype name="MPI_SHORT_INT" type="medi::ShortIntPair" />
+  <datatype name="MPI_LONG_DOUBLE_INT" type="medi::LongDoubleIntPair" />
 </datatypes>
