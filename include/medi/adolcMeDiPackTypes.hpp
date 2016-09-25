@@ -130,6 +130,7 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   static double* adjointBase;
   static double* primalBase;
+  static ext_diff_fct_v2 *extFunc;
 
   static void initTypes() {
     // create the mpi type for ADOL-c
@@ -159,9 +160,15 @@ struct AdolcTool final : public medi::ADToolInterface {
     initOperator(OP_MAX, true, true, (MPI_User_function*)adolcModifiedMax<ModifiedType>, (MPI_User_function*)adolcUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)adolcPostAdjMinMax<AdjointType, PassiveType>);
   }
 
+  static void initExternalFunction() {
+    extFunc = reg_ext_fct(emptyPrimal);
+    extFunc->fos_reverse = callHandle;
+  }
+
   static void init() {
     initTypes();
     initOperators();
+    initExternalFunction();
   }
 
   static void finalizeOperators() {
@@ -213,17 +220,15 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   inline void addToolAction(medi::HandleBase* h) {
     if(NULL != h) {
+      // store the handle pointer in the int array
+      int sizePointer = sizeof(medi::HandleBase*) / sizeof(int);
+      if(sizePointer * sizeof(int) != sizeof(medi::HandleBase*)) {
+        std::cerr << "Error pointer type is not a multiple of an int." << std::endl;
+        exit(-1);
+      }
 
-      Type temp = 1.0;
-      Type* tempPointer = &temp;
-      int one = 1;
-      int location = temp.loc();
-      ext_diff_fct_v2 *extFunc = reg_ext_fct(emptyPrimal);
-      edf_set_opaque_context(extFunc, h);
       h->userData = extFunc;
-      extFunc->fos_reverse = callHandle;
-      call_ext_fct(extFunc, 1, &location, 1, 0, &one, &tempPointer, NULL, NULL);
-
+      call_ext_fct(extFunc, sizePointer, reinterpret_cast<int*>(&h), 0, 0, NULL, NULL, NULL, NULL);
     }
   }
 
@@ -237,8 +242,7 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   static int callHandle(int iArrLen, int* iArr, int nout, int nin, int *outsz, double **up, int *insz, double **zp, double **x, double **y, void *h) {
 
-    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-    ext_diff_fct_v2 *extFunc = static_cast<ext_diff_fct_v2*>(handle->userData);
+    medi::HandleBase* handle = *reinterpret_cast<medi::HandleBase**>(iArr);
     adjointBase = extFunc->adjointVector;
     primalBase = extFunc->primalVector;
     handle->func(handle);
