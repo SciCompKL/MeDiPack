@@ -5,6 +5,7 @@
 
 #include "medipack.h"
 #include "ampi/async.hpp"
+#include "exceptions.hpp"
 
 #include "adToolInterface.h"
 
@@ -234,8 +235,7 @@ struct AdolcTool final : public medi::ADToolInterface {
       // store the handle pointer in the int array
       int sizePointer = sizeof(medi::HandleBase*) / sizeof(int);
       if(sizePointer * sizeof(int) != sizeof(medi::HandleBase*)) {
-        std::cerr << "Error pointer type is not a multiple of an int." << std::endl;
-        exit(-1);
+        MEDI_EXCEPTION("Error pointer type is not a multiple of an int.");
       }
 
       call_ext_fct(extFunc, sizePointer, reinterpret_cast<int*>(&h), 0, 0, NULL, NULL, NULL, NULL);
@@ -275,8 +275,7 @@ struct AdolcTool final : public medi::ADToolInterface {
         }
         break;
       default:
-        std::cerr << "Error: Not implemented switch case." << std::endl;
-        exit(-1);
+        MEDI_EXCEPTION("Not implemented switch case.");
         break;
       }
 
