@@ -2,6 +2,12 @@
 
 namespace medi {
 
+  enum class ManualDeleteType {
+    Normal,
+    Async,
+    Wait
+  };
+
   struct HandleBase;
   typedef void (*ReverseFunction)(HandleBase* h);
   typedef void (*ContinueFunction)(HandleBase* h);
@@ -10,6 +16,12 @@ namespace medi {
 
   struct HandleBase {
     ReverseFunction func;
+    ManualDeleteType deleteType;
+
+    HandleBase() :
+      func(NULL),
+      deleteType(ManualDeleteType::Normal) {}
+
 
     virtual ~HandleBase() {}
   };

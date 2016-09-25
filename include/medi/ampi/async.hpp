@@ -53,6 +53,8 @@ namespace medi {
         finishFunc(finishFunc),
         handle(handle) {
          this->func = (ReverseFunction)AMPI_Wait_b;
+        this->deleteType = ManualDeleteType::Wait;
+        this->handle->deleteType = ManualDeleteType::Async;
       }
   };
 

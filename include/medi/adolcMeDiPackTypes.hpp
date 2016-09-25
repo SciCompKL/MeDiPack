@@ -4,6 +4,7 @@
 #include <adolc/externfcts2.h>
 
 #include "medipack.h"
+#include "ampi/async.hpp"
 
 #include "adToolInterface.h"
 
@@ -257,7 +258,28 @@ struct AdolcTool final : public medi::ADToolInterface {
     handle->func(handle);
 
     if(deleteReverseHandles) {
-      delete handle;
+      switch (handle->deleteType) {
+      case medi::ManualDeleteType::Normal:
+        delete handle;
+        break;
+      case medi::ManualDeleteType::Async:
+        // handle is part of an asyncronous communication
+        // it will be deleted in the correspoinding wait
+        break;
+      case medi::ManualDeleteType::Wait:
+        // delete the wait handle and the corresponding asyncrounous handle
+        {
+          medi::WaitHandle* waitHandle = static_cast<medi::WaitHandle*>(handle);
+          delete waitHandle->handle;
+          delete waitHandle;
+        }
+        break;
+      default:
+        std::cerr << "Error: Not implemented switch case." << std::endl;
+        exit(-1);
+        break;
+      }
+
     }
 
     return 0;
