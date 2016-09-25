@@ -9,3 +9,4 @@ medi::AMPI_Op AdolcTool::OP_MIN;
 medi::AMPI_Op AdolcTool::OP_MAX;
 
 double* AdolcTool::adjointBase;
+double* AdolcTool::primalBase;

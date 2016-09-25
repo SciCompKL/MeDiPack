@@ -116,6 +116,12 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
+      inline void setReverseValues(const void* indices, const void* primals, int elements) const {
+        MEDI_UNUSED(indices);
+        MEDI_UNUSED(primals);
+        MEDI_UNUSED(elements);
+      }
+
       inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(elements);

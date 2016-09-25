@@ -11,6 +11,7 @@ namespace medi {
     public:
       virtual bool isActiveType() const = 0;
       virtual bool isHandleRequired() const  = 0;
+      virtual bool isOldPrimalsRequired() const = 0;
       virtual void startAssembly(HandleBase* h) = 0;
       virtual void stopAssembly(HandleBase* h) = 0;
       virtual void addToolAction(HandleBase* h) = 0;

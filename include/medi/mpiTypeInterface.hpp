@@ -64,6 +64,8 @@ namespace medi {
 
       virtual void updateAdjoints(const void* indices, const void* adjoints, int elements) const = 0;
 
+      virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;
+
       virtual void combineAdjoints(void* buf, const int elements, const int ranks) const = 0;
 
       virtual void createTypeBuffer(void* &buf, size_t size) const = 0;
@@ -138,6 +140,10 @@ namespace medi {
 
       void updateAdjoints(const void* indices, const void* adjoints, int elements) const {
         cast().updateAdjoints(castBuffer<IndexTypeB>(indices), castBuffer<AdjointTypeB>(adjoints), elements);
+      }
+
+      void setReverseValues(const void* indices, const void* primals, int elements) const {
+        cast().setReverseValues(castBuffer<IndexTypeB>(indices), castBuffer<PassiveTypeB>(primals), elements);
       }
 
       void combineAdjoints(void* buf, const int elements, const int ranks) const {

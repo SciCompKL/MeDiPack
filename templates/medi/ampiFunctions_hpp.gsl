@@ -88,6 +88,9 @@ for functions.function as curFunction
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)TotalSize", "int")
      addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
      addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+     if(name(item) =  "recv")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
+     endif
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
      if(defined(item.displs))
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
@@ -324,19 +327,26 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
   endRootReverse(my.buffer)
 endfunction
 
+# define function for primal restore
+function createPrimalRestore(buffer, elementName)
+  startRootReverse(my.buffer)
+>   h->$(my.buffer.type)->setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+  endRootReverse(my.buffer)
+endfunction
+
 # define function for primal extraction
-function createPrimalExtraction(buffer)
+function createPrimalExtraction(buffer, elementName)
   startRoot(my.buffer)
->   $(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)Primals, $(my.buffer.count));
+>   $(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)$(my.elementName), $(my.buffer.count));
     if(defined(my.buffer.inplace))
 >     if(MPI_IN_PLACE != $(my.buffer.name)) {
     endif
     # TODO: add proper loop creation
->   $(my.buffer.type)->getValues($(my.buffer.name), 0, h->$(my.Buffer.name)Primals, 0, $(my.buffer.count));
+>   $(my.buffer.type)->getValues($(my.buffer.name), 0, h->$(my.Buffer.name)$(my.elementName), 0, $(my.buffer.count));
     if(defined(my.buffer.inplace))
 >     } else {
         inplaceBuffer = my.buffer->inplaceBuffer
->       $(inplaceBuffer.type)->getValues($(inplaceBuffer.name), 0, h->$(my.Buffer.name)Primals, 0, $(inplaceBuffer.count));
+>       $(inplaceBuffer.type)->getValues($(inplaceBuffer.name), 0, h->$(my.Buffer.name)$(my.elementName), 0, $(inplaceBuffer.count));
 >     }
     endif
   endRoot(my.buffer)
@@ -505,6 +515,9 @@ namespace medi {
 .
 .   for curFunction.recv
 .     createBufferReverseCleanup(recv, curFunction, 0)
+      if(h->$(curFunction.adType).isOldPrimalsRequired()) {
+.       createPrimalRestore(recv, "OldPrimals")
+      }
 .   endfor
   }
 
@@ -538,7 +551,7 @@ namespace medi {
         // extract the primal values for the operator if required
         if(nullptr != h && op.requiresPrimal) {
 .         for curFunction.send
-.           createPrimalExtraction(send)
+.           createPrimalExtraction(send, "Primals")
 .         endfor
         }
 .     endfor
@@ -587,6 +600,14 @@ namespace medi {
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
+
+.       for curFunction.recv
+          // extract the old primal values from the recv buffer if the AD tool
+          // needs the primal values reset
+          if($(curFunction.adType).isOldPrimalsRequired()) {
+.           createPrimalExtraction(recv, "OldPrimals")
+          }
+.       endfor
 
         // create the index buffers
 .       for curFunction. as item where defined(item.arg)
@@ -666,7 +687,7 @@ namespace medi {
         // extract the primal values for the operator if required
         if(nullptr != h && op.requiresPrimal) {
 .       for curFunction.recv
-.         createPrimalExtraction(recv)
+.         createPrimalExtraction(recv, "Primals")
 .       endfor
         }
 .     endfor

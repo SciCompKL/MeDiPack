@@ -109,6 +109,12 @@ namespace medi {
         }
       }
 
+      inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
+        for(int pos = 0; pos < elements; ++pos) {
+          ADTool::setValue(indices[pos], primals[pos]);
+        }
+      }
+
       inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
         for(int curRank = 1; curRank < ranks; ++curRank) {
           for(int curPos = 0; curPos < elements; ++curPos) {

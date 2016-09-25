@@ -204,6 +204,10 @@ struct CoDiPackTool final : public medi::ADToolInterface {
     return Type::getGlobalTape().isActive();
   }
 
+  inline bool isOldPrimalsRequired() const {
+    return false;
+  }
+
   inline void startAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
 
@@ -240,6 +244,11 @@ struct CoDiPackTool final : public medi::ADToolInterface {
 
   static inline PassiveType getValue(const Type& value) {
     return value.getValue();
+  }
+
+  static inline void setValue(const IndexType& index, const PassiveType& primal) {
+    MEDI_UNUSED(index);
+    MEDI_UNUSED(primal);
   }
 
   static inline AdjointType getAdjoint(const int index) {

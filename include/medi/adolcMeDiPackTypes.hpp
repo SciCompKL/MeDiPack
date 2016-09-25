@@ -129,6 +129,7 @@ struct AdolcTool final : public medi::ADToolInterface {
   static medi::AMPI_Op OP_MAX;
 
   static double* adjointBase;
+  static double* primalBase;
 
   static void initTypes() {
     // create the mpi type for ADOL-c
@@ -201,6 +202,10 @@ struct AdolcTool final : public medi::ADToolInterface {
     return isTaping();
   }
 
+  inline bool isOldPrimalsRequired() const {
+    return true;
+  }
+
   inline void startAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
 
@@ -235,6 +240,7 @@ struct AdolcTool final : public medi::ADToolInterface {
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     ext_diff_fct_v2 *extFunc = static_cast<ext_diff_fct_v2*>(handle->userData);
     adjointBase = extFunc->adjointVector;
+    primalBase = extFunc->primalVector;
     handle->func(handle);
 
     return 0;
@@ -250,6 +256,10 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   static inline PassiveType getValue(const Type& value) {
     return value.value();
+  }
+
+  static inline void setValue(const IndexType& index, const PassiveType& primal) {
+    primalBase[index] = primal;
   }
 
   static inline AdjointType getAdjoint(const int index) {
