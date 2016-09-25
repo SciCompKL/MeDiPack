@@ -10,6 +10,7 @@ namespace medi {
 
   struct HandleBase {
     ReverseFunction func;
+    void* userData;
 
     virtual ~HandleBase() {}
   };
