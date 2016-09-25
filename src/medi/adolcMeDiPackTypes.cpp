@@ -11,3 +11,5 @@ medi::AMPI_Op AdolcTool::OP_MAX;
 double* AdolcTool::adjointBase;
 double* AdolcTool::primalBase;
 ext_diff_fct_v2* AdolcTool::extFunc;
+
+bool AdolcTool::deleteReverseHandles = true;

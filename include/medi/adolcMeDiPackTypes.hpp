@@ -132,6 +132,16 @@ struct AdolcTool final : public medi::ADToolInterface {
   static double* primalBase;
   static ext_diff_fct_v2 *extFunc;
 
+  static bool deleteReverseHandles;
+
+  static void setDeleteReverseHandles(bool value) {
+    deleteReverseHandles = value;
+  }
+
+  static bool isDeleteReverseHandles() {
+    return deleteReverseHandles;
+  }
+
   static void initTypes() {
     // create the mpi type for ADOL-c
     MpiType = MPI_INT;
@@ -227,7 +237,6 @@ struct AdolcTool final : public medi::ADToolInterface {
         exit(-1);
       }
 
-      h->userData = extFunc;
       call_ext_fct(extFunc, sizePointer, reinterpret_cast<int*>(&h), 0, 0, NULL, NULL, NULL, NULL);
     }
   }
@@ -246,6 +255,10 @@ struct AdolcTool final : public medi::ADToolInterface {
     adjointBase = extFunc->adjointVector;
     primalBase = extFunc->primalVector;
     handle->func(handle);
+
+    if(deleteReverseHandles) {
+      delete handle;
+    }
 
     return 0;
   }
