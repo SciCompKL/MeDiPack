@@ -79,7 +79,7 @@ $(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
 # Driver for ADOL-c
 DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/adolc/adolcDriver.cpp -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc_ampi -I$(DRIVER_DIR)/adolc
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/adolc/adolcDriver.cpp -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolc
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
