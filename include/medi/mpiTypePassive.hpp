@@ -15,26 +15,23 @@ namespace medi {
           MpiTypePassive<T>,
           T,
           T,
-          T,
-          T,
-          T>
+          ADToolPassive>
   {
 
     public:
 
       typedef T Type;
       typedef T ModifiedType;
-      typedef T PassiveType;
-      typedef T AdjointType;
-      typedef T IndexType;
+      typedef void PassiveType;
+      typedef void IndexType;
 
       typedef ADToolPassive Tool;
 
       Tool adTool;
 
       MpiTypePassive(MPI_Datatype type) :
-        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, PassiveType, AdjointType, IndexType>(type, type, type),
-        adTool() {}
+        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        adTool(type) {}
 
       Tool& getADTool() {
         return adTool;
@@ -104,28 +101,12 @@ namespace medi {
         MEDI_UNUSED(ranks);
       }
 
-      inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(adjoints);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(adjoints);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void setReverseValues(const void* indices, const void* primals, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(primals);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(elements);
-        MEDI_UNUSED(ranks);
+      inline void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
+        MEDI_UNUSED(from);
+        MEDI_UNUSED(fromOffset);
+        MEDI_UNUSED(to);
+        MEDI_UNUSED(toOffset);
+        MEDI_UNUSED(count);
       }
 
       inline void createTypeBuffer(Type* &buf, size_t size) const {
@@ -136,18 +117,6 @@ namespace medi {
         buf = new ModifiedType[size];
       }
 
-      inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-        buf = new AdjointType[size];
-      }
-
-      inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
-        buf = new PassiveType[size];
-      }
-
-      inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
-        buf = new IndexType[size];
-      }
-
       inline void deleteTypeBuffer(Type* &buf) const {
         if(NULL != buf) {
           delete [] buf;
@@ -156,27 +125,6 @@ namespace medi {
       }
 
       inline void deleteModifiedTypeBuffer(ModifiedType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deleteIndexTypeBuffer(IndexType* &buf) const {
         if(NULL != buf) {
           delete [] buf;
           buf = NULL;

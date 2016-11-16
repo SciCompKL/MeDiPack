@@ -9,10 +9,8 @@ namespace medi {
   class MpiTypeInterface {
     private:
 
-      //TODO: add modified type
       MPI_Datatype mpiType;
       MPI_Datatype modifiedMpiType;
-      MPI_Datatype adjointMpiType;
     public:
 
       typedef void Type;
@@ -21,10 +19,9 @@ namespace medi {
       typedef void PassiveType;
       typedef void IndexType;
 
-      MpiTypeInterface(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType, MPI_Datatype adjointMpiType) :
+      MpiTypeInterface(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType) :
         mpiType(mpiType),
-        modifiedMpiType(modifiedMpiType),
-        adjointMpiType(adjointMpiType) {}
+        modifiedMpiType(modifiedMpiType) {}
 
       virtual ~MpiTypeInterface() {}
 
@@ -36,9 +33,6 @@ namespace medi {
         return modifiedMpiType;
       }
 
-      MPI_Datatype getAdjointMpiType() const {
-        return adjointMpiType;
-      }
 
       virtual bool isModifiedBufferRequired() const = 0;
 
@@ -60,34 +54,15 @@ namespace medi {
 
       virtual void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const = 0;
 
-      virtual void getAdjoints(const void* indices, void* adjoints, int elements) const = 0;
-
-      virtual void updateAdjoints(const void* indices, const void* adjoints, int elements) const = 0;
-
-      virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;
-
-      virtual void combineAdjoints(void* buf, const int elements, const int ranks) const = 0;
+      virtual void copy(void* from, size_t fromOffset, void* to, size_t toOffset, int count) const  = 0;
 
       virtual void createTypeBuffer(void* &buf, size_t size) const = 0;
 
       virtual void createModifiedTypeBuffer(void* &buf, size_t size) const = 0;
 
-      virtual void createAdjointTypeBuffer(void* &buf, size_t size) const = 0;
-
-      virtual void createPassiveTypeBuffer(void* &buf, size_t size) const = 0;
-
-      virtual void createIndexTypeBuffer(void* &buf, size_t size) const = 0;
-
       virtual void deleteTypeBuffer(void* &buf) const = 0;
 
       virtual void deleteModifiedTypeBuffer(void* &buf) const = 0;
-
-      virtual void deleteAdjointTypeBuffer(void* &buf) const = 0;
-
-      virtual void deletePassiveTypeBuffer(void* &buf) const = 0;
-
-      virtual void deleteIndexTypeBuffer(void* &buf) const = 0;
-
   };
 
   /**
@@ -95,12 +70,15 @@ namespace medi {
    *
    * Functions that are not implemented: isModifiedBufferRequired
    */
-  template <typename Impl, typename TypeB, typename ModifiedTypeB, typename PassiveTypeB, typename AdjointTypeB, typename IndexTypeB>
+  template <typename Impl, typename TypeB, typename ModifiedTypeB, typename ADToolB>
   class MpiTypeBase : public MpiTypeInterface {
     public:
 
-      MpiTypeBase(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType, MPI_Datatype adjointMpiType) :
-        MpiTypeInterface(mpiType, modifiedMpiType, adjointMpiType) {}
+      typedef typename ADToolB::PassiveType PassiveTypeB;
+      typedef typename ADToolB::IndexType IndexTypeB;
+
+      MpiTypeBase(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType) :
+        MpiTypeInterface(mpiType, modifiedMpiType) {}
 
       int getValuesPerElement(const void* buf) const {
         return cast().getValuesPerElement(castBuffer<TypeB>(buf));
@@ -134,20 +112,8 @@ namespace medi {
         cast().performReduce(castBuffer<TypeB>(buf), castBuffer<TypeB>(target), count, op, ranks);
       }
 
-      void getAdjoints(const void* indices, void* adjoints, int elements) const {
-        cast().getAdjoints(castBuffer<IndexTypeB>(indices), castBuffer<AdjointTypeB>(adjoints), elements);
-      }
-
-      void updateAdjoints(const void* indices, const void* adjoints, int elements) const {
-        cast().updateAdjoints(castBuffer<IndexTypeB>(indices), castBuffer<AdjointTypeB>(adjoints), elements);
-      }
-
-      void setReverseValues(const void* indices, const void* primals, int elements) const {
-        cast().setReverseValues(castBuffer<IndexTypeB>(indices), castBuffer<PassiveTypeB>(primals), elements);
-      }
-
-      void combineAdjoints(void* buf, const int elements, const int ranks) const {
-        cast().combineAdjoints(castBuffer<AdjointTypeB>(buf), elements, ranks);
+      void copy(void* from, size_t fromOffset, void* to, size_t toOffset, int count) const {
+        cast().copy(castBuffer<TypeB>(from), fromOffset, castBuffer<TypeB>(to), toOffset, count);
       }
 
       void createTypeBuffer(void* &buf, size_t size) const {
@@ -158,36 +124,12 @@ namespace medi {
         cast().createModifiedTypeBuffer(castBuffer<ModifiedTypeB>(buf), size);
       }
 
-      void createAdjointTypeBuffer(void* &buf, size_t size) const {
-        cast().createAdjointTypeBuffer(castBuffer<AdjointTypeB>(buf), size);
-      }
-
-      void createPassiveTypeBuffer(void* &buf, size_t size) const {
-        cast().createPassiveTypeBuffer(castBuffer<PassiveTypeB>(buf), size);
-      }
-
-      void createIndexTypeBuffer(void* &buf, size_t size) const {
-        cast().createIndexTypeBuffer(castBuffer<IndexTypeB>(buf), size);
-      }
-
       void deleteTypeBuffer(void* &buf) const {
         cast().deleteTypeBuffer(castBuffer<TypeB>(buf));
       }
 
       void deleteModifiedTypeBuffer(void* &buf) const {
         cast().deleteModifiedTypeBuffer(castBuffer<ModifiedTypeB>(buf));
-      }
-
-      void deleteAdjointTypeBuffer(void* &buf) const {
-        cast().deleteAdjointTypeBuffer(castBuffer<AdjointTypeB>(buf));
-      }
-
-      void deletePassiveTypeBuffer(void* &buf) const {
-        cast().deletePassiveTypeBuffer(castBuffer<PassiveTypeB>(buf));
-      }
-
-      void deleteIndexTypeBuffer(void* &buf) const {
-        cast().deleteIndexTypeBuffer(castBuffer<IndexTypeB>(buf));
       }
 
     private:
@@ -211,5 +153,3 @@ namespace medi {
       }
   };
 }
-
-

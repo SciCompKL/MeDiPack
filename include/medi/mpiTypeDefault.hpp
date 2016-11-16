@@ -12,9 +12,7 @@ namespace medi {
           MpiTypeDefault<ADTool>,
           typename ADTool::Type,
           typename ADTool::ModifiedType,
-          typename ADTool::PassiveType,
-          typename ADTool::AdjointType,
-          typename ADTool::IndexType>
+          ADTool>
   {
 
     public:
@@ -30,8 +28,8 @@ namespace medi {
       Tool adTool;
 
       MpiTypeDefault() :
-        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, PassiveType, AdjointType, IndexType>(Tool::MpiType, Tool::ModifiedMpiType, Tool::AdjointMpiType),
-        adTool() {}
+        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
+        adTool(Tool::AdjointMpiType) {}
 
       Tool& getADTool() {
         return adTool;
@@ -92,35 +90,14 @@ namespace medi {
           MPI_Reduce_local(&buf[j * count], buf, count, this->getMpiType(), op.primalFunction);
         }
 
+        copy(buf, 0, target, 0, count);
+      }
+
+      void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
         for(int i = 0; i < count; ++i) {
-          target[i] = buf[i];
+          to[toOffset + i] = from[fromOffset + i];
         }
-      }
 
-      inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
-        for(int pos = 0; pos < elements; ++pos) {
-          adjoints[pos] = ADTool::getAdjoint(indices[pos]);
-        }
-      }
-
-      inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
-        for(int pos = 0; pos < elements; ++pos) {
-          ADTool::updateAdjoint(indices[pos], adjoints[pos]);
-        }
-      }
-
-      inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-        for(int pos = 0; pos < elements; ++pos) {
-          ADTool::setValue(indices[pos], primals[pos]);
-        }
-      }
-
-      inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
-        for(int curRank = 1; curRank < ranks; ++curRank) {
-          for(int curPos = 0; curPos < elements; ++curPos) {
-            buf[curPos] += buf[elements * curRank + curPos];
-          }
-        }
       }
 
       inline void createTypeBuffer(Type* &buf, size_t size) const {
@@ -131,18 +108,6 @@ namespace medi {
         buf = new ModifiedType[size];
       }
 
-      inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-        buf = new AdjointType[size];
-      }
-
-      inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
-        buf = new PassiveType[size];
-      }
-
-      inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
-        buf = new IndexType[size];
-      }
-
       inline void deleteTypeBuffer(Type* &buf) const {
         if(NULL != buf) {
           delete [] buf;
@@ -151,27 +116,6 @@ namespace medi {
       }
 
       inline void deleteModifiedTypeBuffer(ModifiedType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
-      }
-
-      inline void deleteIndexTypeBuffer(IndexType* &buf) const {
         if(NULL != buf) {
           delete [] buf;
           buf = NULL;

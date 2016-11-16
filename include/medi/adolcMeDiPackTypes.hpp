@@ -112,7 +112,7 @@ void adolcPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
   }
 }
 
-struct AdolcTool final : public medi::ADToolInterface {
+struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int> {
   typedef adouble Type;
   typedef double AdjointType;
   typedef double ModifiedType;
@@ -213,6 +213,10 @@ struct AdolcTool final : public medi::ADToolInterface {
     finalizeTypes();
   }
 
+  AdolcTool(MPI_Datatype adjointMpiType) :
+    medi::ADToolBase<AdolcTool, double, double, int>(adjointMpiType) {}
+
+
   inline bool isActiveType() const {
     return true;
   }
@@ -244,6 +248,66 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   inline void stopAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
+  }
+
+  inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
+    for(int pos = 0; pos < elements; ++pos) {
+      adjoints[pos] = adjointBase[indices[pos]];
+      adjointBase[indices[pos]] = 0.0;
+    }
+  }
+
+  inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
+    for(int pos = 0; pos < elements; ++pos) {
+      adjointBase[indices[pos]] += adjoints[pos];
+    }
+  }
+
+  inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
+    for(int pos = 0; pos < elements; ++pos) {
+      primalBase[indices[pos]] = primals[pos];
+    }
+  }
+
+  inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
+    for(int curRank = 1; curRank < ranks; ++curRank) {
+      for(int curPos = 0; curPos < elements; ++curPos) {
+        buf[curPos] += buf[elements * curRank + curPos];
+      }
+    }
+  }
+
+  inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
+    buf = new AdjointType[size];
+  }
+
+  inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
+    buf = new PassiveType[size];
+  }
+
+  inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
+    buf = new IndexType[size];
+  }
+
+  inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
+    if(NULL != buf) {
+      delete [] buf;
+      buf = NULL;
+    }
+  }
+
+  inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
+    if(NULL != buf) {
+      delete [] buf;
+      buf = NULL;
+    }
+  }
+
+  inline void deleteIndexTypeBuffer(IndexType* &buf) const {
+    if(NULL != buf) {
+      delete [] buf;
+      buf = NULL;
+    }
   }
 
   static int emptyPrimal(int iArrLen, int *iArr, int nin, int nout, int *insz, double **x, int *outsz, double **y, void* ctx) {
@@ -294,20 +358,6 @@ struct AdolcTool final : public medi::ADToolInterface {
 
   static inline PassiveType getValue(const Type& value) {
     return value.value();
-  }
-
-  static inline void setValue(const IndexType& index, const PassiveType& primal) {
-    primalBase[index] = primal;
-  }
-
-  static inline AdjointType getAdjoint(const int index) {
-    AdjointType temp = adjointBase[index];
-    adjointBase[index] = 0;
-    return temp;
-  }
-
-  static inline void updateAdjoint(const int index, const AdjointType& adjoint) {
-    adjointBase[index] += adjoint;
   }
 
   static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) {

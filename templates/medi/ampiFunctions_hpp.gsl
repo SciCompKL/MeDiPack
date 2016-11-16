@@ -86,10 +86,10 @@ for functions.function as curFunction
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)TotalSize", "int")
-     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
-     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
+     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
      if(name(item) =  "recv")
-       addHandleData(curFunction->reverseHandle, 0, "$(item.type)->deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
      endif
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
      if(defined(item.displs))
@@ -297,10 +297,10 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
     if(defined(my.buffer.all))
       allMul = "* getCommSize(h->$(my.buffer.all))"
     endif
->   h->$(my.buffer.type)->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
+>   h->$(my.curFunction.adType).createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
     if(1 = my.isRecv)
 >     // Adjoint buffers are always linear in space so we can accesses them in one sweep
->     h->$(my.buffer.type)->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+>     h->$(my.curFunction.adType).getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
 >
       if(defined(my.curFunction->operator))
 >       h->$(my.curFunction->operator.name).preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
@@ -313,7 +313,7 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
   startRootReverse(my.buffer)
     if(1 = my.isSend)
       if(defined(my.buffer.all))
->       h->$(my.buffer.type)->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
+>       h->$(my.curFunction.adType).combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
       endif
       if(defined(my.curFunction->operator))
 >       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
@@ -321,23 +321,23 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
 >       h->$(my.curFunction->operator.name).postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize);
       endif
 >     // Adjoint buffers are always linear in space so they can be accessed in one sweep
->     h->$(my.buffer.type)->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+>     h->$(my.curFunction.adType).updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
     endif
->   h->$(my.buffer.type)->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
+>   h->$(my.curFunction.adType).deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
   endRootReverse(my.buffer)
 endfunction
 
 # define function for primal restore
-function createPrimalRestore(buffer, elementName)
+function createPrimalRestore(buffer, curFunction, elementName)
   startRootReverse(my.buffer)
->   h->$(my.buffer.type)->setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   h->$(my.curFunction.adType).setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
   endRootReverse(my.buffer)
 endfunction
 
 # define function for primal extraction
-function createPrimalExtraction(buffer, elementName)
+function createPrimalExtraction(buffer, curFunction, elementName)
   startRoot(my.buffer)
->   $(my.buffer.type)->createPassiveTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   $(my.curFunction.adType).createPassiveTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
     createBufferAccessLogic(my.buffer, 0, "$type$->getValues($name$, $pos$, h->$(my.buffer.name)$(my.elementName), $startLinPos$, $curCount$);")
   endRoot(my.buffer)
 endfunction
@@ -506,7 +506,7 @@ namespace medi {
 .   for curFunction.recv
 .     createBufferReverseCleanup(recv, curFunction, 0)
       if(h->$(curFunction.adType).isOldPrimalsRequired()) {
-.       createPrimalRestore(recv, "OldPrimals")
+.       createPrimalRestore(recv, curFunction, "OldPrimals")
       }
 .   endfor
   }
@@ -608,7 +608,7 @@ namespace medi {
                 }
 .             endif
               h->$(item.name)TotalSize = $(item.name)Elements * $(item.type)->getValuesPerElement($(item.name));
-              $(item.type)->createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
+              $(curFunction.adType).createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
 .           endRoot(item)
 .         endif
 .       endfor
@@ -618,7 +618,7 @@ namespace medi {
           // extract the primal values for the operator if required
           if(op.requiresPrimal) {
 .           for curFunction.send
-.             createPrimalExtraction(send, "Primals")
+.             createPrimalExtraction(send, curFunction, "Primals")
 .           endfor
           }
 .       endfor
@@ -627,7 +627,7 @@ namespace medi {
           // extract the old primal values from the recv buffer if the AD tool
           // needs the primal values reset
           if($(curFunction.adType).isOldPrimalsRequired()) {
-.           createPrimalExtraction(recv, "OldPrimals")
+.           createPrimalExtraction(recv, curFunction, "OldPrimals")
           }
 .       endfor
 
@@ -678,7 +678,7 @@ namespace medi {
         // extract the primal values for the operator if required
         if(nullptr != h && op.requiresPrimal) {
 .       for curFunction.recv
-.         createPrimalExtraction(recv, "Primals")
+.         createPrimalExtraction(recv, curFunction, "Primals")
 .       endfor
         }
 .     endfor
