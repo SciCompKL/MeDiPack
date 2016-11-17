@@ -34,9 +34,9 @@
   <datatype name="MPI_OFFSET" type="MPI_Offset" />
   <datatype name="MPI_COUNT" type="MPI_Count" />
   <datatype name="MPI_CXX_BOOL" type="bool" />
-  <datatype name="MPI_CXX_FLOAT_COMPLEX" type="std::complex<float>" />
-  <datatype name="MPI_CXX_DOUBLE_COMPLEX" type="std::complex<double>" />
-  <datatype name="MPI_CXX_LONG_DOUBLE_COMPLEX" type="std::complex<long double>" />
+<!--  <datatype name="MPI_CXX_FLOAT_COMPLEX" type="std::complex<float>" /> -->
+<!--  <datatype name="MPI_CXX_DOUBLE_COMPLEX" type="std::complex<double>" /> -->
+<!--  <datatype name="MPI_CXX_LONG_DOUBLE_COMPLEX" type="std::complex<long double>" /> -->
   <datatype name="MPI_FLOAT_INT" type="medi::FloatIntPair" />
   <datatype name="MPI_DOUBLE_INT" type="medi::DoubleIntPair" />
   <datatype name="MPI_LONG_INT" type="medi::LongIntPair" />
