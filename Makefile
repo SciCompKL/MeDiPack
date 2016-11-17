@@ -13,7 +13,7 @@ GENERATED_FILES= \
 
 ASTYLE_FILE=template.style
 
-all: $(GENERATED_FILES)
+all: $(GEN_DIR)/medi $(GENERATED_FILES)
 
 # define the dependencies for all the files
 $(GEN_DIR)/medi/ampiFunctions.hpp: $(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl $(DEF_DIR)/mpiFunctions.xml
@@ -25,7 +25,7 @@ $(GEN_DIR)/medi/ampiDatatypes.cpp: $(TEMPL_DIR)/medi/ampiDatatypes_cpp.gsl $(DEF
 $(GEN_DIR):
 	mkdir $(GEN_DIR)
 
-$(GEN_DIR)/medi:
+$(GEN_DIR)/medi: $(GEN_DIR)
 	mkdir $(GEN_DIR)/medi
 
 # the generation rules
