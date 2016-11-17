@@ -1,0 +1,10 @@
+<definitions>
+  <define name="MPI_MAX_DATAREP_STRING" />
+  <define name="MPI_MAX_ERROR_STRING" />
+  <define name="MPI_MAX_INFO_KEY" />
+  <define name="MPI_MAX_INFO_VAL" />
+  <define name="MPI_MAX_LIBRARY_VERSION_STRING" />
+  <define name="MPI_MAX_OBJECT_NAME" />
+  <define name="MPI_MAX_PORT_NAME" />
+  <define name="MPI_MAX_PROCESSOR_NAME" />
+</definitions>

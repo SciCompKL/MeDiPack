@@ -1,0 +1,22 @@
+.ignorecase = 0
+.template 0
+
+function modifyTypeName(type)
+  return string.replace(my.type, "MPI_|AMPI_")
+endfunction
+
+for definitions.define as curDefine
+  curDefine.ampiName = modifyTypeName(curDefine.name)
+endfor
+
+.endtemplate
+.output "$(switches.arg1)"
+#pragma once
+
+#include <mpi.h>
+
+namespace medi {
+.for definitions.define as curDefine
+  #define $(curDefine.ampiName) $(curDefine.name)
+.endfor
+}
