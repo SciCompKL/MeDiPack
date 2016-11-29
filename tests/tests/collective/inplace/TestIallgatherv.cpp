@@ -18,7 +18,7 @@ void func(NUMBER* x, NUMBER* y) {
   }
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
-  medi::AMPI_Iallgatherv(static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
+  medi::AMPI_Iallgatherv(medi::AMPI_IN_PLACE, -1, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }

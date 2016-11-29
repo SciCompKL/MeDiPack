@@ -14,7 +14,7 @@ void func(NUMBER* x, NUMBER* y) {
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
   if(0 == world_rank) {
-    medi::AMPI_Scatterv(x, counts, displs, mpiNumberType, static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD);
+    medi::AMPI_Scatterv(x, counts, displs, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD);
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }

@@ -17,7 +17,7 @@ void func(NUMBER* x, NUMBER* y) {
     y[i + offset] = x[i];
   }
 
-  medi::AMPI_Iallgather(static_cast<NUMBER*>(AMPI_IN_PLACE), 0, mpiNumberType, y, 10, mpiNumberType, MPI_COMM_WORLD, &request);
+  medi::AMPI_Iallgather(medi::AMPI_IN_PLACE, 0, mpiNumberType, y, 10, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }

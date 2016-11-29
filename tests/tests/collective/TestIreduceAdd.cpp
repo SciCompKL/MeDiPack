@@ -12,7 +12,7 @@ void func(NUMBER* x, NUMBER* y) {
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
   medi::AMPI_Request request;
-  medi::AMPI_Ireduce(x, &y[ 0], 10, mpiNumberType, TOOL::OP_ADD, 0, MPI_COMM_WORLD, &request);
+  medi::AMPI_Ireduce(x, &y[ 0], 10, mpiNumberType, TOOL::OP_SUM, 0, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }

@@ -12,7 +12,7 @@ void func(NUMBER* x, NUMBER* y) {
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
   if(0 == world_rank) {
-    medi::AMPI_Scatter(x, 10, mpiNumberType, static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD);
+    medi::AMPI_Scatter(x, 10, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD);
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }

@@ -14,5 +14,5 @@ void func(NUMBER* x, NUMBER* y) {
   for(int i = 0; i < 10; ++i) {
     y[i] = x[i];
   }
-  medi::AMPI_Alltoall(static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD);
+  medi::AMPI_Alltoall(medi::AMPI_IN_PLACE, -1, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD);
 }

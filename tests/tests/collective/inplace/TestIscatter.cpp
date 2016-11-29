@@ -13,7 +13,7 @@ void func(NUMBER* x, NUMBER* y) {
 
   medi::AMPI_Request request;
   if(0 == world_rank) {
-    medi::AMPI_Iscatter(x, 10, mpiNumberType, static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Iscatter(x, 10, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
     medi::AMPI_Iscatter(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }

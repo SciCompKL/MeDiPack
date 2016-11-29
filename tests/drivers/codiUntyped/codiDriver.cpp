@@ -87,4 +87,4 @@ int main(int nargs, char** args) {
   medi::AMPI_Finalize();
 }
 
-#include <medi/ampi/async.cpp>
+#include <medi/medi.cpp>

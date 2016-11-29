@@ -17,7 +17,7 @@ void func(NUMBER* x, NUMBER* y) {
   medi::AMPI_Request request;
   int counts[2] = {5, 5};
   int displs[2] = {0, 5};
-  medi::AMPI_Ialltoallv(static_cast<NUMBER*>(AMPI_IN_PLACE), NULL, NULL, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
+  medi::AMPI_Ialltoallv(medi::AMPI_IN_PLACE, NULL, NULL, mpiNumberType, y, counts, displs, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }

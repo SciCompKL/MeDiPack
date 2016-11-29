@@ -15,7 +15,7 @@ void func(NUMBER* x, NUMBER* y) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::AMPI_Gather(static_cast<NUMBER*>(AMPI_IN_PLACE), -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
+    medi::AMPI_Gather(medi::AMPI_IN_PLACE, -1, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   } else {
     medi::AMPI_Gather(x, 10, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   }

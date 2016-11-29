@@ -16,9 +16,9 @@ void func(NUMBER* x, NUMBER* y) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::AMPI_Ireduce(static_cast<NUMBER*>(AMPI_IN_PLACE), y, 10, mpiNumberType, TOOL::OP_MUL, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Ireduce(medi::AMPI_IN_PLACE, y, 10, mpiNumberType, TOOL::OP_PROD, 0, MPI_COMM_WORLD, &request);
   } else {
-    medi::AMPI_Ireduce(x, NULL, 10, mpiNumberType, TOOL::OP_MUL, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Ireduce(x, NULL, 10, mpiNumberType, TOOL::OP_PROD, 0, MPI_COMM_WORLD, &request);
   }
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);

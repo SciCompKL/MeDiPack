@@ -11,5 +11,5 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-  medi::AMPI_Allreduce(x, &y[ 0], 10, mpiNumberType, TOOL::OP_ADD, MPI_COMM_WORLD);
+  medi::AMPI_Allreduce(x, &y[ 0], 10, mpiNumberType, TOOL::OP_SUM, MPI_COMM_WORLD);
 }
