@@ -125,8 +125,8 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
-  static medi::AMPI_Op OP_ADD;
-  static medi::AMPI_Op OP_MUL;
+  static medi::AMPI_Op OP_SUM;
+  static medi::AMPI_Op OP_PROD;
   static medi::AMPI_Op OP_MIN;
   static medi::AMPI_Op OP_MAX;
 
@@ -152,22 +152,16 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   }
 
   static void initOperator(medi::AMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
-    MPI_Op modifiedTypeOperator;
-    MPI_Op_create(modifiedFunc, true, &modifiedTypeOperator);
-    MPI_Op valueTypeOperator;
-    MPI_Op_create(primalFunc, true, &valueTypeOperator);
-    op.init(requiresPrimal, requiresPrimalSend, valueTypeOperator, modifiedTypeOperator, preAdjointOperation, postAdjointOperation);
+    op.init(requiresPrimal, requiresPrimalSend, primalFunc, true, modifiedFunc, true, preAdjointOperation, postAdjointOperation);
   }
 
   static void initOperator(medi::AMPI_Op& op, MPI_User_function* primalFunc) {
-    MPI_Op valueTypeOperator;
-    MPI_Op_create(primalFunc, true, &valueTypeOperator);
-    op.init(valueTypeOperator);
+    op.init(primalFunc, true);
   }
 
   static void initOperators() {
-    initOperator(OP_ADD, false, false, (MPI_User_function*)adolcModifiedAdd<ModifiedType>, (MPI_User_function*)adolcUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
-    initOperator(OP_MUL, (MPI_User_function*)adolcUnmodifiedMul<Type>);
+    initOperator(OP_SUM, false, false, (MPI_User_function*)adolcModifiedAdd<ModifiedType>, (MPI_User_function*)adolcUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
+    initOperator(OP_PROD, (MPI_User_function*)adolcUnmodifiedMul<Type>);
     initOperator(OP_MIN, true, true, (MPI_User_function*)adolcModifiedMin<ModifiedType>, (MPI_User_function*)adolcUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)adolcPostAdjMinMax<AdjointType, PassiveType>);
     initOperator(OP_MAX, true, true, (MPI_User_function*)adolcModifiedMax<ModifiedType>, (MPI_User_function*)adolcUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)adolcPostAdjMinMax<AdjointType, PassiveType>);
   }
@@ -184,25 +178,10 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   }
 
   static void finalizeOperators() {
-    MPI_Op_free(&OP_ADD.primalFunction);
-    if(OP_ADD.hasAdjoint) {
-      MPI_Op_free(&OP_ADD.modifiedPrimalFunction);
-    }
-
-    MPI_Op_free(&OP_MUL.primalFunction);
-    if(OP_MUL.hasAdjoint) {
-      MPI_Op_free(&OP_MUL.modifiedPrimalFunction);
-    }
-
-    MPI_Op_free(&OP_MIN.primalFunction);
-    if(OP_MIN.hasAdjoint) {
-      MPI_Op_free(&OP_MIN.modifiedPrimalFunction);
-    }
-
-    MPI_Op_free(&OP_MAX.primalFunction);
-    if(OP_MAX.hasAdjoint) {
-      MPI_Op_free(&OP_MAX.modifiedPrimalFunction);
-    }
+    OP_SUM.free();
+    OP_PROD.free();
+    OP_MIN.free();
+    OP_MAX.free();
   }
 
   static void finalizeTypes() {
