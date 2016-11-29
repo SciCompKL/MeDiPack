@@ -15,6 +15,11 @@ namespace medi {
       typedef void PassiveType;
       typedef void AdjointType;
       typedef void IndexType;
+
+      ADToolPassive(MPI_Datatype adjointType) :
+        ADToolBase<ADToolPassive, void, void, void>(adjointType)
+      {}
+
       inline bool isActiveType() const {return false;}
       inline bool isHandleRequired() const {return false;}
       inline bool isOldPrimalsRequired() const {return false;}
