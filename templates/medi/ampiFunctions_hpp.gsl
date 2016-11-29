@@ -589,25 +589,25 @@ namespace medi {
                 if(AMPI_IN_PLACE != $(item.name)) {
 .             endif
 .             if(defined(item.displs))
-                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type)->getValuesPerElement($(item.name)));
+                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type));
 .             else
-                h->$(item.name)Count = $(item.count) * $(item.type)->getValuesPerElement($(item.name));
+                h->$(item.name)Count = $(item.type)->computeActiveElements($(item.count));
 .             endif
 .             if(defined(item.inplace))
 .               inplaceBuffer = item->inplaceBuffer
                 } else {
 .                if(defined(inplaceBuffer.displs))
 .                  if(defined(item.displs))
-                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type)->getValuesPerElement($(item.name)));
+                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type));
 .                  else
-                     h->$(item.name)Count = $(inplaceBuffer.count)[getCommRank(comm)] * $(inplaceBuffer.type)->getValuesPerElement($(item.name));
+                     h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements($(inplaceBuffer.count)[getCommRank(comm)]);
 .                  endif
 .                else
-                   h->$(item.name)Count = $(inplaceBuffer.count) * $(inplaceBuffer.type)->getValuesPerElement($(item.name));
+                   h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements($(inplaceBuffer.count));
 .                endif
                 }
 .             endif
-              h->$(item.name)TotalSize = $(item.name)Elements * $(item.type)->getValuesPerElement($(item.name));
+              h->$(item.name)TotalSize = $(item.type)->computeActiveElements($(item.name)Elements);
               $(curFunction.adType).createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
 .           endRoot(item)
 .         endif

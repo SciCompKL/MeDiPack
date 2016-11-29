@@ -35,10 +35,8 @@ namespace medi {
         return adTool;
       }
 
-      const int getValuesPerElement(const Type* buf) const {
-        MEDI_UNUSED(buf);
-
-        return 1;
+      int computeActiveElements(const int count) const {
+        return count;
       }
 
       bool isModifiedBufferRequired() const {

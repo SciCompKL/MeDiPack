@@ -36,7 +36,7 @@ namespace medi {
 
       virtual bool isModifiedBufferRequired() const = 0;
 
-      virtual int getValuesPerElement(const void* buf) const = 0;
+      virtual int computeActiveElements(const int count) const = 0;
 
       virtual ADToolInterface& getADTool() = 0;
 
@@ -80,8 +80,8 @@ namespace medi {
       MpiTypeBase(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType) :
         MpiTypeInterface(mpiType, modifiedMpiType) {}
 
-      int getValuesPerElement(const void* buf) const {
-        return cast().getValuesPerElement(castBuffer<TypeB>(buf));
+      int computeActiveElements(const int count) const {
+        return cast().computeActiveElements(count);
       }
 
       void copyIntoModifiedBuffer(const void* buf, size_t bufOffset, void* bufMod, size_t bufModOffset, int elements) const {
