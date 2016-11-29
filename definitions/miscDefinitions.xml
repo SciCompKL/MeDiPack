@@ -1,4 +1,28 @@
 <definitions>
+  <define name="MPI_PROC_NULL" />
+  <define name="MPI_ANY_SOURCE" />
+  <define name="MPI_ANY_TAG" />
+  <define name="MPI_UNDEFINED" />
+  <define name="MPI_BSEND_OVERHEAD" />
+  <define name="MPI_KEYVAL_INVALID" />
+  <define name="MPI_LOCK_EXCLUSIVE" />
+  <define name="MPI_LOCK_SHARED" />
+  <define name="MPI_ROOT" />
+
+  <define name="MPI_GROUP_NULL" />
+  <define name="MPI_COMM_NULL" />
+  <define name="MPI_DATATYPE_NULL" /> <!-- TODO -->
+  <define name="MPI_ERRHANDLER_NULL" />
+  <define name="MPI_FILE_NULL" />
+  <define name="MPI_INFO_NULL" />
+  <define name="MPI_WIN_NULL" />
+  <define name="MPI_MESSAGE_NULL" />
+
+  <define name="MPI_THREAD_FUNNELED" />
+  <define name="MPI_THREAD_MULTIPLE" />
+  <define name="MPI_THREAD_SERIALIZED" />
+  <define name="MPI_THREAD_SINGLE" />
+
   <define name="MPI_MAX_DATAREP_STRING" />
   <define name="MPI_MAX_ERROR_STRING" />
   <define name="MPI_MAX_INFO_KEY" />
@@ -7,4 +31,28 @@
   <define name="MPI_MAX_OBJECT_NAME" />
   <define name="MPI_MAX_PORT_NAME" />
   <define name="MPI_MAX_PROCESSOR_NAME" />
+  <define name="MPI_TAG_UB" />
+  <define name="MPI_IO" />
+  <define name="MPI_HOST" />
+  <define name="MPI_WTIME_IS_GLOBAL" />
+
+  <typedef name="MPI_User_function" />
+
+
+  <operator name="MPI_MAX" />
+  <operator name="MPI_MIN" />
+  <operator name="MPI_SUM" />
+  <operator name="MPI_PROD" />
+  <operator name="MPI_MAXLOC" />
+  <operator name="MPI_MINLOC" />
+  <operator name="MPI_BAND" />
+  <operator name="MPI_BOR" />
+  <operator name="MPI_BXOR" />
+  <operator name="MPI_LAND" />
+  <operator name="MPI_LOR" />
+  <operator name="MPI_LXOR" />
+  <operator name="MPI_REPLACE" />
+  <operator name="MPI_NO_OP" />
+  <operator name="MPI_OP_NULL" />
+
 </definitions>

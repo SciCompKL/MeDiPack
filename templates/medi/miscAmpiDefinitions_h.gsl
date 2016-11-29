@@ -9,6 +9,14 @@ for definitions.define as curDefine
   curDefine.ampiName = modifyTypeName(curDefine.name)
 endfor
 
+for definitions.typedef as curTypedef
+  curTypedef.ampiName = modifyTypeName(curTypedef.name)
+endfor
+
+for definitions.operator as curOperator
+  curOperator.ampiName = modifyTypeName(curOperator.name)
+endfor
+
 .endtemplate
 .output "$(switches.arg1)"
 #pragma once
@@ -18,5 +26,15 @@ endfor
 namespace medi {
 .for definitions.define as curDefine
   #define $(curDefine.ampiName) $(curDefine.name)
+.endfor
+
+.for definitions.typedef as curTypedef
+  typedef $(curTypedef.name) $(curTypedef.ampiName);
+.endfor
+
+  void initializeOperators();
+
+.for definitions.operator as curOperator
+  extern AMPI_Op $(curOperator.ampiName);
 .endfor
 }

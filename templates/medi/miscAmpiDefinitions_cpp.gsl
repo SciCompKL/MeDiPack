@@ -1,0 +1,29 @@
+.ignorecase = 0
+.template 0
+
+function modifyTypeName(type)
+  return string.replace(my.type, "MPI_|AMPI_")
+endfunction
+
+for definitions.operator as curOperator
+  curOperator.ampiName = modifyTypeName(curOperator.name)
+endfor
+
+.endtemplate
+.output "$(switches.arg1)"
+#pragma once
+
+#include <mpi.h>
+
+namespace medi {
+
+.for definitions.operator as curOperator
+  AMPI_Op $(curOperator.ampiName);
+.endfor
+
+  void initializeOperators() {
+.   for definitions.operator as curOperator
+      $(curOperator.ampiName).init($(curOperator.name));
+.   endfor
+  }
+}

@@ -8,6 +8,7 @@ GEN_DIR=generated
 GENERATED_FILES= \
   $(GEN_DIR)/medi/ampiFunctions.hpp \
   $(GEN_DIR)/medi/miscAmpiFunctions.hpp \
+  $(GEN_DIR)/medi/miscAmpiDefinitions.cpp \
   $(GEN_DIR)/medi/miscAmpiDefinitions.h \
   $(GEN_DIR)/medi/ampiDatatypes.h \
   $(GEN_DIR)/medi/ampiDatatypes.cpp
@@ -17,11 +18,12 @@ ASTYLE_FILE=template.style
 all: $(GEN_DIR)/medi $(GENERATED_FILES)
 
 # define the dependencies for all the files
-$(GEN_DIR)/medi/ampiFunctions.hpp: $(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl $(DEF_DIR)/mpiFunctions.xml
-$(GEN_DIR)/medi/miscAmpiFunctions.hpp: $(TEMPL_DIR)/medi/miscAmpiFunctions_hpp.gsl $(DEF_DIR)/miscFunctions.xml
-$(GEN_DIR)/medi/miscAmpiDefinitions.h: $(TEMPL_DIR)/medi/miscAmpiDefinitions_h.gsl $(DEF_DIR)/miscDefinitions.xml
-$(GEN_DIR)/medi/ampiDatatypes.h: $(TEMPL_DIR)/medi/ampiDatatypes_h.gsl $(DEF_DIR)/mpiDatatypes.xml
-$(GEN_DIR)/medi/ampiDatatypes.cpp: $(TEMPL_DIR)/medi/ampiDatatypes_cpp.gsl $(DEF_DIR)/mpiDatatypes.xml
+$(GEN_DIR)/medi/ampiFunctions.hpp: 			 $(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl       $(DEF_DIR)/mpiFunctions.xml
+$(GEN_DIR)/medi/miscAmpiFunctions.hpp: 	 $(TEMPL_DIR)/medi/miscAmpiFunctions_hpp.gsl   $(DEF_DIR)/miscFunctions.xml
+$(GEN_DIR)/medi/miscAmpiDefinitions.cpp: $(TEMPL_DIR)/medi/miscAmpiDefinitions_cpp.gsl $(DEF_DIR)/miscDefinitions.xml
+$(GEN_DIR)/medi/miscAmpiDefinitions.h:   $(TEMPL_DIR)/medi/miscAmpiDefinitions_h.gsl   $(DEF_DIR)/miscDefinitions.xml
+$(GEN_DIR)/medi/ampiDatatypes.h:         $(TEMPL_DIR)/medi/ampiDatatypes_h.gsl         $(DEF_DIR)/mpiDatatypes.xml
+$(GEN_DIR)/medi/ampiDatatypes.cpp: 			 $(TEMPL_DIR)/medi/ampiDatatypes_cpp.gsl       $(DEF_DIR)/mpiDatatypes.xml
 
 # directory generation rules
 $(GEN_DIR):
