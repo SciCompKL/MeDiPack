@@ -2,6 +2,7 @@
 
 #include "async.hpp"
 #include "../medipack.h"
+#include "../mpiInPlace.hpp"
 
 namespace medi {
 
@@ -10,7 +11,7 @@ namespace medi {
 
   template<typename DATATYPE>
   inline int AMPI_Bcast(typename DATATYPE::Type* buffer, int count, DATATYPE* datatype, int root, AMPI_Comm comm) {
-    return AMPI_Bcast_wrap<DATATYPE>(static_cast<typename DATATYPE::Type*>(AMPI_IN_PLACE), buffer, count, datatype, root, comm);
+    return AMPI_Bcast_wrap<DATATYPE>(AMPI_IN_PLACE, buffer, count, datatype, root, comm);
   }
 
   inline int MPI_Bcast_wrap(void* bufferSend, void* bufferRecv, int count, MPI_Datatype type, int root, MPI_Comm comm) {

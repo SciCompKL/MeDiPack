@@ -12,7 +12,6 @@ namespace medi {
   #define AMPI_COMM_WORLD MPI_COMM_WORLD
   #define AMPI_STATUS_IGNORE MPI_STATUS_IGNORE
   #define AMPI_STATUSES_IGNORE MPI_STATUSES_IGNORE
-  #define AMPI_IN_PLACE MPI_IN_PLACE
 
   typedef int Range[3];
 
