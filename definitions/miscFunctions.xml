@@ -121,10 +121,11 @@
   <function name="Wtick" type="double" >
   </function>
 
-  <function name="Init">
+<!-- implemented in wrappers -->
+<!--  <function name="Init">
     <arg name="argc" type="int*" />
     <arg name="argv" type="char***" />
-  </function>
+  </function> -->
 
   <function name="Finalize">
   </function>

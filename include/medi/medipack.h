@@ -82,14 +82,15 @@ namespace medi {
     return displs;
   }
 
-  inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, int ranks, int indicesPerElement) {
+  template<typename Datatype>
+  inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, int ranks, Datatype* type) {
     linearCounts = new int[ranks];
     linearDispls = new int[ranks];
 
-    linearCounts[0] = counts[0] * indicesPerElement;
+    linearCounts[0] = type->computeActiveElements(counts[0]);
     linearDispls[0] = 0;
     for(int i = 1; i < ranks; ++i) {
-      linearCounts[i] = counts[i] * indicesPerElement;
+      linearCounts[i] = type->computeActiveElements(counts[i]);
       linearDispls[i] = linearCounts[i - 1] +  linearDispls[i - 1];
     }
   }

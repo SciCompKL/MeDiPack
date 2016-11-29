@@ -4,6 +4,9 @@
 #include "../medipack.h"
 #include "../mpiInPlace.hpp"
 
+#include "../../../generated/medi/miscAmpiDefinitions.h"
+#include "../../../generated/medi/ampiDatatypes.h"
+
 namespace medi {
 
   template<typename DATATYPE>
@@ -272,4 +275,28 @@ namespace medi {
       return rValue;
     }
   }
+
+  inline void AMPI_Init_common() {
+    initTypes();
+    initializeOperators();
+  }
+
+
+  inline int AMPI_Init(int* argc, char*** argv) {
+    int result = MPI_Init(argc, argv);
+
+    AMPI_Init_common();
+
+    return result;
+  }
+
+  inline int AMPI_Init_thread(int *argc, char ***argv, int required, int *provided) {
+    int result = MPI_Init_thread(argc, argv, required, provided);
+
+    AMPI_Init_common();
+
+    return result;
+  }
+
+
 }

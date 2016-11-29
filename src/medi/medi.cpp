@@ -1,4 +1,5 @@
 #include "../../generated/medi/ampiDatatypes.cpp"
+#include "../../generated/medi/miscAmpiDefinitions.cpp"
 
 #include "../../include/medi/mpiInPlace.hpp"
 
