@@ -33,7 +33,7 @@ namespace medi {
 
     int init(const bool requiresPrimal, const bool requiresPrimalSend, MPI_User_function* primalFunction, int primalFunctionCommute, MPI_User_function* modifiedPrimalFunction, int modifiedPrimalFunctionCommute, const PreAdjointOperation preAdjointOperation, const PostAdjointOperation postAdjointOperation) {
       int result1 = MPI_Op_create(primalFunction, primalFunctionCommute, &this->primalFunction);
-      int result2 = MPI_Op_create(modifiedPrimalFunction, modifiedPrimalFunctionCommute, &this->modifiedPrimalFunction);
+      MPI_Op_create(modifiedPrimalFunction, modifiedPrimalFunctionCommute, &this->modifiedPrimalFunction);
 
       this->requiresPrimal = requiresPrimal;
       this->requiresPrimalSend = requiresPrimalSend;
@@ -53,7 +53,7 @@ namespace medi {
       return result;
     }
 
-    int init(MPI_Op op) {
+    void init(MPI_Op op) {
       this->primalFunction = op;
       this->requiresPrimal = false;
       this->requiresPrimalSend = false;
