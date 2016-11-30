@@ -65,9 +65,12 @@ namespace medi {
   }
 
   inline void performReverseAction(AMPI_Request *request) {
-    request->func(request->handle);
+    if(nullptr != request->func) {
+      request->func(request->handle);
 
-    request->deleteReverseData();
+      request->deleteReverseData();
+    }
+
     *request = AMPI_REQUEST_NULL;
   }
 
