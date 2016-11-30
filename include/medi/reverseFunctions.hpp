@@ -82,6 +82,13 @@ namespace medi {
     MPI_Gather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm);
   }
 
+  template<typename DATATYPE>
+  void AMPI_Ibcast_wrap_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request) {
+    MEDI_UNUSED(count);
+
+    MPI_Igather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm, &request->request);
+  }
+
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);

@@ -118,6 +118,15 @@
     <arg name="root" type="int" />
     <arg name="comm" type="MPI_Comm" />
   </function>
+  <function name="Ibcast_wrap" async="request"> <!-- all defined -->
+    <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
+    <recv name="bufferRecv" type="datatype" count="count" />
+    <arg name="count" type="int" />
+    <type name="datatype" type="MPI_Datatype" />
+    <arg name="root" type="int" />
+    <arg name="comm" type="MPI_Comm" />
+    <request name="request" type="MPI_Request*"/>
+  </function>
 
   <!-- gathers -->
   <function name="Gather"> <!-- all defined -->

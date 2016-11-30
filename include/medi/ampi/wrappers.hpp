@@ -23,6 +23,19 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  int AMPI_Ibcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request);
+
+  template<typename DATATYPE>
+  inline int AMPI_Ibcast(typename DATATYPE::Type* buffer, int count, DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request) {
+    return AMPI_Ibcast_wrap<DATATYPE>(AMPI_IN_PLACE, buffer, count, datatype, root, comm, request);
+  }
+
+  inline int MPI_Ibcast_wrap(void* bufferSend, void* bufferRecv, int count, MPI_Datatype type, int root, MPI_Comm comm, MPI_Request* request) {
+    MEDI_UNUSED(bufferSend);
+    return MPI_Ibcast(bufferRecv, count, type, root, comm, request);
+  }
+
+  template<typename DATATYPE>
   struct AMPI_Ireduce_local_Handle : public HandleBase {
       AMPI_Comm comm;
       int root;
