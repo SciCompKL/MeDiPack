@@ -62,19 +62,19 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t indexOffset, int elements) const {
+      inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(indices);
-        MEDI_UNUSED(indexOffset);
+        MEDI_UNUSED(bufModOffset);
         MEDI_UNUSED(elements);
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t indexOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(indices);
-        MEDI_UNUSED(indexOffset);
+        MEDI_UNUSED(bufModOffset);
         MEDI_UNUSED(elements);
       }
 
@@ -84,11 +84,11 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t primalOffset, int elements) const {
+      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(primals);
-        MEDI_UNUSED(primalOffset);
+        MEDI_UNUSED(bufModOffset);
         MEDI_UNUSED(elements);
       }
 

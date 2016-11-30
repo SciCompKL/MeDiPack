@@ -59,13 +59,17 @@ namespace medi {
         }
       }
 
-      inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t indexOffset, int elements) const {
+      inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+        int indexOffset = computeActiveElements((int)bufModOffset);
+
         for(int i = 0; i < elements; ++i) {
           indices[indexOffset + i] = ADTool::getIndex(buf[bufOffset + i]);
         }
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t indexOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+        int indexOffset = computeActiveElements((int)bufModOffset);
+
         for(int i = 0; i < elements; ++i) {
           indices[indexOffset + i] = ADTool::registerValue(buf[bufOffset + i]);;
         }
@@ -77,7 +81,9 @@ namespace medi {
         }
       }
 
-      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t primalOffset, int elements) const {
+      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
+        int primalOffset = computeActiveElements((int)bufModOffset);
+
         for(int pos = 0; pos < elements; ++pos) {
           primals[primalOffset + pos] = ADTool::getValue(buf[bufOffset + pos]);
         }

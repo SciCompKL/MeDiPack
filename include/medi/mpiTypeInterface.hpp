@@ -44,13 +44,13 @@ namespace medi {
 
       virtual void copyFromModifiedBuffer(void* buf, size_t bufOffset, const void* bufMod, size_t bufModOffset, int elements) const = 0;
 
-      virtual void getIndices(const void* buf, size_t bufOffset, void* indices, size_t indicesOffset, int elements) const = 0;
+      virtual void getIndices(const void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const = 0;
 
-      virtual void registerValue(void* buf, size_t bufOffset, void* indices, size_t indicesOffset, int elements) const = 0;
+      virtual void registerValue(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const = 0;
 
       virtual void clearIndices(void* buf, size_t bufOffset, int elements) const = 0;
 
-      virtual void getValues(const void* buf, size_t bufOffset, void* primals, size_t primalOffset, int elements) const = 0;
+      virtual void getValues(const void* buf, size_t bufOffset, void* primals, size_t bufModOffset, int elements) const = 0;
 
       virtual void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const = 0;
 
@@ -92,20 +92,20 @@ namespace medi {
         cast().copyFromModifiedBuffer(castBuffer<TypeB>(buf), bufOffset, castBuffer<ModifiedTypeB>(bufMod), bufModOffset, elements);
       }
 
-      void getIndices(const void* buf, size_t bufOffset, void* indices, size_t indexOffset, int elements) const {
-        cast().getIndices(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), indexOffset, elements);
+      void getIndices(const void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
+        cast().getIndices(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), bufModOffset, elements);
       }
 
-      void registerValue(void* buf, size_t bufOffset, void* indices, size_t indexOffset, int elements) const {
-        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), indexOffset, elements);
+      void registerValue(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
+        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), bufModOffset, elements);
       }
 
       void clearIndices(void* buf, size_t bufOffset, int elements) const {
         cast().clearIndices(castBuffer<TypeB>(buf), bufOffset, elements);
       }
 
-      void getValues(const void* buf, size_t bufOffset, void* primals, size_t primalOffset, int elements) const {
-        cast().getValues(castBuffer<TypeB>(buf), bufOffset, castBuffer<PassiveTypeB>(primals), primalOffset, elements);
+      void getValues(const void* buf, size_t bufOffset, void* primals, size_t bufModOffset, int elements) const {
+        cast().getValues(castBuffer<TypeB>(buf), bufOffset, castBuffer<PassiveTypeB>(primals), bufModOffset, elements);
       }
 
       void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const {
