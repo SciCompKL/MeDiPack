@@ -214,7 +214,7 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
 
   inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
     for(int pos = 0; pos < elements; ++pos) {
-      int indexCopy = indices[pos];
+      IndexType indexCopy = indices[pos];
       Type::getGlobalTape().gradient(indexCopy) += adjoints[pos];
     }
   }
@@ -278,13 +278,13 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     delete handle;
   }
 
-  static inline int getIndex(const Type& value) {
+  static inline IndexType getIndex(const Type& value) {
     return value.getGradientData();
   }
 
   static inline void clearIndex(Type& value) {
     value.~Type();
-    value.getGradientData() = 0;
+    value.getGradientData() = IndexType();
   }
 
   static inline PassiveType getValue(const Type& value) {
@@ -304,13 +304,13 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   static inline void getFromModifyBuffer(const ModifiedType& modValue, Type& value) {
     MEDI_UNUSED(modValue);
     if(0 != value.getGradientData()) {
-      value.getGradientData() = 0;
+      value.getGradientData() = IndexType();
       Type::getGlobalTape().registerInput(value);
     }
   }
 
-  static inline int registerValue(Type& value) {
-    value.getGradientData() = 0;
+  static inline IndexType registerValue(Type& value) {
+    value.getGradientData() = IndexType();
     Type::getGlobalTape().registerInput(value);
 
     return value.getGradientData();
