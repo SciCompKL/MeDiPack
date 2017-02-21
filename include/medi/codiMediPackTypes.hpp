@@ -208,7 +208,10 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
 
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
     for(int pos = 0; pos < elements; ++pos) {
-      adjoints[pos] = Type::getGlobalTape().getGradient(indices[pos]);
+      IndexType index = indices[pos];
+      AdjointType& grad = Type::getGlobalTape().gradient(index);
+      adjoints[pos] = grad;
+      grad = 0.0;
     }
   }
 
