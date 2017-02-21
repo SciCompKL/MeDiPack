@@ -14,8 +14,14 @@ void func(NUMBER* x, NUMBER* y) {
   medi::AMPI_Request request;
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
+
+  NUMBER* z = new NUMBER[20];
+  for(int i = 0; i < 20; ++i) {
+    z[i] = x[i];
+  }
+
   if(0 == world_rank) {
-    medi::AMPI_Iscatterv(x, counts, displs, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
+    medi::AMPI_Iscatterv(z, counts, displs, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   } else {
     medi::AMPI_Iscatterv(x, counts, displs, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD, &request);
   }
@@ -23,7 +29,9 @@ void func(NUMBER* x, NUMBER* y) {
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
   if(0 == world_rank) {
     for(int i = 0; i < 10; ++i) {
-      y[i] = x[i];
+      y[i] = z[i];
     }
   }
+
+  delete [] z;
 }

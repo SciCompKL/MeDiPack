@@ -14,10 +14,17 @@ void func(NUMBER* x, NUMBER* y) {
   int counts[2] = {10, 10};
   int displs[2] = {0, 10};
   if(0 == world_rank) {
-    medi::AMPI_Scatterv(x, counts, displs, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD);
-    for(int i = 0; i < 10; ++i) {
-      y[i] = x[i];
+    NUMBER* z = new NUMBER[20];
+    for(int i = 0; i < 20; ++i) {
+      z[i] = x[i];
     }
+
+    medi::AMPI_Scatterv(z, counts, displs, mpiNumberType, medi::AMPI_IN_PLACE, -1, mpiNumberType, 0, MPI_COMM_WORLD);
+    for(int i = 0; i < 10; ++i) {
+      y[i] = z[i];
+    }
+
+    delete [] z;
   } else {
     medi::AMPI_Scatterv(x, counts, displs, mpiNumberType, y, 10, mpiNumberType, 0, MPI_COMM_WORLD);
   }
