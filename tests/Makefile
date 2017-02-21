@@ -17,6 +17,9 @@ DEP_FILES  += $(wildcard $(BUILD_DIR)/**/**/Test**.d)
 
 FLAGS = -Wall -pedantic -std=c++11 -I../include -I../src
 
+# The default is to run all drives
+DRIVERS?=ALL
+
 ifeq ($(OPT), yes)
   CXX_FLAGS := -O3 $(FLAGS)
 else
@@ -48,6 +51,27 @@ all:
 # define general sets for tests
 BASIC_TESTS = $(TESTS)
 
+# The build rules for all drivers.
+define DRIVER_RULE
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
+	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
+DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
+$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+endef
+
+# The general template for each driver. It checks if the driver should be run
+define DRIVER_INST
+  ifeq (${DRIVER_NAME}, $(filter ${DRIVER_NAME}, ${DRIVERS}))
+    $(eval $(value DRIVER_RULE))
+  else
+    ifeq (ALL, $(filter ALL, ${DRIVERS}))
+      $(eval $(value DRIVER_RULE))
+    endif
+  endif
+endef
+
 # The first 3 lines of each driver define the basic parameters for this driver.
 # DRIVER_NAME:    The short name for the driver. This used to create the specific files for the driver
 # DRIVER_TESTS:   The full list of tests which are run for this driver. See the general test list for details.
@@ -58,67 +82,37 @@ BASIC_TESTS = $(TESTS)
 DRIVER_NAME  := CoDi
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # Driver for RealReverseIndex
 DRIVER_NAME  := CoDiIndex
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverseIndex
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # Driver for RealReversePrimal
 DRIVER_NAME  := CoDiPrimal
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # Driver for RealReversePrimalIndex
 DRIVER_NAME  := CoDiPrimal
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimalIndex
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with untyped interface
 DRIVER_NAME  := CoDiUntyped
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codiUntyped/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiUntyped
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # Driver for ADOL-c
 DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/adolc/adolcDriver.cpp -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolc
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(TEST_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $< -o $@ $(DRIVER)
-	@$(MPICXX) $(CXX_FLAGS) $(DRIVER) $< -MM -MP -MT $@ -MF $@.d
-DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
-$(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
+$(eval $(value DRIVER_INST))
 
 # rules for generating the test files
 $(RESULT_DIR)/%.out : $(BUILD_DIR)/%_bin
