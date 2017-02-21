@@ -110,6 +110,7 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
 template<typename CoDiType>
 struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
+  typedef typename CoDiType::TapeType Tape;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
   typedef typename CoDiType::PassiveReal PassiveType;
@@ -125,6 +126,8 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   static medi::AMPI_Op OP_PROD;
   static medi::AMPI_Op OP_MIN;
   static medi::AMPI_Op OP_MAX;
+
+  static Tape* adjointTape;
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -209,7 +212,7 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
     for(int pos = 0; pos < elements; ++pos) {
       IndexType index = indices[pos];
-      AdjointType& grad = Type::getGlobalTape().gradient(index);
+      AdjointType& grad = adjointTape->gradient(index);
       adjoints[pos] = grad;
       grad = 0.0;
     }
@@ -218,7 +221,7 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
     for(int pos = 0; pos < elements; ++pos) {
       IndexType indexCopy = indices[pos];
-      Type::getGlobalTape().gradient(indexCopy) += adjoints[pos];
+      adjointTape->gradient(indexCopy) += adjoints[pos];
     }
   }
 
@@ -271,12 +274,15 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     }
   }
 
-  static void callFunc(void* h) {
+  static void callFunc(void* tape, void* h) {
+    adjointTape = (Tape*)tape;
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     handle->func(handle);
   }
 
-  static void deleteFunc(void* h) {
+  static void deleteFunc(void* tape, void* h) {
+    MEDI_UNUSED(tape);
+
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     delete handle;
   }
@@ -331,3 +337,4 @@ template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_SUM;
 template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_PROD;
 template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
 template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MAX;
+template<typename CoDiType> typename CoDiType::TapeType* CoDiPackTool<CoDiType>::adjointTape;
