@@ -4,7 +4,7 @@
 #include <medi/medi.hpp>
 #include <medi/codiMediPackTypes.hpp>
 
-typedef codi::RealReverse NUMBER;
+typedef CODI_TYPE NUMBER;
 
 #include "../globalDefines.h"
 
