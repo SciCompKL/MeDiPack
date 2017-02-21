@@ -135,10 +135,8 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
   static void initTypes() {
     // create the mpi type for CoDiPack
     // this type is used in this type and the passive formulation
-    int blockLength[2] = {1,1};
-    MPI_Aint displacements[2] = {0, sizeof(double)};
-    MPI_Datatype types[2] = {MPI_DOUBLE, MPI_INT};
-    MPI_Type_create_struct(2, blockLength, displacements, types, &MpiType);
+    // TODO: add proper type creation
+    MPI_Type_contiguous(sizeof(CoDiType), MPI_BYTE, &MpiType);
     MPI_Type_commit(&MpiType);
 
     ModifiedMpiType = MpiType;
