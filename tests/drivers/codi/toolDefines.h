@@ -12,6 +12,10 @@ typedef CODI_TYPE NUMBER;
 
 #include "../globalDefines.h"
 
-#define TOOL CoDiPackTool<NUMBER, PRIMAL_RESTORE>
+#if PRIMAL_RESTORE
+# define TOOL CoDiPackToolPrimalRestore<NUMBER>
+#else
+# define TOOL CoDiPackTool<NUMBER>
+#endif
 typedef medi::MpiTypeDefault<TOOL> MPI_NUMBER;
 extern MPI_NUMBER* mpiNumberType;

@@ -107,8 +107,8 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
   }
 }
 
-template<typename CoDiType, bool primalRestore = false>
-struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
+template<typename CoDiType, bool primalRestore, typename Impl>
+struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
   typedef typename CoDiType::TapeType Tape;
   typedef typename CoDiType::GradientValue AdjointType;
@@ -128,6 +128,9 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   static medi::AMPI_Op OP_MAX;
 
   static Tape* adjointTape;
+
+  CoDiPackToolBase(MPI_Datatype adjointMpiType) :
+    medi::ADToolBase<Impl, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -178,10 +181,6 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     finalizeTypes();
   }
 
-  CoDiPackTool(MPI_Datatype adjointMpiType) :
-    medi::ADToolBase<CoDiPackTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
-
-
   inline bool isActiveType() const {
     return true;
   }
@@ -222,16 +221,6 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     for(int pos = 0; pos < elements; ++pos) {
       IndexType indexCopy = indices[pos];
       adjointTape->gradient(indexCopy) += adjoints[pos];
-    }
-  }
-
-  inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-    MEDI_UNUSED(indices);
-    MEDI_UNUSED(primals);
-    MEDI_UNUSED(elements);
-
-    for(int pos = 0; pos < elements; ++pos) {
-      adjointTape->setExternalValueChange(indices[pos], primals[pos]);
     }
   }
 
@@ -320,23 +309,79 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     }
   }
 
-  static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
-    value.getGradientData() = IndexType();
-    oldPrimal = Type::getGlobalTape().registerExtFunctionOutput(value);
-
-    return value.getGradientData();
-  }
-
   static bool isActive() {
     return Type::getGlobalTape().isActive();
   }
 };
 
-template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::MpiType;
-template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::ModifiedMpiType;
-template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::AdjointMpiType;
-template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_SUM;
-template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_PROD;
-template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_MIN;
-template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_MAX;
-template<typename CoDiType, bool primalRestore> typename CoDiType::TapeType* CoDiPackTool<CoDiType, primalRestore>::adjointTape;
+template<typename CoDiType>
+struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, false, CoDiPackTool<CoDiType> >  {
+
+    typedef CoDiType Type;
+    typedef typename CoDiType::TapeType Tape;
+    typedef typename CoDiType::GradientValue AdjointType;
+    typedef CoDiType ModifiedType;
+    typedef typename CoDiType::PassiveReal PassiveType;
+    typedef typename CoDiType::GradientData IndexType;
+
+    CoDiPackTool(MPI_Datatype adjointMpiType) :
+      CoDiPackToolBase<CoDiType, false, CoDiPackTool< CoDiType>>(adjointMpiType) {}
+
+
+    inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
+      MEDI_UNUSED(indices);
+      MEDI_UNUSED(primals);
+      MEDI_UNUSED(elements);
+
+      //Do nothing
+    }
+
+    static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
+      MEDI_UNUSED(oldPrimal);
+
+      value.getGradientData() = IndexType();
+      Type::getGlobalTape().registerInput(value);
+
+      return value.getGradientData();
+    }
+};
+
+template<typename CoDiType>
+struct CoDiPackToolPrimalRestore final : public CoDiPackToolBase<CoDiType, true, CoDiPackToolPrimalRestore<CoDiType> >  {
+
+    typedef CoDiType Type;
+    typedef typename CoDiType::TapeType Tape;
+    typedef typename CoDiType::GradientValue AdjointType;
+    typedef CoDiType ModifiedType;
+    typedef typename CoDiType::PassiveReal PassiveType;
+    typedef typename CoDiType::GradientData IndexType;
+
+    CoDiPackToolPrimalRestore(MPI_Datatype adjointMpiType) :
+      CoDiPackToolBase<CoDiType, true, CoDiPackToolPrimalRestore< CoDiType>>(adjointMpiType) {}
+
+    inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
+      MEDI_UNUSED(indices);
+      MEDI_UNUSED(primals);
+      MEDI_UNUSED(elements);
+
+      for(int pos = 0; pos < elements; ++pos) {
+        CoDiPackToolBase<CoDiType, true, CoDiPackToolPrimalRestore<CoDiType> >::adjointTape->setExternalValueChange(indices[pos], primals[pos]);
+      }
+    }
+
+    static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
+      value.getGradientData() = IndexType();
+      oldPrimal = Type::getGlobalTape().registerExtFunctionOutput(value);
+
+      return value.getGradientData();
+    }
+};
+
+template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::MpiType;
+template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::ModifiedMpiType;
+template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::AdjointMpiType;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_SUM;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_PROD;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MIN;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MAX;
+template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiType::TapeType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::adjointTape;
