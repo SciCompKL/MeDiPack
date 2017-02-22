@@ -67,11 +67,11 @@ namespace medi {
         }
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PassiveType* oldPrimals, size_t bufModOffset, int elements) const {
         int indexOffset = computeActiveElements((int)bufModOffset);
 
         for(int i = 0; i < elements; ++i) {
-          indices[indexOffset + i] = ADTool::registerValue(buf[bufOffset + i]);;
+          indices[indexOffset + i] = ADTool::registerValue(buf[bufOffset + i], oldPrimals[indexOffset + i]);
         }
       }
 

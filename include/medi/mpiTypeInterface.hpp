@@ -46,7 +46,7 @@ namespace medi {
 
       virtual void getIndices(const void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const = 0;
 
-      virtual void registerValue(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const = 0;
+      virtual void registerValue(void* buf, size_t bufOffset, void* indices, void* oldPrimals, size_t bufModOffset, int elements) const = 0;
 
       virtual void clearIndices(void* buf, size_t bufOffset, int elements) const = 0;
 
@@ -96,8 +96,8 @@ namespace medi {
         cast().getIndices(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), bufModOffset, elements);
       }
 
-      void registerValue(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
-        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), bufModOffset, elements);
+      void registerValue(void* buf, size_t bufOffset, void* indices, void* oldPrimals, size_t bufModOffset, int elements) const {
+        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), castBuffer<PassiveTypeB>(oldPrimals), bufModOffset, elements);
       }
 
       void clearIndices(void* buf, size_t bufOffset, int elements) const {

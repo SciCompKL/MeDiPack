@@ -229,8 +229,9 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MEDI_UNUSED(modValue);
   }
 
-  static inline int registerValue(Type& value) {
+  static inline int registerValue(Type& value, PassiveType& oldValue) {
     MEDI_UNUSED(value);
+    MEDI_UNUSED(oldValue);
     return 0;
   }
 

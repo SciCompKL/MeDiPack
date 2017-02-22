@@ -669,7 +669,7 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$type$->registerValue($name$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->registerValue($name$, $pos$, h->$(item.name)Indices, h->$(item.name)OldPrimals, $startLinPos$, $curCount$);")
 .         endif
 .       endfor
       }

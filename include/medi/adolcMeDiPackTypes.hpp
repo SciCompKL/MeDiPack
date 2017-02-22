@@ -347,8 +347,9 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
     value.setValue(modValue);
   }
 
-  static inline int registerValue(Type& value) {
+  static inline int registerValue(Type& value, PassiveType& oldPrimal) {
     MEDI_UNUSED(value);
+    MEDI_UNUSED(oldPrimal);
     // do nothing value should have an index
 
     return value.loc();

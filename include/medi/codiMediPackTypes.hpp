@@ -107,7 +107,7 @@ void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
   }
 }
 
-template<typename CoDiType>
+template<typename CoDiType, bool primalRestore = false>
 struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
   typedef typename CoDiType::TapeType Tape;
@@ -191,7 +191,7 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   }
 
   inline bool isOldPrimalsRequired() const {
-    return false;
+    return primalRestore;
   }
 
   inline void startAssembly(medi::HandleBase* h) {
@@ -230,7 +230,9 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     MEDI_UNUSED(primals);
     MEDI_UNUSED(elements);
 
-    /* not required */
+    for(int pos = 0; pos < elements; ++pos) {
+      adjointTape->setExternalValueChange(indices[pos], primals[pos]);
+    }
   }
 
   inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
@@ -318,9 +320,9 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
     }
   }
 
-  static inline IndexType registerValue(Type& value) {
+  static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
     value.getGradientData() = IndexType();
-    Type::getGlobalTape().registerInput(value);
+    oldPrimal = Type::getGlobalTape().registerExtFunctionOutput(value);
 
     return value.getGradientData();
   }
@@ -330,11 +332,11 @@ struct CoDiPackTool final : public medi::ADToolBase<CoDiPackTool<CoDiType>, type
   }
 };
 
-template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MpiType;
-template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::ModifiedMpiType;
-template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::AdjointMpiType;
-template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_SUM;
-template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_PROD;
-template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MIN;
-template<typename CoDiType> medi::AMPI_Op CoDiPackTool<CoDiType>::OP_MAX;
-template<typename CoDiType> typename CoDiType::TapeType* CoDiPackTool<CoDiType>::adjointTape;
+template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::MpiType;
+template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::ModifiedMpiType;
+template<typename CoDiType, bool primalRestore> MPI_Datatype CoDiPackTool<CoDiType, primalRestore>::AdjointMpiType;
+template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_SUM;
+template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_PROD;
+template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_MIN;
+template<typename CoDiType, bool primalRestore> medi::AMPI_Op CoDiPackTool<CoDiType, primalRestore>::OP_MAX;
+template<typename CoDiType, bool primalRestore> typename CoDiType::TapeType* CoDiPackTool<CoDiType, primalRestore>::adjointTape;

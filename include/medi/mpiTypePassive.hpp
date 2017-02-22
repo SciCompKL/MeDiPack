@@ -70,10 +70,11 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PassiveType* oldPrimals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(indices);
+        MEDI_UNUSED(oldPrimals);
         MEDI_UNUSED(bufModOffset);
         MEDI_UNUSED(elements);
       }
