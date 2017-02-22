@@ -15,7 +15,7 @@ void func(NUMBER* x, NUMBER* y) {
     y[i] = x[i];
   }
   medi::AMPI_Request request;
-  medi::AMPI_Ialltoall(medi::AMPI_IN_PLACE, -1, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD, &request);
+  medi::AMPI_Ialltoall(medi::AMPI_IN_PLACE, 0, mpiNumberType, y, 5, mpiNumberType, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }
