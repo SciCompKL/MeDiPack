@@ -11,7 +11,7 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-  y[0] = 5.0;
+  y[0] = 5.0 * x[0];
   NUMBER temp = x[0] * y[0];
 
   NUMBER yLocal = temp;
