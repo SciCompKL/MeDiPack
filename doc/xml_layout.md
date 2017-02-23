@@ -66,3 +66,8 @@ element: type
 	                        type -> The type of the argument.
 						  [optional] const -> If defined indicates that the argument is constant.
 
+element: status
+  -> Special handling such that it is not stored and created for the reverse calls.
+	child of: function
+	attributes:             name -> The name of the argument.
+	                        type -> The type of the argument.

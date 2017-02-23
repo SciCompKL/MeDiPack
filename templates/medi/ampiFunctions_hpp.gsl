@@ -67,6 +67,8 @@ for functions.function as curFunction
      endif
    elsif(name(item) = "request")
      curFunction.argRev += "&h->$(item.name)Reverse"
+   elsif(name(item) = "status")
+     curFunction.argRev += "&$(item.name)"   # status is not stored
    else
      curFunction.argRev += "h->$(item.name)"
    endif
@@ -105,6 +107,8 @@ for functions.function as curFunction
    elsif(name(item) = "type")
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
      addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
+   elsif(name(item) = "status")
+     # status is not stored
    else
      # add other items to both handles
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.taType)")
@@ -123,6 +127,8 @@ for functions.function as curFunction
      curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
    elsif(name(item) = "type")
      curFunction.argDef += "$(item.tplName)* $(item.name)"
+   elsif(name(item) = "status")
+     curFunction.argDef += "$(item.taType)* $(item.name)"
    else
      curFunction.argDef += "$(item.taType) $(item.name)"
    endif
@@ -488,6 +494,10 @@ namespace medi {
   void AMPI_$(curFunction.name)_b(HandleBase* handle) {
     $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
 
+.   for curFunction.status
+      $(status.type) $(status.name);
+.   endfor
+.
 .   for curFunction.recv
 .     createBufferReverseSetup(recv, curFunction, 1)
 .   endfor

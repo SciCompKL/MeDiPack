@@ -78,7 +78,7 @@
     <arg name="source" type="int"/>
     <arg name="tag" type="int"/>
     <arg name="comm" type="MPI_Comm"/>
-    <arg name="status" type="MPI_Status*"/>
+    <status name="status" type="MPI_Status"/>
   </function>
   <function name="Irecv" async="request"> <!-- all defined -->
     <recv name="buf" type="datatype" count="count"/>
@@ -103,7 +103,7 @@
     <arg name="source" type="int" />
     <arg name="recvtag" type="int" />
     <arg name="comm" type="MPI_Comm" />
-    <arg name="status" type="MPI_Status*" />
+    <status name="status" type="MPI_Status" />
   </function>
 
   <!-- collective communications -->
