@@ -1,346 +1,1334 @@
 <functions>
-  <!-- Point to point communication -->
-  <!-- Send routines -->
-  <function name="Send"> <!-- all defined -->
-    <send name="buf" const="1" type="datatype" count="count"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <arg name="dest" type="int"/>
-    <arg name="tag" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Isend" async="request"> <!-- all defined -->
-    <send name="buf" const="1" type="datatype" count="count"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <arg name="dest" type="int"/>
-    <arg name="tag" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Bsend"> <!-- all defined -->
-    <send name="buf" const="1" type="datatype" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Ibsend" async="request"> <!-- all defined -->
-    <send name="buf" const="1" type="datatype" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Ssend"> <!-- all defined -->
-    <send name="buf" type="datatype" const="1" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Issend" async="request"> <!-- all defined -->
-    <send name="buf" type="datatype" const="1" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Rsend"> <!-- all defined -->
-    <send name="buf" type="datatype" const="1" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Irsend" async="request"> <!-- all defined -->
-    <send name="buf" type="datatype" const="1" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="tag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
+  <!-- A.2 C Bindings -->
+    <!-- A.2.1 Point-to-Point Communication Bindings -->
 
-  <!-- Recv/Irecv-->
-  <function name="Recv"> <!-- all defined -->
-    <recv name="buf" type="datatype" count="count"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <arg name="source" type="int"/>
-    <arg name="tag" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <status name="status" type="MPI_Status"/>
-  </function>
-  <function name="Irecv" async="request"> <!-- all defined -->
-    <recv name="buf" type="datatype" count="count"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <arg name="source" type="int"/>
-    <arg name="tag" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <function name="Bsend" handle="true">
+        <send name="buf" const="1" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
 
-  <!-- Sendrecv-->
-  <function name="Sendrecv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" const="1" count="sendcount" />
-    <arg name="sendcount" type="int" />
-    <type name="sendtype" type="MPI_Datatype" />
-    <arg name="dest" type="int" />
-    <arg name="sendtag" type="int" />
-    <recv name="recvbuf" type="recvtype" count="recvcount"/>
-    <arg name="recvcount" type="int" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="source" type="int" />
-    <arg name="recvtag" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-    <status name="status" type="MPI_Status" />
-  </function>
+      <!-- <function name="Bsend_init" handle="true" handle="true">
+        <send name="buf" type="datatype" count="count" const="1"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
+      </function> -->
 
-  <!-- collective communications -->
+      <function name="Buffer_attach">
+        <arg name="buffer" type="void*" />
+        <arg name="size" type="int" />
+      </function>
 
-  <!-- broadcasts -->
-  <!-- modified interface in order to work with the structure a wrapper is implemented that wraps onto this routine -->
-  <function name="Bcast_wrap"> <!-- all defined -->
-    <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
-    <recv name="bufferRecv" type="datatype" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="root" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Ibcast_wrap" async="request"> <!-- all defined -->
-    <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
-    <recv name="bufferRecv" type="datatype" count="count" />
-    <arg name="count" type="int" />
-    <type name="datatype" type="MPI_Datatype" />
-    <arg name="root" type="int" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <function name="Buffer_detach">
+        <arg name="buffer_addr" type="void*" />
+        <arg name="size" type="int*" />
+      </function>
 
-  <!-- gathers -->
-  <function name="Gather"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Igather" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Gatherv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Igatherv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Allgather"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Iallgather" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Allgatherv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Iallgatherv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <function name="Cancel">
+        <request name="request" type="MPI_Request*" />
+      </function>
 
+	    <function name="Get_count">
+		<arg name="status" const="1" type="MPI_Status*"/>
+		<type name="datatype" type="MPI_Datatype"/>
+		<arg name="count" type="int*"/>
+	    </function>
 
-  <!-- scatters -->
-  <function name="Scatter"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf"/>
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Iscatter" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
-    <arg name="sendcount" type="int"/>
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Scatterv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
-    <arg name="sendcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Iscatterv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
-    <arg name="sendcounts" type="int*" const="1"/>
-    <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
-    <type name="sendtype" type="MPI_Datatype"/>
-    <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
-    <arg name="recvcount" type="int"/>
-    <type name="recvtype" type="MPI_Datatype"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <function name="Ibsend" async="request" handle="true"> <!-- all defined -->
+        <send name="buf" const="1" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
 
-  <!-- all to all -->
-  <function name="Alltoall"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
-    <arg name="sendcount" type="int" />
-    <type name="sendtype" type="MPI_Datatype" />
-    <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
-    <arg name="recvcount" type="int" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Ialltoall" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
-    <arg name="sendcount" type="int" />
-    <type name="sendtype" type="MPI_Datatype" />
-    <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
-    <arg name="recvcount" type="int" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Alltoallv"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
-    <arg name="sendcounts" type="int*" const="1"/>
-    <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
-    <type name="sendtype" type="MPI_Datatype" />
-    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="rdispls" />
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="rdispls" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm" />
-  </function>
-  <function name="Ialltoallv" async="request"> <!-- all defined -->
-    <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
-    <arg name="sendcounts" type="int*" const="1"/>
-    <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
-    <type name="sendtype" type="MPI_Datatype" />
-    <recv name="recvbuf" type="recvtype" count="recvcounts" displs="rdispls" />
-    <arg name="recvcounts" type="int*" const="1"/>
-    <displs name="rdispls" type="int*" const="1" ranks="comm" counts="recvcounts" />
-    <type name="recvtype" type="MPI_Datatype" />
-    <arg name="comm" type="MPI_Comm" />
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <function name="Improbe">
+        <arg name="source" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="flag" type="int*" />
+        <arg name="message" type="MPI_Message*" />
+        <arg name="status" type="MPI_Status*" />
+      </function>
 
-  <!-- reduce -->
-  <function name="Reduce_global" mpiName="MPI_Reduce"> <!-- all defined -->
-    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
-    <recv name="recvbuf" type="datatype" count="count" root="root"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <operator name="op" type="MPI_Op"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Ireduce_global" async="request" mpiName="MPI_Ireduce"> <!-- all defined -->
-    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
-    <recv name="recvbuf" type="datatype" count="count" root="root"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <operator name="op" type="MPI_Op"/>
-    <arg name="root" type="int"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
-  <function name="Allreduce_global" mpiName="MPI_Allreduce"> <!-- all defined -->
-    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
-    <recv name="recvbuf" type="datatype" count="count" />
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <operator name="op" type="MPI_Op"/>
-    <arg name="comm" type="MPI_Comm"/>
-  </function>
-  <function name="Iallreduce_global" async="request" mpiName="MPI_Iallreduce"> <!-- all defined -->
-    <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
-    <recv name="recvbuf" type="datatype" count="count"/>
-    <arg name="count" type="int"/>
-    <type name="datatype" type="MPI_Datatype"/>
-    <operator name="op" type="MPI_Op"/>
-    <arg name="comm" type="MPI_Comm"/>
-    <request name="request" type="MPI_Request*"/>
-  </function>
+      <!-- <function name="Imrecv" async="request" handle="true">
+        <recv name="buf" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="message" type="MPI_Message*" />
+        <request name="request" type="MPI_Request*" />
+      </function> -->
+
+      <function name="Iprobe">
+        <arg name="source" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="flag" type="int*" />
+        <arg name="status" type="MPI_Status*" />
+      </function>
+
+      <function name="Irecv" async="request" handle="true"> <!-- all defined -->
+        <recv name="buf" type="datatype" count="count"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <arg name="source" type="int"/>
+        <arg name="tag" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Irsend" async="request" handle="true"> <!-- all defined -->
+        <send name="buf" type="datatype" const="1" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Isend" async="request" handle="true"> <!-- all defined -->
+        <send name="buf" const="1" type="datatype" count="count"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <arg name="dest" type="int"/>
+        <arg name="tag" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Issend" async="request" handle="true"> <!-- all defined -->
+        <send name="buf" type="datatype" const="1" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Mprobe">
+        <arg name="source" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="message" type="MPI_Message*" />
+        <arg name="status" type="MPI_Status*" />
+      </function>
+
+      <!-- <function name="Mrecv" handle="true">
+        <recv name="buf" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="message" type="MPI_Message*" />
+        <arg name="status" type="MPI_Status*" />
+      </function> -->
+
+      <function name="Probe">
+        <arg name="source" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="status" type="MPI_Status*" />
+      </function>
+
+      <function name="Recv" handle="true"> <!-- all defined -->
+        <recv name="buf" type="datatype" count="count"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <arg name="source" type="int"/>
+        <arg name="tag" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <status name="status" type="MPI_Status"/>
+      </function>
+
+      <function name="Recv_init" handle="true">
+        <send name="buf" type="datatype" count="count" const="1"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="source" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
+      </function>
+
+<!-- int MPI_Request_free(MPI_Request *request) -->
+<!-- int MPI_Request_get_status(MPI_Request request, int *flag, MPI_Status *status) -->
+
+      <function name="Rsend" handle="true"> <!-- all defined -->
+        <send name="buf" type="datatype" const="1" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+      <!--- <function name="Rsend_init" handle="true">
+        <send name="buf" type="datatype" count="count" const="1"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
+      </function> -->
+
+      <function name="Send" handle="true">
+        <send name="buf" const="1" type="datatype" count="count"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <arg name="dest" type="int"/>
+        <arg name="tag" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <!-- <function name="Send_init" handle="true">
+        <send name="buf" type="datatype" count="count" const="1"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
+      </function> -->
+
+      <function name="Sendrecv" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" const="1" count="sendcount" />
+        <arg name="sendcount" type="int" />
+        <type name="sendtype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="sendtag" type="int" />
+        <recv name="recvbuf" type="recvtype" count="recvcount"/>
+        <arg name="recvcount" type="int" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="source" type="int" />
+        <arg name="recvtag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <status name="status" type="MPI_Status" />
+      </function>
+
+      <!-- <function name="Sendrecv_replace" handle="true">
+        <arg name="buf" type="void*" /> TODO: needs to be defined
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="sendtag" type="int" />
+        <arg name="source" type="int" />
+        <arg name="recvtag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="status" type="MPI_Status*" />
+      </function> -->
+
+      <function name="Ssend" handle="true"> <!-- all defined -->
+        <send name="buf" type="datatype" const="1" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+      <!-- <function name="Ssend_init" handle="true">
+        <send name="buf" type="datatype" count="count" const="1"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
+      </function> -->
+
+      <!-- <function name="Start" handle="true">
+        <request name="request" type="MPI_Request" />
+      </function> -->
+
+      <!-- <function name="Startall" handle="true">
+        <arg name="count" type="int" />
+        <arg name="array_of_requests" type="MPI_Request*" />
+      </function> -->
+
+<!-- int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status) -->
+
+      <function name="Test_cancelled">
+        <arg name="status" type="MPI_Status*" const="1"/>
+        <arg name="flag" type="int*" />
+      </function>
+
+<!-- int MPI_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[]) -->
+<!-- int MPI_Testany(int count, MPI_Request array_of_requests[], int *index, int *flag, MPI_Status *status) -->
+<!-- int MPI_Testsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[]) -->
+<!-- int MPI_Wait(MPI_Request *request, MPI_Status *status) -->
+<!-- int MPI_Waitall(int count, MPI_Request array_of_requests[], MPI_Status array_of_statuses[]) -->
+<!-- int MPI_Waitany(int count, MPI_Request array_of_requests[], int *index, MPI_Status *status) -->
+<!-- int MPI_Waitsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])  -->
+
+    <!-- A.2.2 Datatypes C Bindings -->
+
+<!-- MPI_Aint MPI_Aint_add(MPI_Aint base, MPI_Aint disp) -->
+<!-- MPI_Aint MPI_Aint_diff(MPI_Aint addr1, MPI_Aint addr2) -->
+<!-- int MPI_Get_address(const void *location, MPI_Aint *address) -->
+<!-- int MPI_Get_elements(const MPI_Status *status, MPI_Datatype datatype, int *count) -->
+<!-- int MPI_Get_elements_x(const MPI_Status *status, MPI_Datatype datatype, MPI_Count *count) -->
+<!-- int MPI_Pack(const void* inbuf, int incount, MPI_Datatype datatype, void *outbuf, int outsize, int *position, MPI_Comm comm) -->
+<!-- int MPI_Pack_external(const char datarep[], const void *inbuf, int incount, MPI_Datatype datatype, void *outbuf, MPI_Aint outsize, MPI_Aint *position) -->
+<!-- int MPI_Pack_external_size(const char datarep[], int incount, MPI_Datatype datatype, MPI_Aint *size) -->
+<!-- int MPI_Pack_size(int incount, MPI_Datatype datatype, MPI_Comm comm, int *size) -->
+<!-- int MPI_Type_commit(MPI_Datatype *datatype) -->
+<!-- int MPI_Type_contiguous(int count, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_darray(int size, int rank, int ndims, const int array_of_gsizes[], const int array_of_distribs[], const int array_of_dargs[], const int array_of_psizes[], int order, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_hindexed(int count, const int array_of_blocklengths[], const MPI_Aint array_of_displacements[], MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_hindexed_block(int count, int blocklength, const MPI_Aint array_of_displacements[], MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_hvector(int count, int blocklength, MPI_Aint stride, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_indexed_block(int count, int blocklength, const int array_of_displacements[], MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_resized(MPI_Datatype oldtype, MPI_Aint lb, MPI_Aint extent, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_struct(int count, const int array_of_blocklengths[], const MPI_Aint array_of_displacements[], const MPI_Datatype array_of_types[], MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_subarray(int ndims, const int array_of_sizes[], const int array_of_subsizes[], const int array_of_starts[], int order, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_dup(MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_free(MPI_Datatype *datatype) -->
+<!-- int MPI_Type_get_contents(MPI_Datatype datatype, int max_integers, int max_addresses, int max_datatypes, int array_of_integers[], MPI_Aint array_of_addresses[], MPI_Datatype array_of_datatypes[]) -->
+<!-- int MPI_Type_get_envelope(MPI_Datatype datatype, int *num_integers, int *num_addresses, int *num_datatypes, int *combiner) -->
+<!-- int MPI_Type_get_extent(MPI_Datatype datatype, MPI_Aint *lb, MPI_Aint *extent) -->
+<!-- int MPI_Type_get_extent_x(MPI_Datatype datatype, MPI_Count *lb, MPI_Count *extent) -->
+<!-- int MPI_Type_get_true_extent(MPI_Datatype datatype, MPI_Aint *true_lb, MPI_Aint *true_extent) -->
+<!-- int MPI_Type_get_true_extent_x(MPI_Datatype datatype, MPI_Count *true_lb, MPI_Count *true_extent) -->
+<!-- int MPI_Type_indexed(int count, const int array_of_blocklengths[], const int array_of_displacements[], MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_size(MPI_Datatype datatype, int *size) -->
+<!-- int MPI_Type_size_x(MPI_Datatype datatype, MPI_Count *size) -->
+<!-- int MPI_Type_vector(int count, int blocklength, int stride, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
+<!-- int MPI_Unpack(const void* inbuf, int insize, int *position, void *outbuf, int outcount, MPI_Datatype datatype, MPI_Comm comm) -->
+<!-- int MPI_Unpack_external(const char datarep[], const void *inbuf, MPI_Aint insize, MPI_Aint *position, void *outbuf, int outcount, MPI_Datatype datatype)  -->
+
+    <!-- A.2.3 Collective Communication C Bindings -->
+
+      <function name="Allgather" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <function name="Allgatherv" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Allreduce_global" mpiName="MPI_Allreduce" handle="true"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count" />
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <function name="Alltoall" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
+        <arg name="sendcount" type="int" />
+        <type name="sendtype" type="MPI_Datatype" />
+        <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
+        <arg name="recvcount" type="int" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+      <function name="Alltoallv" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
+        <arg name="sendcounts" type="int*" const="1"/>
+        <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
+        <type name="sendtype" type="MPI_Datatype" />
+        <recv name="recvbuf" type="recvtype" count="recvcounts" displs="rdispls" />
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="rdispls" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+      <!-- <function name="Alltoallw" handle="true">
+        <arg name="sendbuf" type="void*" const="1"/>
+        <arg name="sendcounts" type="int*" const="1"/>
+        <arg name="sdispls" type="int*" const="1"/>
+        <arg name="sendtypes" type="MPI_Datatype*" const="1"/>
+        <arg name="recvbuf" type="void*" />
+        <arg name="recvcounts" type="int*" const="1"/>
+        <arg name="rdispls" type="int*" const="1"/>
+        <arg name="recvtypes" type="MPI_Datatype*" const="1"/>
+        <arg name="comm" type="MPI_Comm" />
+      </function> -->
+
+      <function name="Barrier">
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+      <!-- modified interface in order to work with the structure a wrapper is implemented that wraps onto this routine -->
+      <function name="Bcast_wrap" handle="true"> <!-- all defined -->
+        <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
+        <recv name="bufferRecv" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="root" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+      </function>
+
+<!-- int MPI_Exscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) -->
+
+      <function name="Gather" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <function name="Gatherv" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <function name="Iallgather" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Iallgatherv" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Iallreduce_global" async="request" mpiName="MPI_Iallreduce" handle="true"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Ialltoall" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
+        <arg name="sendcount" type="int" />
+        <type name="sendtype" type="MPI_Datatype" />
+        <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
+        <arg name="recvcount" type="int" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Ialltoallv" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
+        <arg name="sendcounts" type="int*" const="1"/>
+        <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
+        <type name="sendtype" type="MPI_Datatype" />
+        <recv name="recvbuf" type="recvtype" count="recvcounts" displs="rdispls" />
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="rdispls" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+<!-- int MPI_Ialltoallw(const void* sendbuf, const int sendcounts[], const int sdispls[], const MPI_Datatype sendtypes[], void* recvbuf, const int recvcounts[], const int rdispls[], const MPI_Datatype recvtypes[], MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ibarrier(MPI_Comm comm, MPI_Request *request) -->
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Ibcast_wrap" async="request" handle="true"> <!-- all defined -->
+        <send name="bufferSend" type="datatype" count="count" root="root" all="comm" inplace="bufferRecv" />
+        <recv name="bufferRecv" type="datatype" count="count" />
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="root" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+<!-- int MPI_Iexscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+
+      <function name="Igather" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Igatherv" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
+        <arg name="recvcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <type name="recvtype" type="MPI_Datatype" />
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Ireduce_global" async="request" mpiName="MPI_Ireduce" handle="true"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
+        <recv name="recvbuf" type="datatype" count="count" root="root"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+<!-- int MPI_Ireduce_scatter(const void* sendbuf, void* recvbuf, const int recvcounts[], MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ireduce_scatter_block(const void* sendbuf, void* recvbuf, int recvcount, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Iscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+
+      <function name="Iscatter" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <function name="Iscatterv" async="request" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
+        <arg name="sendcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <!-- <function name="Op_commutative" handle="true">
+        <arg name="op" type="MPI_Op" />
+        <arg name="commute" type="int " />
+      </function> -->
+
+      <!-- <function name="Op_create" handle="true">
+        <arg name="user_fn" type="MPI_User_function*" />
+        <arg name="commute" type="int" />
+        <arg name="op" type="MPI_Op*" />
+      </function> -->
+
+      <!-- <function name="Op_free" handle="true">
+        <arg name="op" type="MPI_Op " />
+      </function> -->
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Reduce_global" mpiName="MPI_Reduce" handle="true"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
+        <recv name="recvbuf" type="datatype" count="count" root="root"/>
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <!-- <function name="Reduce_local" handle="true">
+        <arg name="inbuf" type="void*" const="1"/>
+        <arg name="inoutbuf" type="void*" />
+        <arg name="count" type="int" />
+        <arg name="datatype" type="MPI_Datatype" />
+        <arg name="op" type="MPI_Op" />
+      </function> -->
+
+      <!-- <function name="Reduce_scatter" handle="true">
+        <arg name="sendbuf" type="void*" const="1"/>
+        <arg name="recvbuf" type="void*" />
+        <arg name="recvcounts" type="int*" const="1"/>
+        <arg name="datatype" type="MPI_Datatype" />
+        <arg name="op" type="MPI_Op" />
+        <arg name="comm" type="MPI_Comm" />
+      </function> -->
+
+      <!-- <function name="Reduce_scatter_block" handle="true">
+        <arg name="sendbuf" type="void*" const="1"/>
+        <arg name="recvbuf" type="void*" />
+        <arg name="recvcount" type="int" />
+        <arg name="datatype" type="MPI_Datatype" />
+        <arg name="op" type="MPI_Op" />
+        <arg name="comm" type="MPI_Comm" />
+      </function> -->
+
+<!-- int MPI_Scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) -->
+
+      <function name="Scatter" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
+        <arg name="sendcount" type="int"/>
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf"/>
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+      <function name="Scatterv" handle="true"> <!-- all defined -->
+        <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
+        <arg name="sendcounts" type="int*" const="1"/>
+        <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
+        <type name="sendtype" type="MPI_Datatype"/>
+        <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
+        <arg name="recvcount" type="int"/>
+        <type name="recvtype" type="MPI_Datatype"/>
+        <arg name="root" type="int"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
+
+    <!-- A.2.4 Groups, Contexts, Communicators, and Caching C Bindings -->
+
+<!-- int MPI_COMM_DUP_FN(MPI_Comm oldcomm, int comm_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_COMM_NULL_COPY_FN(MPI_Comm oldcomm, int comm_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_COMM_NULL_DELETE_FN(MPI_Comm comm, int comm_keyval, void *attribute_val, void *extra_state) -->
+
+      <function name="Comm_compare">
+        <arg name="comm1" type="MPI_Comm" />
+        <arg name="comm2" type="MPI_Comm" />
+        <arg name="result" type="int*" />
+      </function>
+
+      <function name="Comm_create">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="group" type="MPI_Group" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_create_group">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="group" type="MPI_Group" />
+        <arg name="tag" type="int" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_create_keyval">
+        <arg name="comm_copy_attr_fn" type="MPI_Comm_copy_attr_function*" />
+        <arg name="comm_delete_attr_fn" type="MPI_Comm_delete_attr_function*" />
+        <arg name="comm_keyval" type="int*" />
+        <arg name="extra_state" type="void*" />
+      </function>
+
+      <function name="Comm_delete_attr">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="comm_keyval" type="int" />
+      </function>
+
+      <function name="Comm_dup">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_dup_with_info">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="info" type="MPI_Info" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_free">
+        <arg name="comm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_free_keyval">
+        <arg name="comm_keyval" type="int*" />
+      </function>
+
+      <function name="Comm_get_attr">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="comm_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Comm_get_info">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="info_used" type="MPI_Info*" />
+      </function>
+
+      <function name="Comm_get_name">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="comm_name" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="Comm_group">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="group" type="MPI_Group*" />
+      </function>
+
+      <function name="Comm_idup">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="newcomm" type="MPI_Comm*" />
+        <request name="request" type="MPI_Request*" />
+      </function>
+
+      <function name="Comm_rank">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="rank" type="int*" />
+      </function>
+
+      <function name="Comm_remote_group">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="group" type="MPI_Group*" />
+      </function>
+
+      <function name="Comm_remote_size">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="size" type="int*" />
+      </function>
+
+      <function name="Comm_set_attr">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="comm_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+      </function>
+
+      <function name="Comm_set_info">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="info" type="MPI_Info" />
+      </function>
+
+      <function name="Comm_set_name">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="comm_name" type="char*" const="1"/>
+      </function>
+
+      <function name="Comm_size">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="size" type="int*" />
+      </function>
+
+      <function name="Comm_split">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="color" type="int" />
+        <arg name="key" type="int" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_split_type">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="split_type" type="int" />
+        <arg name="key" type="int" />
+        <arg name="info" type="MPI_Info" />
+        <arg name="newcomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Comm_test_inter">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Group_compare">
+        <arg name="group1" type="MPI_Group" />
+        <arg name="group2" type="MPI_Group" />
+        <arg name="result" type="int*" />
+      </function>
+
+      <function name="Group_difference">
+        <arg name="group1" type="MPI_Group" />
+        <arg name="group2" type="MPI_Group" />
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_excl">
+        <arg name="group" type="MPI_Group" />
+        <arg name="n" type="int" />
+        <arg name="ranks" type="int*" const="1"/>
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_free">
+        <arg name="group" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_incl">
+        <arg name="group" type="MPI_Group" />
+        <arg name="n" type="int" />
+        <arg name="ranks" type="int*" const="1"/>
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_intersection">
+        <arg name="group1" type="MPI_Group" />
+        <arg name="group2" type="MPI_Group" />
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_range_excl">
+        <arg name="group" type="MPI_Group" />
+        <arg name="n" type="int" />
+        <arg name="ranges" type="Range*" />
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_range_incl">
+        <arg name="group" type="MPI_Group" />
+        <arg name="n" type="int" />
+        <arg name="ranges" type="Range*" />
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Group_rank">
+        <arg name="group" type="MPI_Group" />
+        <arg name="rank" type="int*" />
+      </function>
+
+      <function name="Group_size">
+        <arg name="group" type="MPI_Group" />
+        <arg name="size" type="int*" />
+      </function>
+
+      <function name="Group_translate_ranks">
+        <arg name="group1" type="MPI_Group" />
+        <arg name="n" type="int" />
+        <arg name="ranks1" type="int*" const="1"/>
+        <arg name="group2" type="MPI_Group" />
+        <arg name="ranks2" type="int*" />
+      </function>
+
+      <function name="Group_union">
+        <arg name="group1" type="MPI_Group" />
+        <arg name="group2" type="MPI_Group" />
+        <arg name="newgroup" type="MPI_Group*" />
+      </function>
+
+      <function name="Intercomm_create">
+        <arg name="local_comm" type="MPI_Comm" />
+        <arg name="local_leader" type="int" />
+        <arg name="peer_comm" type="MPI_Comm" />
+        <arg name="remote_leader" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="newintercomm" type="MPI_Comm*" />
+      </function>
+
+      <function name="Intercomm_merge">
+        <arg name="intercomm" type="MPI_Comm" />
+        <arg name="high" type="int" />
+        <arg name="newintracomm" type="MPI_Comm*" />
+      </function>
+
+<!-- int MPI_TYPE_DUP_FN(MPI_Datatype oldtype, int type_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_TYPE_NULL_COPY_FN(MPI_Datatype oldtype, int type_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_TYPE_NULL_DELETE_FN(MPI_Datatype datatype, int type_keyval, void *attribute_val, void *extra_state) -->
+
+      <function name="Type_create_keyval">
+        <arg name="type_copy_attr_fn" type="MPI_Type_copy_attr_function*" />
+        <arg name="type_delete_attr_fn" type="MPI_Type_delete_attr_function*" />
+        <arg name="type_keyval" type="int*" />
+        <arg name="extra_state" type="void*" />
+      </function>
+
+      <function name="Type_delete_attr">
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="type_keyval" type="int" />
+      </function>
+
+      <function name="Type_free_keyval">
+        <arg name="type_keyval" type="int*" />
+      </function>
+
+      <function name="Type_get_attr">
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="type_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Type_get_name">
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="type_name" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="Type_set_attr">
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="type_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+      </function>
+
+      <function name="Type_set_name">
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="type_name" type="char*" const="1"/>
+      </function>
+
+<!-- int MPI_WIN_DUP_FN(MPI_Win oldwin, int win_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_WIN_NULL_COPY_FN(MPI_Win oldwin, int win_keyval, void *extra_state, void *attribute_val_in, void *attribute_val_out, int *flag) -->
+<!-- int MPI_WIN_NULL_DELETE_FN(MPI_Win win, int win_keyval, void *attribute_val, void *extra_state) -->
+
+      <function name="Win_create_keyval">
+        <arg name="win_copy_attr_fn" type="MPI_Win_copy_attr_function*" />
+        <arg name="win_delete_attr_fn" type="MPI_Win_delete_attr_function*" />
+        <arg name="win_keyval" type="int*" />
+        <arg name="extra_state" type="void*" />
+      </function>
+
+      <function name="Win_delete_attr">
+        <arg name="win" type="MPI_Win" />
+        <arg name="win_keyval" type="int" />
+      </function>
+
+      <function name="Win_free_keyval">
+        <arg name="win_keyval" type="int*" />
+      </function>
+
+      <function name="Win_get_attr">
+        <arg name="win" type="MPI_Win" />
+        <arg name="win_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Win_get_name">
+        <arg name="win" type="MPI_Win" />
+        <arg name="win_name" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="Win_set_attr">
+        <arg name="win" type="MPI_Win" />
+        <arg name="win_keyval" type="int" />
+        <arg name="attribute_val" type="void*" />
+      </function>
+
+      <function name="Win_set_name">
+        <arg name="win" type="MPI_Win" />
+        <arg name="win_name" type="char*" const="1"/>
+      </function>
+
+    <!-- A.2.5 Process Topologies C Bindings -->
+
+<!-- int MPI_Cart_coords(MPI_Comm comm, int rank, int maxdims, int coords[]) -->
+<!-- int MPI_Cart_create(MPI_Comm comm_old, int ndims, const int dims[], const int periods[], int reorder, MPI_Comm *comm_cart) -->
+<!-- int MPI_Cart_get(MPI_Comm comm, int maxdims, int dims[], int periods[], int coords[]) -->
+<!-- int MPI_Cart_map(MPI_Comm comm, int ndims, const int dims[], const int periods[], int *newrank) -->
+<!-- int MPI_Cart_rank(MPI_Comm comm, const int coords[], int *rank) -->
+<!-- int MPI_Cart_shift(MPI_Comm comm, int direction, int disp, int *rank_source, int *rank_dest) -->
+<!-- int MPI_Cart_sub(MPI_Comm comm, const int remain_dims[], MPI_Comm *newcomm) -->
+<!-- int MPI_Cartdim_get(MPI_Comm comm, int *ndims) -->
+<!-- int MPI_Dims_create(int nnodes, int ndims, int dims[]) -->
+<!-- int MPI_Dist_graph_create(MPI_Comm comm_old, int n, const int sources[], const int degrees[], const int destinations[], const int weights[], MPI_Info info, int reorder, MPI_Comm *comm_dist_graph) -->
+<!-- int MPI_Dist_graph_create_adjacent(MPI_Comm comm_old, int indegree, const int sources[], const int sourceweights[], int outdegree, const int destinations[], const int destweights[], MPI_Info info, int reorder, MPI_Comm *comm_dist_graph) -->
+<!-- int MPI_Dist_graph_neighbors(MPI_Comm comm, int maxindegree, int sources[], int sourceweights[], int maxoutdegree, int destinations[], int destweights[]) -->
+<!-- int MPI_Dist_graph_neighbors_count(MPI_Comm comm, int *indegree, int *outdegree, int *weighted) -->
+<!-- int MPI_Graph_create(MPI_Comm comm_old, int nnodes, const int index[], const int edges[], int reorder, MPI_Comm *comm_graph) -->
+<!-- int MPI_Graph_get(MPI_Comm comm, int maxindex, int maxedges, int index[], int edges[]) -->
+<!-- int MPI_Graph_map(MPI_Comm comm, int nnodes, const int index[], const int edges[], int *newrank) -->
+<!-- int MPI_Graph_neighbors(MPI_Comm comm, int rank, int maxneighbors, int neighbors[]) -->
+<!-- int MPI_Graph_neighbors_count(MPI_Comm comm, int rank, int *nneighbors) -->
+<!-- int MPI_Graphdims_get(MPI_Comm comm, int *nnodes, int *nedges) -->
+<!-- int MPI_Ineighbor_allgather(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ineighbor_allgatherv(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, const int recvcounts[], const int displs[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ineighbor_alltoall(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ineighbor_alltoallv(const void* sendbuf, const int sendcounts[], const int sdispls[], MPI_Datatype sendtype, void* recvbuf, const int recvcounts[], const int rdispls[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Ineighbor_alltoallw(const void* sendbuf, const int sendcounts[], const MPI_Aint sdispls[], const MPI_Datatype sendtypes[], void* recvbuf, const int recvcounts[], const MPI_Aint rdispls[], const MPI_Datatype recvtypes[], MPI_Comm comm, MPI_Request *request) -->
+<!-- int MPI_Neighbor_allgather(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm) -->
+<!-- int MPI_Neighbor_allgatherv(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, const int recvcounts[], const int displs[], MPI_Datatype recvtype, MPI_Comm comm) -->
+<!-- int MPI_Neighbor_alltoall(const void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm) -->
+<!-- int MPI_Neighbor_alltoallv(const void* sendbuf, const int sendcounts[], const int sdispls[], MPI_Datatype sendtype, void* recvbuf, const int recvcounts[], const int rdispls[], MPI_Datatype recvtype, MPI_Comm comm) -->
+<!-- int MPI_Neighbor_alltoallw(const void* sendbuf, const int sendcounts[], const MPI_Aint sdispls[], const MPI_Datatype sendtypes[], void* recvbuf, const int recvcounts[], const MPI_Aint rdispls[], const MPI_Datatype recvtypes[], MPI_Comm comm) -->
+<!-- int MPI_Topo_test(MPI_Comm comm, int *status) -->
+
+    <!-- A.2.6 MPI Environmental Management C Bindings -->
+
+      <function name="Wtick" type="double" >
+      </function>
+
+      <function name="Wtime" type="double" >
+      </function>
+
+      <function name="Abort">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="errorcode" type="int" />
+      </function>
+
+      <function name="Add_error_class">
+        <arg name="errorclass" type="int*" />
+      </function>
+
+      <function name="Add_error_code">
+        <arg name="errorclass" type="int" />
+        <arg name="errorcode" type="int*" />
+      </function>
+
+      <function name="Add_error_string">
+        <arg name="errorcode" type="int" />
+        <arg name="string" type="const char*" />
+      </function>
+
+      <function name="Alloc_mem">
+        <arg name="size" type="MPI_Aint" />
+        <arg name="info" type="MPI_Info" />
+        <arg name="baseptr" type="void*" />
+      </function>
+
+      <function name="Comm_call_errhandler">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="errorcode" type="int" />
+      </function>
+
+      <function name="Comm_create_errhandler">
+        <arg name="comm_errhandler_fn" type="MPI_Comm_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Comm_get_errhandler">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Comm_set_errhandler">
+        <arg name="comm" type="MPI_Comm" />
+        <arg name="errhandler" type="MPI_Errhandler" />
+      </function>
+
+      <function name="Errhandler_free">
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Error_class">
+        <arg name="errorcode" type="int" />
+        <arg name="errorclass" type="int*" />
+      </function>
+
+      <function name="Error_string">
+        <arg name="errorcode" type="int" />
+        <arg name="string" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="File_call_errhandler">
+        <arg name="fh" type="MPI_File" />
+        <arg name="errorcode" type="int" />
+      </function>
+
+      <function name="File_create_errhandler">
+        <arg name="file_errhandler_fn" type="MPI_File_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="File_get_errhandler">
+        <arg name="file" type="MPI_File" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="File_set_errhandler">
+        <arg name="file" type="MPI_File" />
+        <arg name="errhandler" type="MPI_Errhandler" />
+      </function>
+
+      <function name="Finalize">
+      </function>
+
+      <function name="Finalized">
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Free_mem">
+        <arg name="base" type="void*" />
+      </function>
+
+      <function name="Get_library_version">
+        <arg name="version" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="Get_processor_name">
+        <arg name="name" type="char*" />
+        <arg name="resultlen" type="int*" />
+      </function>
+
+      <function name="Get_version">
+        <arg name="version" type="int*" />
+        <arg name="subversion" type="int*" />
+      </function>
+
+      <!-- <function name="Init">
+        <arg name="argc" type="int*" />
+        <arg name="argv" type="char***" />
+      </function> -->
+
+      <function name="Initialized">
+        <arg name="flag" type="int*" />
+      </function>
+
+      <function name="Win_call_errhandler">
+        <arg name="win" type="MPI_Win" />
+        <arg name="errorcode" type="int" />
+      </function>
+
+      <function name="Win_create_errhandler">
+        <arg name="win_errhandler_fn" type="MPI_Win_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Win_get_errhandler">
+        <arg name="win" type="MPI_Win" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Win_set_errhandler">
+        <arg name="win" type="MPI_Win" />
+        <arg name="errhandler" type="MPI_Errhandler" />
+      </function>
+
+    <!-- A.2.7 Info Object C Bindings -->
+
+<!-- int MPI_Info_create(MPI_Info *info) -->
+<!-- int MPI_Info_delete(MPI_Info info, const char *key) -->
+<!-- int MPI_Info_dup(MPI_Info info, MPI_Info *newinfo) -->
+<!-- int MPI_Info_free(MPI_Info *info) -->
+<!-- int MPI_Info_get(MPI_Info info, const char *key, int valuelen, char *value, int *flag) -->
+<!-- int MPI_Info_get_nkeys(MPI_Info info, int *nkeys) -->
+<!-- int MPI_Info_get_nthkey(MPI_Info info, int n, char *key) -->
+<!-- int MPI_Info_get_valuelen(MPI_Info info, const char *key, int *valuelen, int *flag) -->
+<!-- int MPI_Info_set(MPI_Info info, const char *key, const char *value) -->
+
+    <!-- A.2.8 Process Creation and Management C Bindings -->
+
+<!-- int MPI_Close_port(const char *port_name) -->
+<!-- int MPI_Comm_accept(const char *port_name, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *newcomm) -->
+<!-- int MPI_Comm_connect(const char *port_name, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *newcomm) -->
+<!-- int MPI_Comm_disconnect(MPI_Comm *comm) -->
+<!-- int MPI_Comm_get_parent(MPI_Comm *parent) -->
+<!-- int MPI_Comm_join(int fd, MPI_Comm *intercomm) -->
+<!-- int MPI_Comm_spawn(const char *command, char *argv[], int maxprocs, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[]) -->
+<!-- int MPI_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], const int array_of_maxprocs[], const MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[]) -->
+<!-- int MPI_Lookup_name(const char *service_name, MPI_Info info, char *port_name) -->
+<!-- int MPI_Open_port(MPI_Info info, char *port_name) -->
+<!-- int MPI_Publish_name(const char *service_name, MPI_Info info, const char *port_name) -->
+<!-- int MPI_Unpublish_name(const char *service_name, MPI_Info info, const char *port_name) -->
+
+    <!-- A.2.9 One-Sided Communication C Bindings -->
+
+<!-- int MPI_Accumulate(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win) -->
+<!-- int MPI_Compare_and_swap(const void *origin_addr, const void *compare_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Win win) -->
+<!-- int MPI_Fetch_and_op(const void *origin_addr, void *result_addr, MPI_Datatype datatype, int target_rank, MPI_Aint target_disp, MPI_Op op, MPI_Win win) -->
+<!-- int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win) -->
+<!-- int MPI_Get_accumulate(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, void *result_addr, int result_count, MPI_Datatype result_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win) -->
+<!-- int MPI_Put(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win) -->
+<!-- int MPI_Raccumulate(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win, MPI_Request *request) -->
+<!-- int MPI_Rget(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win, MPI_Request *request) -->
+<!-- int MPI_Rget_accumulate(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, void *result_addr, int result_count, MPI_Datatype result_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Op op, MPI_Win win, MPI_Request *request) -->
+<!-- int MPI_Rput(const void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win, MPI_Request *request) -->
+<!-- int MPI_Win_allocate(MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, void *baseptr, MPI_Win *win) -->
+<!-- int MPI_Win_allocate_shared(MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, void *baseptr, MPI_Win *win) -->
+<!-- int MPI_Win_attach(MPI_Win win, void *base, MPI_Aint size) -->
+<!-- int MPI_Win_complete(MPI_Win win) -->
+<!-- int MPI_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win) -->
+<!-- int MPI_Win_create_dynamic(MPI_Info info, MPI_Comm comm, MPI_Win *win) -->
+<!-- int MPI_Win_detach(MPI_Win win, const void *base) -->
+<!-- int MPI_Win_fence(int assert, MPI_Win win) -->
+<!-- int MPI_Win_flush(int rank, MPI_Win win) -->
+<!-- int MPI_Win_flush_all(MPI_Win win) -->
+<!-- int MPI_Win_flush_local(int rank, MPI_Win win) -->
+<!-- int MPI_Win_flush_local_all(MPI_Win win) -->
+<!-- int MPI_Win_free(MPI_Win *win) -->
+<!-- int MPI_Win_get_group(MPI_Win win, MPI_Group *group) -->
+<!-- int MPI_Win_get_info(MPI_Win win, MPI_Info *info_used) -->
+<!-- int MPI_Win_lock(int lock_type, int rank, int assert, MPI_Win win) -->
+<!-- int MPI_Win_lock_all(int assert, MPI_Win win) -->
+<!-- int MPI_Win_post(MPI_Group group, int assert, MPI_Win win) -->
+<!-- int MPI_Win_set_info(MPI_Win win, MPI_Info info) -->
+<!-- int MPI_Win_shared_query(MPI_Win win, int rank, MPI_Aint *size, int *disp_unit, void *baseptr) -->
+<!-- int MPI_Win_start(MPI_Group group, int assert, MPI_Win win) -->
+<!-- int MPI_Win_sync(MPI_Win win) -->
+<!-- int MPI_Win_test(MPI_Win win, int *flag) -->
+<!-- int MPI_Win_unlock(int rank, MPI_Win win) -->
+<!-- int MPI_Win_unlock_all(MPI_Win win) -->
+<!-- int MPI_Win_wait(MPI_Win win) -->
+
+    <!-- A.2.10 External Interfaces C Bindings -->
+
+<!-- int MPI_Grequest_complete(MPI_Request request) -->
+<!-- int MPI_Grequest_start(MPI_Grequest_query_function *query_fn, MPI_Grequest_free_function *free_fn, MPI_Grequest_cancel_function *cancel_fn, void *extra_state, MPI_Request *request) -->
+<!-- int MPI_Init_thread(int *argc, char ***argv, int required, int *provided) -->
+<!-- int MPI_Is_thread_main(int *flag) -->
+<!-- int MPI_Query_thread(int *provided) -->
+<!-- int MPI_Status_set_cancelled(MPI_Status *status, int flag) -->
+<!-- int MPI_Status_set_elements(MPI_Status *status, MPI_Datatype datatype, int count) -->
+<!-- int MPI_Status_set_elements_x(MPI_Status *status, MPI_Datatype datatype, MPI_Count count) -->
+
+    <!-- A.2.11 I/O C Bindings -->
+
+<!-- int MPI_CONVERSION_FN_NULL(void *userbuf, MPI_Datatype datatype, int count, void *filebuf, MPI_Offset position, void *extra_state) -->
+<!-- int MPI_File_close(MPI_File *fh) -->
+<!-- int MPI_File_delete(const char *filename, MPI_Info info) -->
+<!-- int MPI_File_get_amode(MPI_File fh, int *amode) -->
+<!-- int MPI_File_get_atomicity(MPI_File fh, int *flag) -->
+<!-- int MPI_File_get_byte_offset(MPI_File fh, MPI_Offset offset, MPI_Offset *disp) -->
+<!-- int MPI_File_get_group(MPI_File fh, MPI_Group *group) -->
+<!-- int MPI_File_get_info(MPI_File fh, MPI_Info *info_used) -->
+<!-- int MPI_File_get_position(MPI_File fh, MPI_Offset *offset) -->
+<!-- int MPI_File_get_position_shared(MPI_File fh, MPI_Offset *offset) -->
+<!-- int MPI_File_get_size(MPI_File fh, MPI_Offset *size) -->
+<!-- int MPI_File_get_type_extent(MPI_File fh, MPI_Datatype datatype, MPI_Aint *extent) -->
+<!-- int MPI_File_get_view(MPI_File fh, MPI_Offset *disp, MPI_Datatype *etype, MPI_Datatype *filetype, char *datarep) -->
+<!-- int MPI_File_iread(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iread_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iread_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iread_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iread_shared(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iwrite(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iwrite_all(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iwrite_at(MPI_File fh, MPI_Offset offset, const void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iwrite_at_all(MPI_File fh, MPI_Offset offset, const void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_iwrite_shared(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Request *request) -->
+<!-- int MPI_File_open(MPI_Comm comm, const char *filename, int amode, MPI_Info info, MPI_File *fh) -->
+<!-- int MPI_File_preallocate(MPI_File fh, MPI_Offset size) -->
+<!-- int MPI_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_read_all_begin(MPI_File fh, void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_read_all_end(MPI_File fh, void *buf, MPI_Status *status) -->
+<!-- int MPI_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_read_at_all_begin(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_read_at_all_end(MPI_File fh, void *buf, MPI_Status *status) -->
+<!-- int MPI_File_read_ordered(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_read_ordered_begin(MPI_File fh, void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_read_ordered_end(MPI_File fh, void *buf, MPI_Status *status) -->
+<!-- int MPI_File_read_shared(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_seek(MPI_File fh, MPI_Offset offset, int whence) -->
+<!-- int MPI_File_seek_shared(MPI_File fh, MPI_Offset offset, int whence) -->
+<!-- int MPI_File_set_atomicity(MPI_File fh, int flag) -->
+<!-- int MPI_File_set_info(MPI_File fh, MPI_Info info) -->
+<!-- int MPI_File_set_size(MPI_File fh, MPI_Offset size) -->
+<!-- int MPI_File_set_view(MPI_File fh, MPI_Offset disp, MPI_Datatype etype, MPI_Datatype filetype, const char *datarep, MPI_Info info) -->
+<!-- int MPI_File_sync(MPI_File fh) -->
+<!-- int MPI_File_write(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_write_all(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_write_all_begin(MPI_File fh, const void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_write_all_end(MPI_File fh, const void *buf, MPI_Status *status) -->
+<!-- int MPI_File_write_at(MPI_File fh, MPI_Offset offset, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_write_at_all(MPI_File fh, MPI_Offset offset, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_write_at_all_begin(MPI_File fh, MPI_Offset offset, const void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_write_at_all_end(MPI_File fh, const void *buf, MPI_Status *status) -->
+<!-- int MPI_File_write_ordered(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_File_write_ordered_begin(MPI_File fh, const void *buf, int count, MPI_Datatype datatype) -->
+<!-- int MPI_File_write_ordered_end(MPI_File fh, const void *buf, MPI_Status *status) -->
+<!-- int MPI_File_write_shared(MPI_File fh, const void *buf, int count, MPI_Datatype datatype, MPI_Status *status) -->
+<!-- int MPI_Register_datarep(const char *datarep, MPI_Datarep_conversion_function *read_conversion_fn, MPI_Datarep_conversion_function *write_conversion_fn, MPI_Datarep_extent_function *dtype_file_extent_fn, void *extra_state) -->
+
+    <!-- A.2.12 Language Bindings C Bindings -->
+
+<!-- int MPI_Status_f082f(MPI_F08_status *f08_status, MPI_Fint *f_status) -->
+<!-- int MPI_Status_f2f08(MPI_Fint *f_status, MPI_F08_status *f08_status) -->
+<!-- int MPI_Type_create_f90_complex(int p, int r, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_f90_integer(int r, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_create_f90_real(int p, int r, MPI_Datatype *newtype) -->
+<!-- int MPI_Type_match_size(int typeclass, int size, MPI_Datatype *datatype) -->
+<!-- MPI_Fint MPI_Comm_c2f(MPI_Comm comm) -->
+<!-- MPI_Comm MPI_Comm_f2c(MPI_Fint comm) -->
+<!-- MPI_Fint MPI_Errhandler_c2f(MPI_Errhandler errhandler) -->
+<!-- MPI_Errhandler MPI_Errhandler_f2c(MPI_Fint errhandler) -->
+<!-- MPI_Fint MPI_File_c2f(MPI_File file) -->
+<!-- MPI_File MPI_File_f2c(MPI_Fint file) -->
+<!-- MPI_Fint MPI_Group_c2f(MPI_Group group) -->
+<!-- MPI_Group MPI_Group_f2c(MPI_Fint group) -->
+<!-- MPI_Fint MPI_Info_c2f(MPI_Info info) -->
+<!-- MPI_Info MPI_Info_f2c(MPI_Fint info) -->
+<!-- MPI_Fint MPI_Message_c2f(MPI_Message message) -->
+<!-- MPI_Message MPI_Message_f2c(MPI_Fint message) -->
+<!-- MPI_Fint MPI_Op_c2f(MPI_Op op) -->
+<!-- MPI_Op MPI_Op_f2c(MPI_Fint op) -->
+<!-- MPI_Fint MPI_Request_c2f(MPI_Request request) -->
+<!-- MPI_Request MPI_Request_f2c(MPI_Fint request) -->
+<!-- int MPI_Status_c2f(const MPI_Status *c_status, MPI_Fint *f_status) -->
+<!-- int MPI_Status_c2f08(const MPI_Status *c_status, MPI_F08_status *f08_status) -->
+<!-- int MPI_Status_f082c(const MPI_F08_status *f08_status, MPI_Status *c_status) -->
+<!-- int MPI_Status_f2c(const MPI_Fint *f_status, MPI_Status *c_status) -->
+<!-- MPI_Fint MPI_Type_c2f(MPI_Datatype datatype) -->
+<!-- MPI_Datatype MPI_Type_f2c(MPI_Fint datatype) -->
+<!-- MPI_Fint MPI_Win_c2f(MPI_Win win) -->
+<!-- MPI_Win MPI_Win_f2c(MPI_Fint win) -->
+
+    <!-- A.2.13 Tools / Profiling Interface C Bindings -->
+
+<!-- int MPI_Pcontrol(const int level, ...) -->
+
+    <!-- A.2.14 Tools / MPI Tool Information Interface C Bindings -->
+
+<!-- int MPI_T_category_changed(int *stamp) -->
+<!-- int MPI_T_category_get_categories(int cat_index, int len, int indices[]) -->
+<!-- int MPI_T_category_get_cvars(int cat_index, int len, int indices[]) -->
+<!-- int MPI_T_category_get_index(const char *name, int *cat_index) -->
+<!-- int MPI_T_category_get_info(int cat_index, char *name, int *name_len, char *desc, int *desc_len, int *num_cvars, int *num_pvars, int *num_categories) -->
+<!-- int MPI_T_category_get_num(int *num_cat) -->
+<!-- int MPI_T_category_get_pvars(int cat_index, int len, int indices[]) -->
+<!-- int MPI_T_cvar_get_index(const char *name, int *cvar_index) -->
+<!-- int MPI_T_cvar_get_info(int cvar_index, char *name, int *name_len, int *verbosity, MPI_Datatype *datatype, MPI_T_enum *enumtype, char *desc, int *desc_len, int *bind, int *scope) -->
+<!-- int MPI_T_cvar_get_num(int *num_cvar) -->
+<!-- int MPI_T_cvar_handle_alloc(int cvar_index, void *obj_handle, MPI_T_cvar_handle *handle, int *count) -->
+<!-- int MPI_T_cvar_handle_free(MPI_T_cvar_handle *handle) -->
+<!-- int MPI_T_cvar_read(MPI_T_cvar_handle handle, void* buf) -->
+<!-- int MPI_T_cvar_write(MPI_T_cvar_handle handle, const void* buf) -->
+<!-- int MPI_T_enum_get_info(MPI_T_enum enumtype, int *num, char *name, int *name_len) -->
+<!-- int MPI_T_enum_get_item(MPI_T_enum enumtype, int index, int *value, char *name, int *name_len) -->
+<!-- int MPI_T_finalize(void) -->
+<!-- int MPI_T_init_thread(int required, int *provided) -->
+<!-- int MPI_T_pvar_get_index(const char *name, int var_class, int *pvar_index) -->
+<!-- int MPI_T_pvar_get_info(int pvar_index, char *name, int *name_len, int *verbosity, int *var_class, MPI_Datatype *datatype, MPI_T_enum *enumtype, char *desc, int *desc_len, int *bind, int *readonly, int *continuous, int *atomic) -->
+<!-- int MPI_T_pvar_get_num(int *num_pvar) -->
+<!-- int MPI_T_pvar_handle_alloc(MPI_T_pvar_session session, int pvar_index, void *obj_handle, MPI_T_pvar_handle *handle, int *count) -->
+<!-- int MPI_T_pvar_handle_free(MPI_T_pvar_session session, MPI_T_pvar_handle *handle) -->
+<!-- int MPI_T_pvar_read(MPI_T_pvar_session session, MPI_T_pvar_handle handle, void* buf) -->
+<!-- int MPI_T_pvar_readreset(MPI_T_pvar_session session, MPI_T_pvar_handle handle, void* buf) -->
+<!-- int MPI_T_pvar_reset(MPI_T_pvar_session session, MPI_T_pvar_handle handle) -->
+<!-- int MPI_T_pvar_session_create(MPI_T_pvar_session *session) -->
+<!-- int MPI_T_pvar_session_free(MPI_T_pvar_session *session) -->
+<!-- int MPI_T_pvar_start(MPI_T_pvar_session session, MPI_T_pvar_handle handle) -->
+<!-- int MPI_T_pvar_stop(MPI_T_pvar_session session, MPI_T_pvar_handle handle) -->
+<!-- int MPI_T_pvar_write(MPI_T_pvar_session session, MPI_T_pvar_handle handle, const void* buf) -->
 
 </functions>
