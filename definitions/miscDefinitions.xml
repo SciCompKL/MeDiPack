@@ -1,58 +1,372 @@
 <definitions>
-  <define name="MPI_PROC_NULL" />
-  <define name="MPI_ANY_SOURCE" />
-  <define name="MPI_ANY_TAG" />
-  <define name="MPI_UNDEFINED" />
-  <define name="MPI_BSEND_OVERHEAD" />
-  <define name="MPI_KEYVAL_INVALID" />
-  <define name="MPI_LOCK_EXCLUSIVE" />
-  <define name="MPI_LOCK_SHARED" />
-  <define name="MPI_ROOT" />
 
-  <define name="MPI_GROUP_NULL" />
-  <define name="MPI_COMM_NULL" />
-  <define name="MPI_DATATYPE_NULL" /> <!-- TODO -->
-  <define name="MPI_ERRHANDLER_NULL" />
-  <define name="MPI_FILE_NULL" />
-  <define name="MPI_INFO_NULL" />
-  <define name="MPI_WIN_NULL" />
-  <define name="MPI_MESSAGE_NULL" />
+  <!-- A.1 Defined Values and Handles -->
+    <!-- A.1.1 Defined Constants -->
+      <!-- Error classes -->
+        <define name="MPI_SUCCESS" />
+        <define name="MPI_ERR_BUFFER" />
+        <define name="MPI_ERR_COUNT" />
+        <define name="MPI_ERR_TYPE" />
+        <define name="MPI_ERR_TAG" />
+        <define name="MPI_ERR_COMM" />
+        <define name="MPI_ERR_RANK" />
+        <define name="MPI_ERR_REQUEST" />
+        <define name="MPI_ERR_ROOT" />
+        <define name="MPI_ERR_GROUP" />
+        <define name="MPI_ERR_OP" />
+        <define name="MPI_ERR_TOPOLOGY" />
+        <define name="MPI_ERR_DIMS" />
+        <define name="MPI_ERR_ARG" />
+        <define name="MPI_ERR_UNKNOWN" />
+        <define name="MPI_ERR_TRUNCATE" />
+        <define name="MPI_ERR_OTHER" />
+        <define name="MPI_ERR_INTERN" />
+        <define name="MPI_ERR_PENDING" />
+        <define name="MPI_ERR_IN_STATUS" />
+        <define name="MPI_ERR_ACCESS" />
+        <define name="MPI_ERR_AMODE" />
+        <define name="MPI_ERR_ASSERT" />
+        <define name="MPI_ERR_BAD_FILE" />
+        <define name="MPI_ERR_BASE" />
+        <define name="MPI_ERR_CONVERSION" />
+        <define name="MPI_ERR_DISP" />
+        <define name="MPI_ERR_DUP_DATAREP" />
+        <define name="MPI_ERR_FILE_EXISTS" />
+        <define name="MPI_ERR_FILE_IN_USE" />
+        <define name="MPI_ERR_FILE" />
+        <define name="MPI_ERR_INFO_KEY" />
+        <define name="MPI_ERR_INFO_NOKEY" />
+        <define name="MPI_ERR_INFO_VALUE" />
+        <define name="MPI_ERR_INFO" />
+        <define name="MPI_ERR_IO" />
+        <define name="MPI_ERR_KEYVAL" />
+        <define name="MPI_ERR_LOCKTYPE" />
+        <define name="MPI_ERR_NAME" />
+        <define name="MPI_ERR_NO_MEM" />
+        <define name="MPI_ERR_NOT_SAME" />
+        <define name="MPI_ERR_NO_SPACE" />
+        <define name="MPI_ERR_NO_SUCH_FILE" />
+        <define name="MPI_ERR_PORT" />
+        <define name="MPI_ERR_QUOTA" />
+        <define name="MPI_ERR_READ_ONLY" />
+        <define name="MPI_ERR_RMA_ATTACH" />
+        <define name="MPI_ERR_RMA_CONFLICT" />
+        <define name="MPI_ERR_RMA_RANGE" />
+        <define name="MPI_ERR_RMA_SHARED" />
+        <define name="MPI_ERR_RMA_SYNC" />
+        <define name="MPI_ERR_RMA_FLAVOR" />
+        <define name="MPI_ERR_SERVICE" />
+        <define name="MPI_ERR_SIZE" />
+        <define name="MPI_ERR_SPAWN" />
+        <define name="MPI_ERR_UNSUPPORTED_DATAREP" />
+        <define name="MPI_ERR_UNSUPPORTED_OPERATION" />
+        <define name="MPI_ERR_WIN" />
+        <define name="MPI_T_ERR_CANNOT_INIT" />
+        <define name="MPI_T_ERR_NOT_INITIALIZED" />
+        <define name="MPI_T_ERR_MEMORY" />
+        <define name="MPI_T_ERR_INVALID" />
+        <define name="MPI_T_ERR_INVALID_INDEX" />
+        <define name="MPI_T_ERR_INVALID_ITEM" />
+        <define name="MPI_T_ERR_INVALID_SESSION" />
+        <define name="MPI_T_ERR_INVALID_HANDLE" />
+        <define name="MPI_T_ERR_INVALID_NAME" />
+        <define name="MPI_T_ERR_OUT_OF_HANDLES" />
+        <define name="MPI_T_ERR_OUT_OF_SESSIONS" />
+        <define name="MPI_T_ERR_CVAR_SET_NOT_NOW" />
+        <define name="MPI_T_ERR_CVAR_SET_NEVER" />
+        <define name="MPI_T_ERR_PVAR_NO_WRITE" />
+        <define name="MPI_T_ERR_PVAR_NO_STARTSTOP" />
+        <define name="MPI_T_ERR_PVAR_NO_ATOMIC" />
+        <define name="MPI_ERR_LASTCODE" />
 
-  <define name="MPI_THREAD_FUNNELED" />
-  <define name="MPI_THREAD_MULTIPLE" />
-  <define name="MPI_THREAD_SERIALIZED" />
-  <define name="MPI_THREAD_SINGLE" />
+      <!-- Buffer Address Constants -->
+        <define name="MPI_BOTTOM" />
+        <define name="MPI_IN_PLACE" />
 
-  <define name="MPI_MAX_DATAREP_STRING" />
-  <define name="MPI_MAX_ERROR_STRING" />
-  <define name="MPI_MAX_INFO_KEY" />
-  <define name="MPI_MAX_INFO_VAL" />
-  <define name="MPI_MAX_LIBRARY_VERSION_STRING" />
-  <define name="MPI_MAX_OBJECT_NAME" />
-  <define name="MPI_MAX_PORT_NAME" />
-  <define name="MPI_MAX_PROCESSOR_NAME" />
-  <define name="MPI_TAG_UB" />
-  <define name="MPI_IO" />
-  <define name="MPI_HOST" />
-  <define name="MPI_WTIME_IS_GLOBAL" />
+      <!-- Assorted Constants -->
+        <define name="MPI_PROC_NULL" />
+        <define name="MPI_ANY_SOURCE" />
+        <define name="MPI_ANY_TAG" />
+        <define name="MPI_UNDEFINED" />
+        <define name="MPI_BSEND_OVERHEAD" />
+        <define name="MPI_KEYVAL_INVALID" />
+        <define name="MPI_LOCK_EXCLUSIVE" />
+        <define name="MPI_LOCK_SHARED" />
+        <define name="MPI_ROOT" />
 
-  <typedef name="MPI_User_function" />
+      <!-- No Process Message Handle -->
+        <define name="MPI_MESSAGE_NO_PROC" />
 
+      <!-- Error-handling specifiers -->
+        <define name="MPI_ERRORS_ARE_FATAL" />
+        <define name="MPI_ERRORS_RETURN" />
 
-  <operator name="MPI_MAX" />
-  <operator name="MPI_MIN" />
-  <operator name="MPI_SUM" />
-  <operator name="MPI_PROD" />
-  <operator name="MPI_MAXLOC" />
-  <operator name="MPI_MINLOC" />
-  <operator name="MPI_BAND" />
-  <operator name="MPI_BOR" />
-  <operator name="MPI_BXOR" />
-  <operator name="MPI_LAND" />
-  <operator name="MPI_LOR" />
-  <operator name="MPI_LXOR" />
-  <operator name="MPI_REPLACE" />
-  <operator name="MPI_NO_OP" />
-  <operator name="MPI_OP_NULL" />
+      <!-- Maximum Sizes for Strings -->
+        <define name="MPI_MAX_DATAREP_STRING" />
+        <define name="MPI_MAX_ERROR_STRING" />
+        <define name="MPI_MAX_INFO_KEY" />
+        <define name="MPI_MAX_INFO_VAL" />
+        <define name="MPI_MAX_LIBRARY_VERSION_STRING" />
+        <define name="MPI_MAX_OBJECT_NAME" />
+        <define name="MPI_MAX_PORT_NAME" />
+        <define name="MPI_MAX_PROCESSOR_NAME" />
+
+      <!-- Reserved communicators -->
+        <define name="MPI_COMM_WORLD" />
+        <define name="MPI_COMM_SELF" />
+
+      <!-- Communicator split type constants -->
+        <define name="MPI_COMM_TYPE_SHARED" />
+
+      <!-- Results of communicator and group comparisons -->
+        <define name="MPI_IDENT" />
+        <define name="MPI_CONGRUENT" />
+        <define name="MPI_SIMILAR" />
+        <define name="MPI_UNEQUAL" />
+
+      <!-- Environmental inquiry info key -->
+        <define name="MPI_INFO_ENV" />
+
+      <!-- Environmental inquiry keys -->
+        <define name="MPI_TAG_UB" />
+        <define name="MPI_IO" />
+        <define name="MPI_HOST" />
+        <define name="MPI_WTIME_IS_GLOBAL" />
+
+      <!-- Collective Operations -->
+        <operator name="MPI_MAX" />
+        <operator name="MPI_MIN" />
+        <operator name="MPI_SUM" />
+        <operator name="MPI_PROD" />
+        <operator name="MPI_MAXLOC" />
+        <operator name="MPI_MINLOC" />
+        <operator name="MPI_BAND" />
+        <operator name="MPI_BOR" />
+        <operator name="MPI_BXOR" />
+        <operator name="MPI_LAND" />
+        <operator name="MPI_LOR" />
+        <operator name="MPI_LXOR" />
+        <operator name="MPI_REPLACE" />
+        <operator name="MPI_NO_OP" />
+
+      <!-- Null Handles -->
+        <define name="MPI_GROUP_NULL" />
+        <define name="MPI_COMM_NULL" />
+        <define name="MPI_DATATYPE_NULL" />
+        <define name="MPI_REQUEST_NULL" />
+        <define name="MPI_OP_NULL" />
+        <define name="MPI_ERRHANDLER_NULL" />
+        <define name="MPI_FILE_NULL" />
+        <define name="MPI_INFO_NULL" />
+        <define name="MPI_WIN_NULL" />
+        <define name="MPI_MESSAGE_NULL" />
+
+      <!-- Empty group -->
+        <define name="MPI_GROUP_EMPTY" />
+
+      <!-- Topologies -->
+        <define name="MPI_GRAPH" />
+        <define name="MPI_CART" />
+        <define name="MPI_DIST_GRAPH" />
+
+      <!-- Predefined functions -->
+        <define name="MPI_COMM_NULL_COPY_FN" />
+        <define name="MPI_COMM_DUP_FN" />
+        <define name="MPI_COMM_NULL_DELETE_FN" />
+        <define name="MPI_WIN_NULL_COPY_FN" />
+        <define name="MPI_WIN_DUP_FN" />
+        <define name="MPI_WIN_NULL_DELETE_FN" />
+        <define name="MPI_TYPE_NULL_COPY_FN" />
+        <define name="MPI_TYPE_DUP_FN" />
+        <define name="MPI_TYPE_NULL_DELETE_FN" />
+        <define name="MPI_CONVERSION_FN_NULL" />
+
+      <!-- Predefined Attribute Keys -->
+        <define name="MPI_APPNUM" />
+        <define name="MPI_LASTUSEDCODE" />
+        <define name="MPI_UNIVERSE_SIZE" />
+        <define name="MPI_WIN_BASE" />
+        <define name="MPI_WIN_DISP_UNIT" />
+        <define name="MPI_WIN_SIZE" />
+        <define name="MPI_WIN_CREATE_FLAVOR" />
+        <define name="MPI_WIN_MODEL" />
+
+      <!-- MPI Window Create Flavors -->
+        <define name="MPI_WIN_FLAVOR_CREATE" />
+        <define name="MPI_WIN_FLAVOR_ALLOCATE" />
+        <define name="MPI_WIN_FLAVOR_DYNAMIC" />
+        <define name="MPI_WIN_FLAVOR_SHARED" />
+
+      <!-- MPI Window Models -->
+        <define name="MPI_WIN_SEPARATE" />
+        <define name="MPI_WIN_UNIFIED" />
+
+      <!-- Mode Constants -->
+        <define name="MPI_MODE_APPEND" />
+        <define name="MPI_MODE_CREATE" />
+        <define name="MPI_MODE_DELETE_ON_CLOSE" />
+        <define name="MPI_MODE_EXCL" />
+        <define name="MPI_MODE_NOCHECK" />
+        <define name="MPI_MODE_NOPRECEDE" />
+        <define name="MPI_MODE_NOPUT" />
+        <define name="MPI_MODE_NOSTORE" />
+        <define name="MPI_MODE_NOSUCCEED" />
+        <define name="MPI_MODE_RDONLY" />
+        <define name="MPI_MODE_RDWR" />
+        <define name="MPI_MODE_SEQUENTIAL" />
+        <define name="MPI_MODE_UNIQUE_OPEN" />
+        <define name="MPI_MODE_WRONLY" />
+
+      <!-- Datatype Decoding Constants -->
+        <define name="MPI_COMBINER_CONTIGUOUS" />
+        <define name="MPI_COMBINER_DARRAY" />
+        <define name="MPI_COMBINER_DUP" />
+        <define name="MPI_COMBINER_F90_COMPLEX" />
+        <define name="MPI_COMBINER_F90_INTEGER" />
+        <define name="MPI_COMBINER_F90_REAL" />
+        <define name="MPI_COMBINER_HINDEXED" />
+        <define name="MPI_COMBINER_HVECTOR" />
+        <define name="MPI_COMBINER_INDEXED_BLOCK" />
+        <define name="MPI_COMBINER_HINDEXED_BLOCK" />
+        <define name="MPI_COMBINER_INDEXED" />
+        <define name="MPI_COMBINER_NAMED" />
+        <define name="MPI_COMBINER_RESIZED" />
+        <define name="MPI_COMBINER_STRUCT" />
+        <define name="MPI_COMBINER_SUBARRAY" />
+        <define name="MPI_COMBINER_VECTOR" />
+
+      <!-- Threads Constants -->
+        <define name="MPI_THREAD_FUNNELED" />
+        <define name="MPI_THREAD_MULTIPLE" />
+        <define name="MPI_THREAD_SERIALIZED" />
+        <define name="MPI_THREAD_SINGLE" />
+
+      <!-- File Operation Constants -->
+        <define name="MPI_DISPLACEMENT_CURRENT" />
+        <define name="MPI_DISTRIBUTE_BLOCK" />
+        <define name="MPI_DISTRIBUTE_CYCLIC" />
+        <define name="MPI_DISTRIBUTE_DFLT_DARG" />
+        <define name="MPI_DISTRIBUTE_NONE" />
+        <define name="MPI_ORDER_C" />
+        <define name="MPI_ORDER_FORTRAN" />
+        <define name="MPI_SEEK_CUR" />
+        <define name="MPI_SEEK_END" />
+        <define name="MPI_SEEK_SET" />
+
+      <!-- Constants Specifying Empty or Ignored Input -->
+        <define name="MPI_ARGVS_NULL" />
+        <define name="MPI_ARGV_NULL" />
+        <define name="MPI_ERRCODES_IGNORE" />
+        <define name="MPI_STATUSES_IGNORE" />
+        <define name="MPI_STATUS_IGNORE" />
+        <define name="MPI_UNWEIGHTED" />
+        <define name="MPI_WEIGHTS_EMPTY" />
+
+      <!-- C preprocessor Constants and Fortran Parameters -->
+        <define name="MPI_SUBVERSION" />
+        <define name="MPI_VERSION" />
+
+      <!-- Null handles used in the MPI tool information interface -->
+        <define name="MPI_T_ENUM_NULL" />
+        <define name="MPI_T_enum" />
+        <define name="MPI_T_CVAR_HANDLE_NULL" />
+        <define name="MPI_T_cvar_handle" />
+        <define name="MPI_T_PVAR_HANDLE_NULL" />
+        <define name="MPI_T_pvar_handle" />
+        <define name="MPI_T_PVAR_SESSION_NULL" />
+        <define name="MPI_T_pvar_session" />
+
+      <!-- Verbosity Levels in the MPI tool information interface -->
+        <define name="MPI_T_VERBOSITY_USER_BASIC" />
+        <define name="MPI_T_VERBOSITY_USER_DETAIL" />
+        <define name="MPI_T_VERBOSITY_USER_ALL" />
+        <define name="MPI_T_VERBOSITY_TUNER_BASIC" />
+        <define name="MPI_T_VERBOSITY_TUNER_DETAIL" />
+        <define name="MPI_T_VERBOSITY_TUNER_ALL" />
+        <define name="MPI_T_VERBOSITY_MPIDEV_BASIC" />
+        <define name="MPI_T_VERBOSITY_MPIDEV_DETAIL" />
+        <define name="MPI_T_VERBOSITY_MPIDEV_ALL" />
+        <define name="" />
+      <!-- Constants to identify associations of variables in the MPI tool information interface -->
+        <define name="MPI_T_BIND_NO_OBJECT" />
+        <define name="MPI_T_BIND_MPI_COMM" />
+        <define name="MPI_T_BIND_MPI_DATATYPE" />
+        <define name="MPI_T_BIND_MPI_ERRHANDLER" />
+        <define name="MPI_T_BIND_MPI_FILE" />
+        <define name="MPI_T_BIND_MPI_GROUP" />
+        <define name="MPI_T_BIND_MPI_OP" />
+        <define name="MPI_T_BIND_MPI_REQUEST" />
+        <define name="MPI_T_BIND_MPI_WIN" />
+        <define name="MPI_T_BIND_MPI_MESSAGE" />
+        <define name="MPI_T_BIND_MPI_INFO" />
+
+      <!-- Constants describing the scope of a control variable in the MPI tool information interface -->
+        <define name="MPI_T_SCOPE_CONSTANT" />
+        <define name="MPI_T_SCOPE_READONLY" />
+        <define name="MPI_T_SCOPE_LOCAL" />
+        <define name="MPI_T_SCOPE_GROUP" />
+        <define name="MPI_T_SCOPE_GROUP_EQ" />
+        <define name="MPI_T_SCOPE_ALL" />
+        <define name="MPI_T_SCOPE_ALL_EQ" />
+
+      <!-- Additional constants used by the MPI tool information interface -->
+        <define name="MPI_T_PVAR_ALL_HANDLES" />
+
+      <!-- Performance variables classes used by the MPI tool information interface -->
+        <define name="MPI_T_PVAR_CLASS_STATE" />
+        <define name="MPI_T_PVAR_CLASS_LEVEL" />
+        <define name="MPI_T_PVAR_CLASS_SIZE" />
+        <define name="MPI_T_PVAR_CLASS_PERCENTAGE" />
+        <define name="MPI_T_PVAR_CLASS_HIGHWATERMARK" />
+        <define name="MPI_T_PVAR_CLASS_LOWWATERMARK" />
+        <define name="MPI_T_PVAR_CLASS_COUNTER" />
+        <define name="MPI_T_PVAR_CLASS_AGGREGATE" />
+        <define name="MPI_T_PVAR_CLASS_TIMER" />
+        <define name="MPI_T_PVAR_CLASS_GENERIC" />
+
+    <!-- A.1.2 Types -->
+      <!-- C opaque types -->
+        <define name="MPI_Aint" />
+        <define name="MPI_Count" />
+        <define name="MPI_Fint" />
+        <define name="MPI_Offset" />
+        <define name="MPI_Status" />
+        <define name="MPI_F08_status" />
+
+      <!-- C handles to assorted structures -->
+        <define name="MPI_Comm" />
+        <define name="MPI_Datatype" />
+        <define name="MPI_Errhandler" />
+        <define name="MPI_File" />
+        <define name="MPI_Group" />
+        <define name="MPI_Info" />
+        <define name="MPI_Message" />
+        <define name="MPI_Op" />
+        <define name="MPI_Request" />
+        <define name="MPI_Win" />
+
+      <!-- Types for the MPI_T interface -->
+        <define name="MPI_T_enum" />
+        <define name="MPI_T_cvar_handle" />
+        <define name="MPI_T_pvar_handle" />
+        <define name="MPI_T_pvar_session" />
+
+    <!-- A.1.3 Prototype Definitions -->
+      <!-- prototypes for user-defined functions -->
+        <typedef name="MPI_User_function" />
+        <typedef name="MPI_Comm_copy_attr_function" />
+        <typedef name="MPI_Comm_delete_attr_function" />
+        <typedef name="MPI_Win_copy_attr_function" />
+        <typedef name="MPI_Win_delete_attr_function" />
+        <typedef name="MPI_Type_copy_attr_function" />
+        <typedef name="MPI_Type_delete_attr_function" />
+        <typedef name="MPI_Comm_errhandler_function" />
+        <typedef name="MPI_Win_errhandler_function" />
+        <typedef name="MPI_File_errhandler_function" />
+        <typedef name="MPI_Grequest_query_function" />
+        <typedef name="MPI_Grequest_free_function" />
+        <typedef name="MPI_Grequest_cancel_function" />
+        <typedef name="MPI_Datarep_extent_function" />
+        <typedef name="MPI_Datarep_conversion_function" />
 
 </definitions>
