@@ -111,6 +111,56 @@
         <define name="MPI_MAX_PORT_NAME" />
         <define name="MPI_MAX_PROCESSOR_NAME" />
 
+      <!-- Named Predefined Datatypes C types -->
+        <datatype name="MPI_CHAR" type="char" />
+        <datatype name="MPI_SHORT" type="short" />
+        <datatype name="MPI_INT" type="int" />
+        <datatype name="MPI_LONG" type="long" />
+        <datatype name="MPI_LONG_LONG_INT" type="long long int" />
+        <datatype name="MPI_LONG_LONG" type="long long int" />
+        <datatype name="MPI_SIGNED_CHAR" type="signed char" />
+        <datatype name="MPI_UNSIGNED_CHAR" type="unsigned char" />
+        <datatype name="MPI_UNSIGNED_SHORT" type="unsigned short" />
+        <datatype name="MPI_UNSIGNED" type="unsigned int" />
+        <datatype name="MPI_UNSIGNED_LONG" type="unsigned long" />
+        <datatype name="MPI_UNSIGNED_LONG_LONG" type="unsigned long long int" />
+        <datatype name="MPI_FLOAT" type="float" />
+        <datatype name="MPI_DOUBLE" type="double" />
+        <datatype name="MPI_LONG_DOUBLE" type="long double" />
+        <datatype name="MPI_WCHAR" type="wchar_t" />
+        <datatype name="MPI_C_BOOL" type="bool" />
+        <datatype name="MPI_INT8_T" type="int8_t" />
+        <datatype name="MPI_INT16_T" type="int16_t" />
+        <datatype name="MPI_INT32_T" type="int32_t" />
+        <datatype name="MPI_INT64_T" type="int64_t" />
+        <datatype name="MPI_UINT8_T" type="uint8_t" />
+        <datatype name="MPI_UINT16_T" type="uint16_t" />
+        <datatype name="MPI_UINT32_T" type="uint32_t" />
+        <datatype name="MPI_UINT64_T" type="uint64_t" />
+        <datatype name="MPI_AINT" type="MPI_Aint" />
+        <datatype name="MPI_COUNT" type="MPI_Count" />
+        <datatype name="MPI_OFFSET" type="MPI_Offset" />
+        <!--  <datatype name="MPI_C_COMPLEX" type="float complex" /> -->
+        <!--  <datatype name="MPI_C_FLOAT_COMPLEX" type="float complex" /> -->
+        <!--  <datatype name="MPI_C_DOUBLE_COMPLEX" type="double complex" /> -->
+        <!--  <datatype name="MPI_C_LONG_DOUBLE_COMPLEX" type="long double complex" /> -->
+        <datatype name="MPI_BYTE" type="uint8_t" />
+        <datatype name="MPI_PACKED" type="uint8_t" />
+
+      <!-- Named Predefined Datatypes C++ types -->
+        <datatype name="MPI_CXX_BOOL" type="bool" />
+        <!--  <datatype name="MPI_CXX_FLOAT_COMPLEX" type="std::complex<float>" /> -->
+        <!--  <datatype name="MPI_CXX_DOUBLE_COMPLEX" type="std::complex<double>" /> -->
+        <!--  <datatype name="MPI_CXX_LONG_DOUBLE_COMPLEX" type="std::complex<long double>" /> -->
+
+      <!-- Datatypes for reduction functions (C) -->
+        <datatype name="MPI_FLOAT_INT" type="medi::FloatIntPair" />
+        <datatype name="MPI_DOUBLE_INT" type="medi::DoubleIntPair" />
+        <datatype name="MPI_LONG_INT" type="medi::LongIntPair" />
+        <datatype name="MPI_2INT" type="medi::IntIntPair" />
+        <datatype name="MPI_SHORT_INT" type="medi::ShortIntPair" />
+        <datatype name="MPI_LONG_DOUBLE_INT" type="medi::LongDoubleIntPair" />
+
       <!-- Reserved communicators -->
         <define name="MPI_COMM_WORLD" />
         <define name="MPI_COMM_SELF" />
