@@ -22,6 +22,10 @@ for functions.function as curFunction
   curFunction.mpiName = "MPI_$(curFunction.name)"
  endif
 
+ if(!defined(curFunction.type))
+  curFunction.type = "int"
+ endif
+
  # mark all orignal arguments as args
  for curFunction. as item
    item.arg = 1
@@ -199,11 +203,14 @@ for functions.function as curFunction
    endif
  endfor
 
- # define the ad type that is used in this function
- curFunction.adType = "$(curFunction->type.name)->getADTool()"
+ # special definitions for the type
+ for curFunction.type as type
+   # define the ad type that is used in this function
+   curFunction.adType = "$(type.name)->getADTool()"
 
- # define the main type that is used in this function
- curFunction.mainType = "$(curFunction->type.name)"
+   # define the main type that is used in this function
+   curFunction.mainType = "$(type.name)"
+ endfor
 endfor
 
 function startRoot(buffer)
@@ -460,7 +467,7 @@ endfunction
 #include "../../include/medi/ampi/async.hpp"
 
 namespace medi {
-.for functions.function as curFunction
+.for functions.function as curFunction where curFunction.handle ?= "true"
 .- create the struct for the data store
   template<$(curFunction.tplDef)>
   struct $(curFunction.handleName) : public HandleBase {
@@ -721,6 +728,16 @@ namespace medi {
     }
 
     return rStatus;
+  }
+
+.endfor
+
+.for functions.function as curFunction where !(curFunction.handle ?= "true")
+. if("" <> curFunction.tplDef)
+    template<$(curFunction.tplDef)>
+. endif
+  inline $(curFunction.type) AMPI_$(curFunction.name)($(curFunction.argDef)) {
+    return MPI_$(curFunction.name)($(curFunction.argArg));
   }
 
 .endfor
