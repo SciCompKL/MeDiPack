@@ -17,6 +17,10 @@ for definitions.operator as curOperator
   curOperator.ampiName = modifyTypeName(curOperator.name)
 endfor
 
+for definitions.datatype
+  datatype.taType = modifyTypeName(datatype.name)
+endfor
+
 .endtemplate
 .output "$(switches.arg1)"
 #pragma once
@@ -36,5 +40,16 @@ namespace medi {
 
 .for definitions.operator as curOperator
   extern AMPI_Op $(curOperator.ampiName);
+.endfor
+
+  void initTypes();
+  void finalizeTypes();
+
+.for definitions.datatype
+  typedef MpiTypePassive<$(datatype.type)> $(datatype.taType)_Type;
+.endfor
+
+.for definitions.datatype
+  extern $(datatype.taType)_Type* $(datatype.taType);
 .endfor
 }
