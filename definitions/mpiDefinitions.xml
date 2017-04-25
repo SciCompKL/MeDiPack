@@ -81,7 +81,7 @@
 
       <!-- Buffer Address Constants -->
         <define name="MPI_BOTTOM" />
-        <define name="MPI_IN_PLACE" />
+        <define name="MPI_IN_PLACE" special="include/medi/mpiInPlace.hpp" />
 
       <!-- Assorted Constants -->
         <define name="MPI_PROC_NULL" />
@@ -203,7 +203,7 @@
         <define name="MPI_GROUP_NULL" />
         <define name="MPI_COMM_NULL" />
         <define name="MPI_DATATYPE_NULL" />
-        <define name="MPI_REQUEST_NULL" />
+        <define name="MPI_REQUEST_NULL" special="include/medi/ampi/async.hpp"/>
         <define name="MPI_OP_NULL" />
         <define name="MPI_ERRHANDLER_NULL" />
         <define name="MPI_FILE_NULL" />
@@ -391,8 +391,8 @@
         <define name="MPI_Group" />
         <define name="MPI_Info" />
         <define name="MPI_Message" />
-        <define name="MPI_Op" />
-        <define name="MPI_Request" />
+        <define name="MPI_Op" special="include/medi/mpiOp.hpp" />
+        <define name="MPI_Request" special="include/medi/ampi/async.hpp" />
         <define name="MPI_Win" />
 
       <!-- Types for the MPI_T interface -->

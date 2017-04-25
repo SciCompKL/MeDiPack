@@ -5,6 +5,12 @@ function modifyTypeName(type)
   return string.replace(my.type, "MPI_|AMPI_")
 endfunction
 
+# delete all items that have a special handling
+
+for definitions. as item where item.special ?<> ""
+  delete item
+endfor
+
 for definitions.define as curDefine
   curDefine.ampiName = modifyTypeName(curDefine.name)
 endfor
