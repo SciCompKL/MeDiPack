@@ -9,6 +9,11 @@ element: function
 	           [optional] async -> Defines that the function is asynchronous. The value defines the name of the
 						                     argument that is the mpi request.
             [optinal] mpiName -> Defines the name that is used for the real mpi function in the generation process. If not defined the name of the function will be taken.
+         [optinal] mediHandle -> Defines the handling type of MeDiPack for this function possible options are:
+                                    transform: Preforms AD handling
+                                      disable: Ignores the function
+                                      default: Just produce a forward handling to the normal MPI function. [default value]
+
 
 element: arg
   -> A regular argument that does not need special handling.
