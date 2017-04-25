@@ -467,7 +467,7 @@ endfunction
 #include "../../include/medi/ampi/async.hpp"
 
 namespace medi {
-.for functions.function as curFunction where curFunction.handle ?= "true"
+.for functions.function as curFunction where curFunction.mediHandle ?= "transform"
 .- create the struct for the data store
   template<$(curFunction.tplDef)>
   struct $(curFunction.handleName) : public HandleBase {
@@ -732,7 +732,7 @@ namespace medi {
 
 .endfor
 
-.for functions.function as curFunction where !(curFunction.handle ?= "true")
+.for functions.function as curFunction where "default" = (curFunction.mediHandle?"default")
 . if("" <> curFunction.tplDef)
     template<$(curFunction.tplDef)>
 . endif
