@@ -7,7 +7,5 @@
 #include "ampi/operatorFunctions.hpp"
 #include "ampi/wrappers.hpp"
 
-#include "../../generated/medi/miscAmpiDefinitions.h"
-#include "../../generated/medi/miscAmpiFunctions.hpp"
-#include "../../generated/medi/ampiDatatypes.h"
+#include "../../generated/medi/ampiDefinitions.h"
 #include "../../generated/medi/ampiFunctions.hpp"

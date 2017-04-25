@@ -2,7 +2,7 @@
 
 #include "../macros.h"
 #include "../mpiOp.hpp"
-#include "../../../generated/medi/miscAmpiDefinitions.h"
+#include "../../../generated/medi/ampiDefinitions.h"
 
 namespace medi {
   inline int AMPI_Op_create(AMPI_User_function* user_fn, int commute, AMPI_Op* op) {

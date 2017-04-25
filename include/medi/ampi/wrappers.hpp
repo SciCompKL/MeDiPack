@@ -4,8 +4,7 @@
 #include "../medipack.h"
 #include "../mpiInPlace.hpp"
 
-#include "../../../generated/medi/miscAmpiDefinitions.h"
-#include "../../../generated/medi/ampiDatatypes.h"
+#include "../../../generated/medi/ampiDefinitions.h"
 
 namespace medi {
 

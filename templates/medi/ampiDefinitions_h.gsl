@@ -27,6 +27,8 @@ endfor
 
 #include <mpi.h>
 
+#include "../../include/medi/mpiTypePassive.hpp"
+
 namespace medi {
 .for definitions.define as curDefine
   #define $(curDefine.ampiName) $(curDefine.name)
