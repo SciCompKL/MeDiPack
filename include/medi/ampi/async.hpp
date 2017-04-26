@@ -2,6 +2,8 @@
 
 #include "../medipack.h"
 
+#include "../../../generated/medi/ampiDefinitions.h"
+
 namespace medi {
 
   typedef void (*DeleteReverseData)(void* data);

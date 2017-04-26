@@ -385,7 +385,7 @@
 
       <!-- C handles to assorted structures -->
         <define name="MPI_Comm" />
-        <define name="MPI_Datatype" />
+        <define name="MPI_Datatype" special="include/medi/medipack.h" />
         <define name="MPI_Errhandler" />
         <define name="MPI_File" />
         <define name="MPI_Group" />
