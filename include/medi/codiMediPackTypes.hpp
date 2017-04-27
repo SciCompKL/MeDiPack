@@ -5,11 +5,23 @@
 #include "adToolInterface.h"
 
 template <typename T>
+void codiModifiedDependency(T& inval, T& inoutval) {
+
+  bool active = (0 != inoutval.getGradientData()) | (0 != inval.getGradientData());
+  if(active) {
+    inoutval.getGradientData() = -1; // TODO: Define invalid index in CoDiPack
+  } else {
+    inoutval.getGradientData() = 0; // TODO: Define passive index in CoDiPack
+  }
+}
+
+template <typename T>
 void codiModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   MEDI_UNUSED(datatype);
 
   for(int i = 0; i < *len; ++i) {
     inoutvec[i].value() += invec[i].value();
+    codiModifiedDependency(invec[i], inoutvec[i]);
   }
 }
 
@@ -19,6 +31,7 @@ void codiModifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
 
   for(int i = 0; i < *len; ++i) {
     inoutvec[i].value() *= invec[i].value();
+    codiModifiedDependency(invec[i], inoutvec[i]);
   }
 }
 
@@ -29,6 +42,7 @@ void codiModifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   using std::max;
   for(int i = 0; i < *len; ++i) {
     inoutvec[i].value() = max(inoutvec[i].value(), invec[i].value());
+    codiModifiedDependency(invec[i], inoutvec[i]);
   }
 }
 
@@ -39,6 +53,7 @@ void codiModifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
   using std::min;
   for(int i = 0; i < *len; ++i) {
     inoutvec[i].value() = min(inoutvec[i].value(), invec[i].value());
+    codiModifiedDependency(invec[i], inoutvec[i]);
   }
 }
 
@@ -281,8 +296,9 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
   }
 
   static inline void clearIndex(Type& value) {
+    IndexType oldIndex = value.getGradientData();
     value.~Type();
-    value.getGradientData() = IndexType();
+    value.getGradientData() = oldIndex;  // restore the index here so that the other side can decide of the communication was active or not
   }
 
   static inline PassiveType getValue(const Type& value) {
@@ -337,8 +353,13 @@ struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, false, CoDiPackToo
     static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
       MEDI_UNUSED(oldPrimal);
 
+      bool wasActive = 0 != value.getGradientData();
       value.getGradientData() = IndexType();
-      Type::getGlobalTape().registerInput(value);
+
+      // make the value active again if it has been active before on the other processor
+      if(wasActive) {
+        Type::getGlobalTape().registerInput(value);
+      }
 
       return value.getGradientData();
     }
@@ -368,8 +389,14 @@ struct CoDiPackToolPrimalRestore final : public CoDiPackToolBase<CoDiType, true,
     }
 
     static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
+      bool wasActive = 0 != value.getGradientData();
       value.getGradientData() = IndexType();
-      oldPrimal = Type::getGlobalTape().registerExtFunctionOutput(value);
+
+      if(wasActive) {
+        oldPrimal = Type::getGlobalTape().registerExtFunctionOutput(value);
+      } else {
+        oldPrimal = 0.0;
+      }
 
       return value.getGradientData();
     }

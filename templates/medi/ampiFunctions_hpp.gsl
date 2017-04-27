@@ -245,24 +245,31 @@ endfunction
 #                           -1 -> add negative check (executed if no modified buffers are required)
 function createBufferAccessLogic(buffer, modifiedCheck, access)
   startRoot(my.buffer)
+
   if(1 = my.modifiedCheck)
->  if($(my.buffer.type)->isModifiedBufferRequired()) {
+>   if($(my.buffer.type)->isModifiedBufferRequired()) {
   elsif(-1 = my.modifiedCheck)
->  if(!$(my.buffer.type)->isModifiedBufferRequired()) {
+>   if(!$(my.buffer.type)->isModifiedBufferRequired()) {
   endif
-     if(defined(my.buffer.inplace))
->      if(AMPI_IN_PLACE != $(my.buffer.name)) {
-     endif
-     generateLoop(my.buffer, my.access)
-     if(defined(my.buffer.inplace))
->     } else {
-        inplaceBuffer = my.buffer->inplaceBuffer
-        generateInplaceLoop(my.buffer, inplaceBuffer, my.access)
->     }
-     endif
+
+  # Check if this buffer can be an inplace buffer
+  if(defined(my.buffer.inplace))
+>   if(AMPI_IN_PLACE != $(my.buffer.name)) {
+  endif
+
+    generateLoop(my.buffer, my.access)
+
+  # else for an inplece buffer
+  if(defined(my.buffer.inplace))
+>   } else {
+      inplaceBuffer = my.buffer->inplaceBuffer
+      generateInplaceLoop(my.buffer, inplaceBuffer, my.access)
+>   }
+  endif
   if(0 <> my.modifiedCheck)
->  }
+>   }
   endif
+
   endRoot(my.buffer)
 endfunction
 
