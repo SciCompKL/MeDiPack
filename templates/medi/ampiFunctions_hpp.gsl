@@ -26,6 +26,7 @@ for functions.function as curFunction
   curFunction.type = "int"
  endif
 
+ #echo curFunction.name
  # mark all orignal arguments as args
  for curFunction. as item
    item.arg = 1
@@ -748,4 +749,6 @@ namespace medi {
   }
 
 .endfor
+
+.- All functions with curFunction.mediHandle equal to 'disable' or 'handled' are ignored
 }

@@ -12,6 +12,7 @@ element: function
          [optinal] mediHandle -> Defines the handling type of MeDiPack for this function possible options are:
                                     transform: Preforms AD handling
                                       disable: Ignores the function
+                                      handled: Ignores the function, but indicates that the function is handled in a wrapper.
                                       default: Just produce a forward handling to the normal MPI function. [default value]
 
 
