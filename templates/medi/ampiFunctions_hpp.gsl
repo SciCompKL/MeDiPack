@@ -496,6 +496,8 @@ endfunction
 
 .endtemplate
 .output "$(switches.arg1)"
+.literal from "templates/medi/license_c.header"
+
 #pragma once
 
 #include "../../include/medi/medipack.h"
