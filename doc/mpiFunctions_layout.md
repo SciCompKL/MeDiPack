@@ -63,7 +63,8 @@ element: request
 	child of: function
 	attributes:             name -> The name of the argument.
 	                        type -> The type of the argument.
-						  [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant.
+              [optional] noptr -> Indicates that the request is no pointer type.
 
 element: type
   -> Special handling for datatype arguments. Depending on the interface they are treated as templates or normal arguments.

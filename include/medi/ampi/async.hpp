@@ -249,9 +249,4 @@ namespace medi {
 
     return rStatus;
   }
-
-  inline int AMPI_Request_get_status(AMPI_Request request, int *flag, AMPI_Status *status) {
-    // no handling if the request is finished because a call to any wait or test method is still expected.
-    return MPI_Request_get_status(request.request, flag, status);
-  }
 }

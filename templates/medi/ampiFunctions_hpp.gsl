@@ -178,7 +178,11 @@ for functions.function as curFunction
    elsif(name(item) = "operator")
      curFunction.argReg += "$(item.name).primalFunction"    # get the regular mpi type
    elsif(name(item) = "request")
-     curFunction.argReg += "&$(item.name)->request"
+     if(defined(item.noptr))
+       curFunction.argReg += "$(item.name).request"
+     else
+       curFunction.argReg += "&$(item.name)->request"
+     endif
    else
      curFunction.argReg += "$(item.name)"
    endif
@@ -197,7 +201,11 @@ for functions.function as curFunction
    elsif(name(item) = "displs")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "request")
-     curFunction.argArg += "&$(item.name)->request"
+     if(defined(item.noptr))
+       curFunction.argArg += "$(item.name).request"
+     else
+       curFunction.argArg += "&$(item.name)->request"
+     endif
    else
      curFunction.argArg += "$(item.name)"
    endif

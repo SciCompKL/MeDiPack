@@ -66,9 +66,9 @@
       </function>
 
 	    <function name="Get_count">
-		<arg name="status" const="1" type="MPI_Status*"/>
-		<type name="datatype" type="MPI_Datatype"/>
-		<arg name="count" type="int*"/>
+        <arg name="status" const="1" type="MPI_Status*"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <arg name="count" type="int*"/>
 	    </function>
 
       <function name="Ibsend" async="request" mediHandle="transform"> <!-- all defined -->
@@ -189,12 +189,12 @@
         <request name="request" type="MPI_Request*" />
       </function>
 
-      <function name="MPI_Request_free" mediHandle="handled">
+      <function name="Request_free" mediHandle="handled">
         <request name="request" type="MPI_Request*" />
       </function>
 
-      <function name="MPI_Request_get_status" mediHandle="default">
-        <request name="request" type="MPI_Request" />
+      <function name="Request_get_status" mediHandle="default">
+        <request name="request" type="MPI_Request" noptr="true" />
         <arg name="flag" type="int*" />
         <arg name="status" type="MPI_Status*" />
       </function>
