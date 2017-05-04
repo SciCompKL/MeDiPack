@@ -4,8 +4,10 @@ CMakeLists.txt
 MeDiPack.config
 MeDiPack.creator
 MeDiPack.creator.user
+MeDiPack.creator.user.9b79e20
 MeDiPack.files
 MeDiPack.includes
 mpi31-report.pdf
+setup_env.txt
 tests/build
 tests/results
