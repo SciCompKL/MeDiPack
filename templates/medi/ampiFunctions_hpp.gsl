@@ -553,6 +553,9 @@ namespace medi {
 .
 .   for curFunction.recv
 .     createBufferReverseSetup(recv, curFunction, 1)
+      if(h->$(curFunction.adType).isOldPrimalsRequired()) {
+.       createPrimalRestore(recv, curFunction, "OldPrimals")
+      }
 .   endfor
 .
 .   for curFunction.send
@@ -568,9 +571,6 @@ namespace medi {
 .
 .   for curFunction.recv
 .     createBufferReverseCleanup(recv, curFunction, 0)
-      if(h->$(curFunction.adType).isOldPrimalsRequired()) {
-.       createPrimalRestore(recv, curFunction, "OldPrimals")
-      }
 .   endfor
   }
 
