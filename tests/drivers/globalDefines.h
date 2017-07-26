@@ -53,3 +53,5 @@ int getInputCount();
 int getOutputCount();
 
 void func(NUMBER* x, NUMBER* y);
+
+#define mpiNumberType TOOL::MPI_TYPE

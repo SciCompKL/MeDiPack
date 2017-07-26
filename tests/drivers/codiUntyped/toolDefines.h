@@ -34,8 +34,9 @@
 
 typedef codi::RealReverse NUMBER;
 
+#define TOOL CoDiPackTool<NUMBER>
+
 #include "../globalDefines.h"
 
-#define TOOL CoDiPackTool<NUMBER>
-typedef medi::MpiTypeInterface MPI_NUMBER;
-extern MPI_NUMBER* mpiNumberType;
+#undef mpiNumberType
+#define mpiNumberType ((medi::MpiTypeInterface*)TOOL::MPI_TYPE)

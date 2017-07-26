@@ -31,8 +31,6 @@
 #include <iostream>
 #include <vector>
 
-MPI_NUMBER* mpiNumberType;
-
 int main(int nargs, char** args) {
 
   medi::AMPI_Init(&nargs, &args);
@@ -44,8 +42,6 @@ int main(int nargs, char** args) {
 
 
   TOOL::init();
-
-  mpiNumberType = new medi::MpiTypeDefault<TOOL>();
 
   int evalPoints = getEvalPointsCount();
   int inputs = getInputCount();
@@ -108,8 +104,6 @@ int main(int nargs, char** args) {
 
   delete [] y;
   delete [] x;
-
-  delete mpiNumberType;
 
   TOOL::finalize();
   medi::AMPI_Finalize();
