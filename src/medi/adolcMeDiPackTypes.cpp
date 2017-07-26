@@ -35,6 +35,7 @@ medi::AMPI_Op AdolcTool::OP_SUM;
 medi::AMPI_Op AdolcTool::OP_PROD;
 medi::AMPI_Op AdolcTool::OP_MIN;
 medi::AMPI_Op AdolcTool::OP_MAX;
+AdolcTool::MediType* AdolcTool::MPI_TYPE;
 
 double* AdolcTool::adjointBase;
 double* AdolcTool::primalBase;

@@ -31,6 +31,7 @@
 #include "medipack.h"
 
 #include "adToolInterface.h"
+#include "mpiTypeDefault.hpp"
 
 template <typename T>
 void codiUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
@@ -89,6 +90,9 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
   static medi::AMPI_Op OP_MIN;
   static medi::AMPI_Op OP_MAX;
 
+  typedef medi::MpiTypeDefault<CoDiPackForwardTool> MediType;
+  static MediType* MPI_TYPE;
+
   static void initTypes() {
     // create the mpi type for CoDiPack
     // this type is used in this type and the passive formulation
@@ -113,6 +117,8 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
   static void init() {
     initTypes();
     initOperators();
+
+    MPI_TYPE = new MediType();
   }
 
   static void finalizeOperators() {
@@ -127,6 +133,11 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
   }
 
   static void finalize() {
+    if(nullptr != MPI_TYPE) {
+      delete MPI_TYPE;
+      MPI_TYPE = nullptr;
+    }
+
     finalizeOperators();
     finalizeTypes();
   }
@@ -275,3 +286,4 @@ template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_SUM;
 template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_PROD;
 template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MIN;
 template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MAX;
+template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_TYPE;

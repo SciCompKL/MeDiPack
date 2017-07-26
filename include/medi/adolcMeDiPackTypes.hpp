@@ -36,6 +36,7 @@
 #include "exceptions.hpp"
 
 #include "adToolInterface.h"
+#include "mpiTypeDefault.hpp"
 
 template <typename T>
 void adolcModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
@@ -162,6 +163,9 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   static double* primalBase;
   static ext_diff_fct_v2 *extFunc;
 
+  typedef medi::MpiTypeDefault<AdolcTool> MediType;
+  static MediType* MPI_TYPE;
+
   static bool deleteReverseHandles;
 
   static void setDeleteReverseHandles(bool value) {
@@ -203,6 +207,8 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
     initTypes();
     initOperators();
     initExternalFunction();
+
+    MPI_TYPE = new MediType();
   }
 
   static void finalizeOperators() {
@@ -216,6 +222,11 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   }
 
   static void finalize() {
+    if(nullptr != MPI_TYPE) {
+      delete MPI_TYPE;
+      MPI_TYPE = nullptr;
+    }
+
     finalizeOperators();
     finalizeTypes();
   }
