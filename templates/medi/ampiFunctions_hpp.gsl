@@ -126,7 +126,7 @@ for functions.function as curFunction
      if(name(item) =  "recv")
        addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
      endif
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::AdjointType*")
      if(defined(item.displs))
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Displs;", "$(item.name)Displs", "int*")

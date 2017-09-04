@@ -38,6 +38,10 @@ typedef CODI_TYPE NUMBER;
 # define PRIMAL_RESTORE 0
 #endif
 
+#ifndef VECTOR
+# define VECTOR 0
+#endif
+
 #if PRIMAL_RESTORE
 # define TOOL CoDiPackToolPrimalRestore<NUMBER>
 #else
