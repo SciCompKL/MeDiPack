@@ -469,7 +469,15 @@
         <arg name="comm" type="MPI_Comm" />
       </function>
 
-<!-- int MPI_Exscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) -->
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Exscan" mediHandle="handled"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count" />
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
 
       <function name="Gather" mediHandle="transform"> <!-- all defined -->
         <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
@@ -566,7 +574,16 @@
         <request name="request" type="MPI_Request*"/>
       </function>
 
-<!-- int MPI_Iexscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Iexscan" async="request" mediHandle="handled"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count" />
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
 
       <function name="Igather" async="request" mediHandle="transform"> <!-- all defined -->
         <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
@@ -607,7 +624,17 @@
 
 <!-- int MPI_Ireduce_scatter(const void* sendbuf, void* recvbuf, const int recvcounts[], MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
 <!-- int MPI_Ireduce_scatter_block(const void* sendbuf, void* recvbuf, int recvcount, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
-<!-- int MPI_Iscan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) -->
+
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Iscan" async="request" mediHandle="handled"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count" />
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+        <request name="request" type="MPI_Request*"/>
+      </function>
 
       <function name="Iscatter" async="request" mediHandle="transform"> <!-- all defined -->
         <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
@@ -686,7 +713,15 @@
         <arg name="comm" type="MPI_Comm" />
       </function>
 
-<!-- int MPI_Scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) -->
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Scan" mediHandle="handled"> <!-- all defined -->
+        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <recv name="recvbuf" type="datatype" count="count" />
+        <arg name="count" type="int"/>
+        <type name="datatype" type="MPI_Datatype"/>
+        <operator name="op" type="MPI_Op"/>
+        <arg name="comm" type="MPI_Comm"/>
+      </function>
 
       <function name="Scatter" mediHandle="transform"> <!-- all defined -->
         <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>

@@ -66,7 +66,6 @@ namespace medi {
   struct AMPI_Ireduce_local_Handle : public HandleBase {
       AMPI_Comm comm;
       int root;
-      bool all;
       int count;
       DATATYPE* datatype;
       AMPI_Op op;
@@ -75,32 +74,116 @@ namespace medi {
 
       HandleBase* origHandle;
       ContinueFunction origFunc;
+      int reduceSize;
   };
 
   template<typename DATATYPE>
-  inline void performReduce(bool all, typename DATATYPE::Type* tempbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
-    int commSize = getCommSize(comm);
+  int AMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int AMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm);
+  template<typename DATATYPE>
+  int AMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int AMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm);
+  template<typename DATATYPE>
+  int AMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int AMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request);
+  template<typename DATATYPE>
+  int AMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request);
+  template<typename SENDTYPE, typename RECVTYPE>
+  int AMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request);
+
+  template<typename DATATYPE>
+  inline void performReduce(typename DATATYPE::Type* tempbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, int reduceSize) {
     int commRank = getCommRank(comm);
 
-    if(all || root == commRank) {
-      datatype->performReduce(tempbuf, recvbuf, count, op, commSize);
+    if(-1 == root || root == commRank) {
+      datatype->performReduce(tempbuf, recvbuf, count, op, reduceSize);
 
       datatype->deleteTypeBuffer(tempbuf);
     }
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Ireduce_local_finish(HandleBase* handle) {
+  inline int GatherAndPerformOperationLocal(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, int reduceSize) {
+    int commSize = getCommSize(comm);
+    int commRank = getCommRank(comm);
+
+    typename DATATYPE::Type* tempbuf = NULL;
+    if(-1 == root || root == commRank) {
+      datatype->createTypeBuffer(tempbuf, count * commSize);
+    }
+
+    const typename DATATYPE::Type* sendbufGather = sendbuf;
+    if(AMPI_IN_PLACE == sendbuf) {
+      sendbufGather = recvbuf;
+    }
+
+    int rValue;
+    if(-1 == root) {
+      rValue = AMPI_Allgather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, comm);
+    } else {
+      rValue = AMPI_Gather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, root, comm);
+    }
+
+    performReduce<DATATYPE>(tempbuf, recvbuf, count, datatype, op, root, comm, reduceSize);
+
+    return rValue;
+  }
+
+  template<typename DATATYPE>
+  inline int IgatherAndPerformOperationLocal_finish(HandleBase* handle) {
 
     AMPI_Ireduce_local_Handle<DATATYPE>* h = static_cast<AMPI_Ireduce_local_Handle<DATATYPE>*>(handle);
     // first call the orignal function
     h->origFunc(h->origHandle);
 
-    performReduce<DATATYPE>(h->all, h->tempbuf, h->recvbuf, h->count, h->datatype, h->op, h->root, h->comm);
+    performReduce<DATATYPE>(h->tempbuf, h->recvbuf, h->count, h->datatype, h->op, h->root, h->comm, h->reduceSize);
 
     delete h;
 
     return 0;
+  }
+
+  template<typename DATATYPE>
+  inline int IgatherAndPerformOperationLocal(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request, int reduceSize) {
+    int commSize = getCommSize(comm);
+    int commRank = getCommRank(comm);
+
+    typename DATATYPE::Type* tempbuf = NULL;
+    if(-1 == root || root == commRank) {
+      datatype->createTypeBuffer(tempbuf, count * commSize);
+    }
+
+    const typename DATATYPE::Type* sendbufGather = sendbuf;
+    if(AMPI_IN_PLACE == sendbuf) {
+      sendbufGather = recvbuf;
+    }
+
+    int rValue;
+    if(-1 == root) {
+      rValue = AMPI_Iallgather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, comm, request);
+    } else {
+      rValue = AMPI_Igather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, root, comm, request);
+    }
+    AMPI_Ireduce_local_Handle<DATATYPE>* curHandle = new AMPI_Ireduce_local_Handle<DATATYPE>();
+    curHandle->comm = comm;
+    curHandle->root = root;
+    curHandle->count = count;
+    curHandle->op = op;
+    curHandle->datatype = datatype;
+    curHandle->recvbuf = recvbuf;
+    curHandle->tempbuf = tempbuf;
+    curHandle->origHandle = request->handle;
+    curHandle->origFunc = request->func;
+    curHandle->reduceSize = reduceSize;
+
+    // set our own handle now to the request
+    request->handle = curHandle;
+    request->func = (ContinueFunction)IgatherAndPerformOperationLocal_finish<DATATYPE>;
+
+    return rValue;
   }
 
   template<typename DATATYPE>
@@ -130,25 +213,6 @@ namespace medi {
     return 0;
   }
 
-
-  template<typename DATATYPE>
-  int AMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm);
-  template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm);
-  template<typename DATATYPE>
-  int AMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm);
-  template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm);
-  template<typename DATATYPE>
-  int AMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request);
-  template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request);
-  template<typename DATATYPE>
-  int AMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request);
-  template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request);
-
-
   template<typename DATATYPE>
   inline int AMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     if(!datatype->getADTool().isActiveType()) {
@@ -173,23 +237,7 @@ namespace medi {
       }
     } else {
       // perform a gather and apply the operator locally
-      int commSize = getCommSize(comm);
-      int commRank = getCommRank(comm);
-
-      typename DATATYPE::Type* tempbuf = NULL;
-      if(root == commRank) {
-        datatype->createTypeBuffer(tempbuf, count * commSize);
-      }
-
-      const typename DATATYPE::Type* sendbufGather = sendbuf;
-      if(AMPI_IN_PLACE == sendbuf) {
-        sendbufGather = recvbuf;
-      }
-      int rValue = AMPI_Gather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, root, comm);
-
-      performReduce<DATATYPE>(false, tempbuf, recvbuf, count, datatype, op, root, comm);
-
-      return rValue;
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, root, comm, getCommSize(comm));
     }
   }
 
@@ -224,36 +272,7 @@ namespace medi {
       }
     } else {
       // perform a gather and apply the operator locally
-      int commSize = getCommSize(comm);
-      int commRank = getCommRank(comm);
-
-      typename DATATYPE::Type* tempbuf = NULL;
-      if(root == commRank) {
-        datatype->createTypeBuffer(tempbuf, count * commSize);
-      }
-
-      const typename DATATYPE::Type* sendbufGather = sendbuf;
-      if(AMPI_IN_PLACE == sendbuf) {
-        sendbufGather = recvbuf;
-      }
-      int rValue = AMPI_Igather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, root, comm, request);
-      AMPI_Ireduce_local_Handle<DATATYPE>* curHandle = new AMPI_Ireduce_local_Handle<DATATYPE>();
-      curHandle->comm = comm;
-      curHandle->root = root;
-      curHandle->all = false;
-      curHandle->count = count;
-      curHandle->op = op;
-      curHandle->datatype = datatype;
-      curHandle->recvbuf = recvbuf;
-      curHandle->tempbuf = tempbuf;
-      curHandle->origHandle = request->handle;
-      curHandle->origFunc = request->func;
-
-      // set our own handle now to the request
-      request->handle = curHandle;
-      request->func = (ContinueFunction)AMPI_Ireduce_local_finish<DATATYPE>;
-
-      return rValue;
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, root, comm, request, getCommSize(comm));
     }
   }
 
@@ -263,20 +282,7 @@ namespace medi {
       return AMPI_Allreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm);
     } else {
       // perform a gather and apply the operator locally
-      int commSize = getCommSize(comm);
-
-      typename DATATYPE::Type* tempbuf = NULL;
-      datatype->createTypeBuffer(tempbuf, count * commSize);
-
-      const typename DATATYPE::Type* sendbufGather = sendbuf;
-      if(AMPI_IN_PLACE == sendbuf) {
-        sendbufGather = recvbuf;
-      }
-      int rValue = AMPI_Allgather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, comm);
-
-      performReduce<DATATYPE>(true, tempbuf, recvbuf, count, datatype, op, -1, comm);
-
-      return rValue;
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommSize(comm));
     }
   }
 
@@ -286,33 +292,47 @@ namespace medi {
       return AMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm, request);
     } else {
       // perform a gather and apply the operator locally
-      int commSize = getCommSize(comm);
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommSize(comm));
+    }
+  }
 
-      typename DATATYPE::Type* tempbuf = NULL;
-      datatype->createTypeBuffer(tempbuf, count * commSize);
+  template<typename DATATYPE>
+  inline int AMPI_Exscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+    if(!datatype->getADTool().isActiveType()) {
+      return MPI_Exscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm);
+    } else {
+      // perform a gather and apply the operator locally
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommRank(comm));
+    }
+  }
 
-      const typename DATATYPE::Type* sendbufGather = sendbuf;
-      if(AMPI_IN_PLACE == sendbuf) {
-        sendbufGather = recvbuf;
-      }
-      int rValue = AMPI_Iallgather<DATATYPE, DATATYPE>(sendbufGather, count, datatype, tempbuf, count, datatype, comm, request);
-      AMPI_Ireduce_local_Handle<DATATYPE>* curHandle = new AMPI_Ireduce_local_Handle<DATATYPE>();
-      curHandle->comm = comm;
-      curHandle->root = -1;
-      curHandle->all = true;
-      curHandle->count = count;
-      curHandle->op = op;
-      curHandle->datatype = datatype;
-      curHandle->recvbuf = recvbuf;
-      curHandle->tempbuf = tempbuf;
-      curHandle->origHandle = request->handle;
-      curHandle->origFunc = request->func;
+  template<typename DATATYPE>
+  inline int AMPI_Iexscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+    if(!datatype->getADTool().isActiveType()) {
+      return MPI_Iexscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm, &request->request);
+    } else {
+      // perform a gather and apply the operator locally
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommRank(comm));
+    }
+  }
 
-      // set our own handle now to the request
-      request->handle = curHandle;
-      request->func = (ContinueFunction)AMPI_Ireduce_local_finish<DATATYPE>;
+  template<typename DATATYPE>
+  inline int AMPI_Scan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+    if(!datatype->getADTool().isActiveType()) {
+      return MPI_Scan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm);
+    } else {
+      // perform a gather and apply the operator locally
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommRank(comm) + 1);
+    }
+  }
 
-      return rValue;
+  template<typename DATATYPE>
+  inline int AMPI_Iscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+    if(!datatype->getADTool().isActiveType()) {
+      return MPI_Iscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm, &request->request);
+    } else {
+      // perform a gather and apply the operator locally
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommRank(comm) + 1);
     }
   }
 

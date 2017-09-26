@@ -122,7 +122,9 @@ namespace medi {
           MPI_Reduce_local(&buf[j * count], buf, count, this->getMpiType(), op.primalFunction);
         }
 
-        copy(buf, 0, target, 0, count);
+        if(0 != ranks) {
+          copy(buf, 0, target, 0, count);
+        }
       }
 
       void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
