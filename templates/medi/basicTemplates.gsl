@@ -27,54 +27,10 @@
 .-
 .
 .ignorecase = 0
-.
-.include "templates/medi/basicTemplates.gsl"
-.
 .template 0
 
-for definitions.operator as curOperator
-  curOperator.ampiName = modifyTypeName(curOperator.name)
-endfor
-
-for definitions.datatype
-  datatype.taType = modifyTypeName(datatype.name)
-endfor
+function modifyTypeName(type)
+  return string.replace(my.type, "MPI_|AMPI_")
+endfunction
 
 .endtemplate
-.output "$(switches.arg1)"
-.literal from "templates/medi/license_c.header"
-
-#pragma once
-
-#include <mpi.h>
-
-#include "ampiDefinitions.h"
-
-namespace medi {
-
-.for definitions.operator as curOperator
-  AMPI_Op $(curOperator.ampiName);
-.endfor
-
-.for definitions.datatype
-  $(datatype.taType)_Type* $(datatype.taType);
-.endfor
-
-  void initializeOperators() {
-.   for definitions.operator as curOperator
-      $(curOperator.ampiName).init($(curOperator.name));
-.   endfor
-  }
-
-  void initTypes() {
-.   for definitions.datatype
-      $(datatype.taType) = new $(datatype.taType)_Type($(datatype.name));
-.   endfor
-  }
-
-  void finalizeTypes() {
-.   for definitions.datatype
-     delete $(datatype.taType);
-.   endfor
-  }
-}

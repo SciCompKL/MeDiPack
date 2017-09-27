@@ -25,13 +25,12 @@
 .-
 .- Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
 .-
-
+.
 .ignorecase = 0
+.
+.include "templates/medi/basicTemplates.gsl"
+.
 .template 0
-
-function modifyTypeName(type)
-  return string.replace(my.type, "MPI_|AMPI_")
-endfunction
 
 function addHandleData(handle, pack, del, name, type)
   new my.handle.item
