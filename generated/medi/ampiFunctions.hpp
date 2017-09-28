@@ -33,12 +33,13 @@
 #include "../../include/medi/ampi/async.hpp"
 
 namespace medi {
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Bsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -147,12 +148,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Ibsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -337,13 +340,15 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Irecv_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
     typename DATATYPE::PassiveType* bufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -545,12 +550,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Irsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -735,12 +742,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Isend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -925,12 +934,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Issend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -1115,13 +1126,15 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Recv_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
     typename DATATYPE::PassiveType* bufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -1249,12 +1262,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Rsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -1363,12 +1378,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Send_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -1477,12 +1494,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Sendrecv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -1492,7 +1511,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -1663,12 +1682,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Ssend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PassiveType* bufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
     int bufCount;
     int count;
     DATATYPE* datatype;
@@ -1777,12 +1798,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Allgather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -1790,7 +1813,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -1970,12 +1993,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Allgatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -1983,7 +2008,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -2199,18 +2224,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Allreduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int recvbufTotalSize;
     typename DATATYPE::IndexType* recvbufIndices;
     typename DATATYPE::PassiveType* recvbufPrimals;
     typename DATATYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int count;
     DATATYPE* datatype;
@@ -2405,12 +2432,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Alltoall_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -2418,7 +2447,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -2596,12 +2625,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Alltoallv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int* sendbufCount;
     int* sendbufDispls;
     const  int* sendcounts;
@@ -2611,7 +2642,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -2849,18 +2880,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Bcast_wrap_AdjointHandle : public HandleBase {
     int bufferSendTotalSize;
     typename DATATYPE::IndexType* bufferSendIndices;
     typename DATATYPE::PassiveType* bufferSendPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufferSendAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufferSendAdjoints;
     int bufferSendCount;
     int bufferRecvTotalSize;
     typename DATATYPE::IndexType* bufferRecvIndices;
     typename DATATYPE::PassiveType* bufferRecvPrimals;
     typename DATATYPE::PassiveType* bufferRecvOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufferRecvAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufferRecvAdjoints;
     int bufferRecvCount;
     int count;
     DATATYPE* datatype;
@@ -3051,12 +3084,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Gather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3064,7 +3099,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -3267,12 +3302,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Gatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3280,7 +3317,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -3520,12 +3557,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3533,7 +3572,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -3798,12 +3837,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3811,7 +3852,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -4121,18 +4162,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Iallreduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int recvbufTotalSize;
     typename DATATYPE::IndexType* recvbufIndices;
     typename DATATYPE::PassiveType* recvbufPrimals;
     typename DATATYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int count;
     DATATYPE* datatype;
@@ -4409,12 +4452,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoall_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -4422,7 +4467,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -4685,12 +4730,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoallv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int* sendbufCount;
     int* sendbufDispls;
     const  int* sendcounts;
@@ -4700,7 +4747,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -5039,18 +5086,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Ibcast_wrap_AdjointHandle : public HandleBase {
     int bufferSendTotalSize;
     typename DATATYPE::IndexType* bufferSendIndices;
     typename DATATYPE::PassiveType* bufferSendPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufferSendAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufferSendAdjoints;
     int bufferSendCount;
     int bufferRecvTotalSize;
     typename DATATYPE::IndexType* bufferRecvIndices;
     typename DATATYPE::PassiveType* bufferRecvPrimals;
     typename DATATYPE::PassiveType* bufferRecvOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* bufferRecvAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* bufferRecvAdjoints;
     int bufferRecvCount;
     int count;
     DATATYPE* datatype;
@@ -5320,12 +5369,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -5333,7 +5384,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -5625,12 +5676,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -5638,7 +5691,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
     const  int* recvcounts;
@@ -5975,18 +6028,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Ireduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int recvbufTotalSize;
     typename DATATYPE::IndexType* recvbufIndices;
     typename DATATYPE::PassiveType* recvbufPrimals;
     typename DATATYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int count;
     DATATYPE* datatype;
@@ -6293,12 +6348,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iscatter_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -6306,7 +6363,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -6598,12 +6655,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iscatterv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int* sendbufCount;
     int* sendbufDispls;
     const  int* sendcounts;
@@ -6613,7 +6672,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -6948,18 +7007,20 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Reduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int recvbufTotalSize;
     typename DATATYPE::IndexType* recvbufIndices;
     typename DATATYPE::PassiveType* recvbufPrimals;
     typename DATATYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename DATATYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename DATATYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int count;
     DATATYPE* datatype;
@@ -7182,12 +7243,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Scatter_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int sendbufCount;
     int sendcount;
     SENDTYPE* sendtype;
@@ -7195,7 +7258,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -7399,12 +7462,14 @@ namespace medi {
     return rStatus;
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Scatterv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PassiveType* sendbufPrimals;
-    /* required for async */ typename SENDTYPE::PassiveType* sendbufAdjoints;
+    /* required for async */ typename SENDTYPE::AdjointType* sendbufAdjoints;
     int* sendbufCount;
     int* sendbufDispls;
     const  int* sendcounts;
@@ -7414,7 +7479,7 @@ namespace medi {
     typename RECVTYPE::IndexType* recvbufIndices;
     typename RECVTYPE::PassiveType* recvbufPrimals;
     typename RECVTYPE::PassiveType* recvbufOldPrimals;
-    /* required for async */ typename RECVTYPE::PassiveType* recvbufAdjoints;
+    /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int recvbufCount;
     int recvcount;
     RECVTYPE* recvtype;
@@ -7653,384 +7718,1124 @@ namespace medi {
     return rStatus;
   }
 
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Buffer_attach(void* buffer, int size) {
     return MPI_Buffer_attach(buffer, size);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Buffer_detach(void* buffer_addr, int* size) {
     return MPI_Buffer_detach(buffer_addr, size);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Cancel(AMPI_Request* request) {
     return MPI_Cancel(&request->request);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Get_count(const AMPI_Status* status, DATATYPE* datatype, int* count) {
     return MPI_Get_count(status, datatype->getModifiedMpiType(), count);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Improbe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Message* message, AMPI_Status* status) {
     return MPI_Improbe(source, tag, comm, flag, message, status);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Iprobe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Status* status) {
     return MPI_Iprobe(source, tag, comm, flag, status);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Mprobe(int source, int tag, AMPI_Comm comm, AMPI_Message* message, AMPI_Status* status) {
     return MPI_Mprobe(source, tag, comm, message, status);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Probe(int source, int tag, AMPI_Comm comm, AMPI_Status* status) {
     return MPI_Probe(source, tag, comm, status);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Request_get_status(AMPI_Request request, int* flag, AMPI_Status* status) {
     return MPI_Request_get_status(request.request, flag, status);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Test_cancelled(const AMPI_Status* status, int* flag) {
     return MPI_Test_cancelled(status, flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Barrier(AMPI_Comm comm) {
     return MPI_Barrier(comm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_compare(AMPI_Comm comm1, AMPI_Comm comm2, int* result) {
     return MPI_Comm_compare(comm1, comm2, result);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_create(AMPI_Comm comm, AMPI_Group group, AMPI_Comm* newcomm) {
     return MPI_Comm_create(comm, group, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_create_group(AMPI_Comm comm, AMPI_Group group, int tag, AMPI_Comm* newcomm) {
     return MPI_Comm_create_group(comm, group, tag, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_create_keyval(AMPI_Comm_copy_attr_function* comm_copy_attr_fn,
                                      AMPI_Comm_delete_attr_function* comm_delete_attr_fn, int* comm_keyval, void* extra_state) {
     return MPI_Comm_create_keyval(comm_copy_attr_fn, comm_delete_attr_fn, comm_keyval, extra_state);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_delete_attr(AMPI_Comm comm, int comm_keyval) {
     return MPI_Comm_delete_attr(comm, comm_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_dup(AMPI_Comm comm, AMPI_Comm* newcomm) {
     return MPI_Comm_dup(comm, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_dup_with_info(AMPI_Comm comm, AMPI_Info info, AMPI_Comm* newcomm) {
     return MPI_Comm_dup_with_info(comm, info, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_free(AMPI_Comm* comm) {
     return MPI_Comm_free(comm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_free_keyval(int* comm_keyval) {
     return MPI_Comm_free_keyval(comm_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_get_attr(AMPI_Comm comm, int comm_keyval, void* attribute_val, int* flag) {
     return MPI_Comm_get_attr(comm, comm_keyval, attribute_val, flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_get_info(AMPI_Comm comm, AMPI_Info* info_used) {
     return MPI_Comm_get_info(comm, info_used);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_get_name(AMPI_Comm comm, char* comm_name, int* resultlen) {
     return MPI_Comm_get_name(comm, comm_name, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_group(AMPI_Comm comm, AMPI_Group* group) {
     return MPI_Comm_group(comm, group);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_idup(AMPI_Comm comm, AMPI_Comm* newcomm, AMPI_Request* request) {
     return MPI_Comm_idup(comm, newcomm, &request->request);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_rank(AMPI_Comm comm, int* rank) {
     return MPI_Comm_rank(comm, rank);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_remote_group(AMPI_Comm comm, AMPI_Group* group) {
     return MPI_Comm_remote_group(comm, group);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_remote_size(AMPI_Comm comm, int* size) {
     return MPI_Comm_remote_size(comm, size);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_set_attr(AMPI_Comm comm, int comm_keyval, void* attribute_val) {
     return MPI_Comm_set_attr(comm, comm_keyval, attribute_val);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_set_info(AMPI_Comm comm, AMPI_Info info) {
     return MPI_Comm_set_info(comm, info);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_set_name(AMPI_Comm comm, const char* comm_name) {
     return MPI_Comm_set_name(comm, comm_name);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_size(AMPI_Comm comm, int* size) {
     return MPI_Comm_size(comm, size);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_split(AMPI_Comm comm, int color, int key, AMPI_Comm* newcomm) {
     return MPI_Comm_split(comm, color, key, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_split_type(AMPI_Comm comm, int split_type, int key, AMPI_Info info, AMPI_Comm* newcomm) {
     return MPI_Comm_split_type(comm, split_type, key, info, newcomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_test_inter(AMPI_Comm comm, int* flag) {
     return MPI_Comm_test_inter(comm, flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_compare(AMPI_Group group1, AMPI_Group group2, int* result) {
     return MPI_Group_compare(group1, group2, result);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_difference(AMPI_Group group1, AMPI_Group group2, AMPI_Group* newgroup) {
     return MPI_Group_difference(group1, group2, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_excl(AMPI_Group group, int n, const int* ranks, AMPI_Group* newgroup) {
     return MPI_Group_excl(group, n, ranks, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_free(AMPI_Group* group) {
     return MPI_Group_free(group);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_incl(AMPI_Group group, int n, const int* ranks, AMPI_Group* newgroup) {
     return MPI_Group_incl(group, n, ranks, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_intersection(AMPI_Group group1, AMPI_Group group2, AMPI_Group* newgroup) {
     return MPI_Group_intersection(group1, group2, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_range_excl(AMPI_Group group, int n, Range* ranges, AMPI_Group* newgroup) {
     return MPI_Group_range_excl(group, n, ranges, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_range_incl(AMPI_Group group, int n, Range* ranges, AMPI_Group* newgroup) {
     return MPI_Group_range_incl(group, n, ranges, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_rank(AMPI_Group group, int* rank) {
     return MPI_Group_rank(group, rank);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_size(AMPI_Group group, int* size) {
     return MPI_Group_size(group, size);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_translate_ranks(AMPI_Group group1, int n, const int* ranks1, AMPI_Group group2, int* ranks2) {
     return MPI_Group_translate_ranks(group1, n, ranks1, group2, ranks2);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Group_union(AMPI_Group group1, AMPI_Group group2, AMPI_Group* newgroup) {
     return MPI_Group_union(group1, group2, newgroup);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Intercomm_create(AMPI_Comm local_comm, int local_leader, AMPI_Comm peer_comm, int remote_leader,
                                    int tag, AMPI_Comm* newintercomm) {
     return MPI_Intercomm_create(local_comm, local_leader, peer_comm, remote_leader, tag, newintercomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Intercomm_merge(AMPI_Comm intercomm, int high, AMPI_Comm* newintracomm) {
     return MPI_Intercomm_merge(intercomm, high, newintracomm);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Type_create_keyval(AMPI_Type_copy_attr_function* type_copy_attr_fn,
                                      AMPI_Type_delete_attr_function* type_delete_attr_fn, int* type_keyval, void* extra_state) {
     return MPI_Type_create_keyval(type_copy_attr_fn, type_delete_attr_fn, type_keyval, extra_state);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_delete_attr(DATATYPE* datatype, int type_keyval) {
     return MPI_Type_delete_attr(datatype->getModifiedMpiType(), type_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Type_free_keyval(int* type_keyval) {
     return MPI_Type_free_keyval(type_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_get_attr(DATATYPE* datatype, int type_keyval, void* attribute_val, int* flag) {
     return MPI_Type_get_attr(datatype->getModifiedMpiType(), type_keyval, attribute_val, flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_get_name(DATATYPE* datatype, char* type_name, int* resultlen) {
     return MPI_Type_get_name(datatype->getModifiedMpiType(), type_name, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_set_attr(DATATYPE* datatype, int type_keyval, void* attribute_val) {
     return MPI_Type_set_attr(datatype->getModifiedMpiType(), type_keyval, attribute_val);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_set_name(DATATYPE* datatype, const char* type_name) {
     return MPI_Type_set_name(datatype->getModifiedMpiType(), type_name);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_create_keyval(AMPI_Win_copy_attr_function* win_copy_attr_fn,
                                     AMPI_Win_delete_attr_function* win_delete_attr_fn, int* win_keyval, void* extra_state) {
     return MPI_Win_create_keyval(win_copy_attr_fn, win_delete_attr_fn, win_keyval, extra_state);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_delete_attr(AMPI_Win win, int win_keyval) {
     return MPI_Win_delete_attr(win, win_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_free_keyval(int* win_keyval) {
     return MPI_Win_free_keyval(win_keyval);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_get_attr(AMPI_Win win, int win_keyval, void* attribute_val, int* flag) {
     return MPI_Win_get_attr(win, win_keyval, attribute_val, flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_get_name(AMPI_Win win, char* win_name, int* resultlen) {
     return MPI_Win_get_name(win, win_name, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_set_attr(AMPI_Win win, int win_keyval, void* attribute_val) {
     return MPI_Win_set_attr(win, win_keyval, attribute_val);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_set_name(AMPI_Win win, const char* win_name) {
     return MPI_Win_set_name(win, win_name);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline double AMPI_Wtick() {
     return MPI_Wtick();
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline double AMPI_Wtime() {
     return MPI_Wtime();
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Abort(AMPI_Comm comm, int errorcode) {
     return MPI_Abort(comm, errorcode);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Add_error_class(int* errorclass) {
     return MPI_Add_error_class(errorclass);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Add_error_code(int errorclass, int* errorcode) {
     return MPI_Add_error_code(errorclass, errorcode);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Add_error_string(int errorcode, const char* string) {
     return MPI_Add_error_string(errorcode, string);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Alloc_mem(AMPI_Aint size, AMPI_Info info, void* baseptr) {
     return MPI_Alloc_mem(size, info, baseptr);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_call_errhandler(AMPI_Comm comm, int errorcode) {
     return MPI_Comm_call_errhandler(comm, errorcode);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_create_errhandler(AMPI_Comm_errhandler_function* comm_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_Comm_create_errhandler(comm_errhandler_fn, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_get_errhandler(AMPI_Comm comm, AMPI_Errhandler* errhandler) {
     return MPI_Comm_get_errhandler(comm, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_set_errhandler(AMPI_Comm comm, AMPI_Errhandler errhandler) {
     return MPI_Comm_set_errhandler(comm, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Errhandler_free(AMPI_Errhandler* errhandler) {
     return MPI_Errhandler_free(errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Error_class(int errorcode, int* errorclass) {
     return MPI_Error_class(errorcode, errorclass);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Error_string(int errorcode, char* string, int* resultlen) {
     return MPI_Error_string(errorcode, string, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_File_call_errhandler(AMPI_File fh, int errorcode) {
     return MPI_File_call_errhandler(fh, errorcode);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_File_create_errhandler(AMPI_File_errhandler_function* file_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_File_create_errhandler(file_errhandler_fn, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_File_get_errhandler(AMPI_File file, AMPI_Errhandler* errhandler) {
     return MPI_File_get_errhandler(file, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_File_set_errhandler(AMPI_File file, AMPI_Errhandler errhandler) {
     return MPI_File_set_errhandler(file, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Finalize() {
     return MPI_Finalize();
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Finalized(int* flag) {
     return MPI_Finalized(flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Free_mem(void* base) {
     return MPI_Free_mem(base);
   }
 
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Get_library_version(char* version, int* resultlen) {
     return MPI_Get_library_version(version, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Get_processor_name(char* name, int* resultlen) {
     return MPI_Get_processor_name(name, resultlen);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Get_version(int* version, int* subversion) {
     return MPI_Get_version(version, subversion);
   }
 
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Initialized(int* flag) {
     return MPI_Initialized(flag);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_call_errhandler(AMPI_Win win, int errorcode) {
     return MPI_Win_call_errhandler(win, errorcode);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_create_errhandler(AMPI_Win_errhandler_function* win_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_Win_create_errhandler(win_errhandler_fn, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_get_errhandler(AMPI_Win win, AMPI_Errhandler* errhandler) {
     return MPI_Win_get_errhandler(win, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_set_errhandler(AMPI_Win win, AMPI_Errhandler errhandler) {
     return MPI_Win_set_errhandler(win, errhandler);
   }
 
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_create(AMPI_Info* info) {
+    return MPI_Info_create(info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_delete(AMPI_Info info, const char* key) {
+    return MPI_Info_delete(info, key);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_dup(AMPI_Info info, AMPI_Info* newinfo) {
+    return MPI_Info_dup(info, newinfo);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_free(AMPI_Info* info) {
+    return MPI_Info_free(info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_get(AMPI_Info info, const char* key, int valuelen, char* value, int* flag) {
+    return MPI_Info_get(info, key, valuelen, value, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_get_nkeys(AMPI_Info info, int* nkeys) {
+    return MPI_Info_get_nkeys(info, nkeys);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_get_nthkey(AMPI_Info info, int n, char* key) {
+    return MPI_Info_get_nthkey(info, n, key);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_get_valuelen(AMPI_Info info, const char* key, int* valuelen, int* flag) {
+    return MPI_Info_get_valuelen(info, key, valuelen, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Info_set(AMPI_Info info, const char* key, const char* value) {
+    return MPI_Info_set(info, key, value);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Close_port(const char* port_name) {
+    return MPI_Close_port(port_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_accept(const char* port_name, AMPI_Info info, int root, AMPI_Comm comm, AMPI_Comm* newcomm) {
+    return MPI_Comm_accept(port_name, info, root, comm, newcomm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_connect(const char* port_name, AMPI_Info info, int root, AMPI_Comm comm, AMPI_Comm* newcomm) {
+    return MPI_Comm_connect(port_name, info, root, comm, newcomm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_disconnect(AMPI_Comm* comm) {
+    return MPI_Comm_disconnect(comm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_get_parent(AMPI_Comm* parent) {
+    return MPI_Comm_get_parent(parent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_join(int fd, AMPI_Comm* intercomm) {
+    return MPI_Comm_join(fd, intercomm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_spawn(const char* command, char** argv, int maxprocs, AMPI_Info info, int root, AMPI_Comm comm,
+                             AMPI_Comm* intercomm, int* array_of_errcodes) {
+    return MPI_Comm_spawn(command, argv, maxprocs, info, root, comm, intercomm, array_of_errcodes);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Comm_spawn_multiple(int count, char** array_of_commands, char*** array_of_argv,
+                                      const int* array_of_maxprocs, const AMPI_Info* array_of_info, int root, AMPI_Comm comm, AMPI_Comm* intercomm,
+                                      int* array_of_errcodes) {
+    return MPI_Comm_spawn_multiple(count, array_of_commands, array_of_argv, array_of_maxprocs, array_of_info, root, comm,
+                                   intercomm, array_of_errcodes);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Lookup_name(const char* service_name, AMPI_Info info, char* port_name) {
+    return MPI_Lookup_name(service_name, info, port_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Open_port(AMPI_Info info, char* port_name) {
+    return MPI_Open_port(info, port_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Publish_name(const char* service_name, AMPI_Info info, const char* port_name) {
+    return MPI_Publish_name(service_name, info, port_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Unpublish_name(const char* service_name, AMPI_Info info, const char* port_name) {
+    return MPI_Unpublish_name(service_name, info, port_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Grequest_complete(AMPI_Request request) {
+    return MPI_Grequest_complete(request.request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Grequest_start(AMPI_Grequest_query_function* query_fn, AMPI_Grequest_free_function* free_fn,
+                                 AMPI_Grequest_cancel_function* cancel_fn, void* extra_state, AMPI_Request* request) {
+    return MPI_Grequest_start(query_fn, free_fn, cancel_fn, extra_state, &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Is_thread_main(int* flag) {
+    return MPI_Is_thread_main(flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Query_thread(int* provided) {
+    return MPI_Query_thread(provided);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Status_set_cancelled(AMPI_Status* status, int flag) {
+    return MPI_Status_set_cancelled(status, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Status_set_elements(AMPI_Status* status, DATATYPE* datatype, int count) {
+    return MPI_Status_set_elements(status, datatype->getModifiedMpiType(), count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Status_set_elements_x(AMPI_Status* status, DATATYPE* datatype, AMPI_Count count) {
+    return MPI_Status_set_elements_x(status, datatype->getModifiedMpiType(), count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_close(AMPI_File* fh) {
+    return MPI_File_close(fh);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_delete(const char* filename, AMPI_Info info) {
+    return MPI_File_delete(filename, info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_amode(AMPI_File fh, int* amode) {
+    return MPI_File_get_amode(fh, amode);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_atomicity(AMPI_File fh, int* flag) {
+    return MPI_File_get_atomicity(fh, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_byte_offset(AMPI_File fh, AMPI_Offset offset, AMPI_Offset* disp) {
+    return MPI_File_get_byte_offset(fh, offset, disp);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_group(AMPI_File fh, AMPI_Group* group) {
+    return MPI_File_get_group(fh, group);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_info(AMPI_File fh, AMPI_Info* info_used) {
+    return MPI_File_get_info(fh, info_used);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_position(AMPI_File fh, AMPI_Offset* offset) {
+    return MPI_File_get_position(fh, offset);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_position_shared(AMPI_File fh, AMPI_Offset* offset) {
+    return MPI_File_get_position_shared(fh, offset);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_get_size(AMPI_File fh, AMPI_Offset* size) {
+    return MPI_File_get_size(fh, size);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_get_type_extent(AMPI_File fh, DATATYPE* datatype, AMPI_Aint* extent) {
+    return MPI_File_get_type_extent(fh, datatype->getModifiedMpiType(), extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename ETYPE, typename FILETYPE>
+  inline int AMPI_File_get_view(AMPI_File fh, AMPI_Offset* disp, ETYPE* etype, FILETYPE* filetype, char* datarep) {
+    return MPI_File_get_view(fh, disp, etype->getModifiedMpiType(), filetype->getModifiedMpiType(), datarep);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iread(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Request* request) {
+    return MPI_File_iread(fh, buf, count, datatype->getModifiedMpiType(), request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iread_all(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Request* request) {
+    return MPI_File_iread_all(fh, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iread_at(AMPI_File fh, AMPI_Offset offset, void* buf, int count, DATATYPE* datatype,
+                                AMPI_Request* request) {
+    return MPI_File_iread_at(fh, offset, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iread_at_all(AMPI_File fh, AMPI_Offset offset, void* buf, int count, DATATYPE* datatype,
+                                    AMPI_Request* request) {
+    return MPI_File_iread_at_all(fh, offset, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iread_shared(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Request* request) {
+    return MPI_File_iread_shared(fh, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iwrite(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Request* request) {
+    return MPI_File_iwrite(fh, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iwrite_all(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Request* request) {
+    return MPI_File_iwrite_all(fh, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iwrite_at(AMPI_File fh, AMPI_Offset offset, const void* buf, int count, DATATYPE* datatype,
+                                 AMPI_Request* request) {
+    return MPI_File_iwrite_at(fh, offset, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iwrite_at_all(AMPI_File fh, AMPI_Offset offset, const void* buf, int count, DATATYPE* datatype,
+                                     AMPI_Request* request) {
+    return MPI_File_iwrite_at_all(fh, offset, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_iwrite_shared(AMPI_File fh, const void* buf, int count, DATATYPE* datatype,
+                                     AMPI_Request* request) {
+    return MPI_File_iwrite_shared(fh, buf, count, datatype->getModifiedMpiType(), &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_open(AMPI_Comm comm, const char* filename, int amode, AMPI_Info info, AMPI_File* fh) {
+    return MPI_File_open(comm, filename, amode, info, fh);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_preallocate(AMPI_File fh, AMPI_Offset size) {
+    return MPI_File_preallocate(fh, size);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_read(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_all(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_read_all(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_all_begin(AMPI_File fh, void* buf, int count, DATATYPE* datatype) {
+    return MPI_File_read_all_begin(fh, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_read_all_end(AMPI_File fh, void* buf, AMPI_Status* status) {
+    return MPI_File_read_all_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_at(AMPI_File fh, AMPI_Offset offset, void* buf, int count, DATATYPE* datatype,
+                               AMPI_Status* status) {
+    return MPI_File_read_at(fh, offset, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_at_all(AMPI_File fh, AMPI_Offset offset, void* buf, int count, DATATYPE* datatype,
+                                   AMPI_Status* status) {
+    return MPI_File_read_at_all(fh, offset, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_at_all_begin(AMPI_File fh, AMPI_Offset offset, void* buf, int count, DATATYPE* datatype) {
+    return MPI_File_read_at_all_begin(fh, offset, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_read_at_all_end(AMPI_File fh, void* buf, AMPI_Status* status) {
+    return MPI_File_read_at_all_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_ordered(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_read_ordered(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_ordered_begin(AMPI_File fh, void* buf, int count, DATATYPE* datatype) {
+    return MPI_File_read_ordered_begin(fh, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_read_ordered_end(AMPI_File fh, void* buf, AMPI_Status* status) {
+    return MPI_File_read_ordered_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_read_shared(AMPI_File fh, void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_read_shared(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_seek(AMPI_File fh, AMPI_Offset offset, int whence) {
+    return MPI_File_seek(fh, offset, whence);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_seek_shared(AMPI_File fh, AMPI_Offset offset, int whence) {
+    return MPI_File_seek_shared(fh, offset, whence);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_set_atomicity(AMPI_File fh, int flag) {
+    return MPI_File_set_atomicity(fh, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_set_info(AMPI_File fh, AMPI_Info info) {
+    return MPI_File_set_info(fh, info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_set_size(AMPI_File fh, AMPI_Offset size) {
+    return MPI_File_set_size(fh, size);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename ETYPE, typename FILETYPE>
+  inline int AMPI_File_set_view(AMPI_File fh, AMPI_Offset disp, ETYPE* etype, FILETYPE* filetype, const char* datarep,
+                                AMPI_Info info) {
+    return MPI_File_set_view(fh, disp, etype->getModifiedMpiType(), filetype->getModifiedMpiType(), datarep, info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_sync(AMPI_File fh) {
+    return MPI_File_sync(fh);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_write(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_all(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_write_all(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_all_begin(AMPI_File fh, const void* buf, int count, DATATYPE* datatype) {
+    return MPI_File_write_all_begin(fh, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_write_all_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+    return MPI_File_write_all_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_at(AMPI_File fh, AMPI_Offset offset, const void* buf, int count, DATATYPE* datatype,
+                                AMPI_Status* status) {
+    return MPI_File_write_at(fh, offset, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_at_all(AMPI_File fh, AMPI_Offset offset, const void* buf, int count, DATATYPE* datatype,
+                                    AMPI_Status* status) {
+    return MPI_File_write_at_all(fh, offset, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_at_all_begin(AMPI_File fh, AMPI_Offset offset, const void* buf, int count,
+                                          DATATYPE* datatype) {
+    return MPI_File_write_at_all_begin(fh, offset, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_write_at_all_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+    return MPI_File_write_at_all_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_ordered(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_write_ordered(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_ordered_begin(AMPI_File fh, const void* buf, int count, DATATYPE* datatype) {
+    return MPI_File_write_ordered_begin(fh, buf, count, datatype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_File_write_ordered_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+    return MPI_File_write_ordered_end(fh, buf, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_File_write_shared(AMPI_File fh, const void* buf, int count, DATATYPE* datatype, AMPI_Status* status) {
+    return MPI_File_write_shared(fh, buf, count, datatype->getModifiedMpiType(), status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Register_datarep(const char* datarep, AMPI_Datarep_conversion_function* read_conversion_fn,
+                                   AMPI_Datarep_conversion_function* write_conversion_fn, AMPI_Datarep_extent_function* dtype_file_extent_fn,
+                                   void* extra_state) {
+    return MPI_Register_datarep(datarep, read_conversion_fn, write_conversion_fn, dtype_file_extent_fn, extra_state);
+  }
+
+#endif
 
 }
