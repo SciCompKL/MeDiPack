@@ -42,6 +42,12 @@
 # define MEDI_MPI_TARGET MEDI_MPI_VERSION_3_1
 #endif
 
+#ifdef MEDI_NO_CONST_SEND
+# define MEDI_CONST_SEND /* const */
+#else
+# define MEDI_CONST_SEND const
+#endif
+
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)

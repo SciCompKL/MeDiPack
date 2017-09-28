@@ -36,6 +36,7 @@
 
 namespace medi {
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   int AMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE* datatype, int root, AMPI_Comm comm);
 
@@ -61,6 +62,7 @@ namespace medi {
     MEDI_UNUSED(bufferSend);
     return MPI_Ibcast(bufferRecv, count, type, root, comm, request);
   }
+#endif
 
   template<typename DATATYPE>
   struct AMPI_Ireduce_local_Handle : public HandleBase {
