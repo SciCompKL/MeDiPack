@@ -38,6 +38,10 @@
 #define MEDI_MPI_VERSION_3_0 300
 #define MEDI_MPI_VERSION_3_1 301
 
+#ifndef MEDI_MPI_TARGET
+# define MEDI_MPI_TARGET MEDI_MPI_VERSION_3_1
+#endif
+
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)
