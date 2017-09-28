@@ -116,7 +116,11 @@ for functions.function as curFunction
  endnew
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
+   if(name(item) =  "send")
+     constMod = defined(item.const) ?? "MEDI_CONST_SEND " ? ""
+   endif
    if(name(item) =  "recv" | name(item) =  "send")
+
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)TotalSize", "int")
@@ -154,6 +158,10 @@ for functions.function as curFunction
  curFunction.argDef = ""
  for curFunction. as item where defined(item.arg)
    constMod = defined(item.const) ?? "const " ? ""
+   if(name(item) =  "send")
+     constMod = defined(item.const) ?? "MEDI_CONST_SEND " ? ""
+   endif
+
    curFunction.argDef +=   constMod # prepend the const modifier
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argDef += "typename $(item.typeName)::Type* $(item.name)"  #append '::Type' to the typename
