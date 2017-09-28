@@ -513,6 +513,8 @@ endfunction
 
 namespace medi {
 .for functions.function as curFunction where curFunction.mediHandle ?= "transform"
+. startVersionGuard(curFunction)
+.
 .- create the struct for the data store
   template<$(curFunction.tplDef)>
   struct $(curFunction.handleName) : public HandleBase {
@@ -775,9 +777,13 @@ namespace medi {
     return rStatus;
   }
 
+.
+. endVersionGuard(curFunction)
 .endfor
 
 .for functions.function as curFunction where "default" = (curFunction.mediHandle?"default")
+. startVersionGuard(curFunction)
+.
 . if("" <> curFunction.tplDef)
     template<$(curFunction.tplDef)>
 . endif
@@ -785,6 +791,7 @@ namespace medi {
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }
 
+. endVersionGuard(curFunction)
 .endfor
 
 .- All functions with curFunction.mediHandle equal to 'disable' or 'handled' are ignored

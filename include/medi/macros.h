@@ -28,6 +28,16 @@
 
 #pragma once
 
+#define MEDI_MPI_VERSION_1_0 100
+#define MEDI_MPI_VERSION_1_1 101
+#define MEDI_MPI_VERSION_1_2 102
+#define MEDI_MPI_VERSION_1_3 103
+#define MEDI_MPI_VERSION_2_0 200
+#define MEDI_MPI_VERSION_2_1 201
+#define MEDI_MPI_VERSION_2_2 202
+#define MEDI_MPI_VERSION_3_0 300
+#define MEDI_MPI_VERSION_3_1 301
+
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)

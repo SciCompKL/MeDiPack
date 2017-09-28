@@ -33,4 +33,23 @@ function modifyTypeName(type)
   return string.replace(my.type, "MPI_|AMPI_")
 endfunction
 
+function generateMPIVersion(version)
+  return "MEDI_MPI_VERSION_" + string.replace(my.version, ".|_")
+endfunction
+
+function startVersionGuard(item)
+  if(!defined(my.item.version))
+    abort("Error version: $(my.item.name)")
+  endif
+  if(defined(my.item.deprecated))
+>#if $(generateMPIVersion(my.item.version)) <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < $(generateMPIVersion(my.item.deprecated))
+  else
+>#if $(generateMPIVersion(my.item.version)) <= MEDI_MPI_TARGET
+  endif
+endfunction
+
+function endVersionGuard(item)
+>#endif
+endfunction
+
 .endtemplate
