@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include <mpi.h>
+
 #define MEDI_MPI_VERSION_1_0 100
 #define MEDI_MPI_VERSION_1_1 101
 #define MEDI_MPI_VERSION_1_2 102
@@ -38,8 +40,14 @@
 #define MEDI_MPI_VERSION_3_0 300
 #define MEDI_MPI_VERSION_3_1 301
 
+
 #ifndef MEDI_MPI_TARGET
-# define MEDI_MPI_TARGET MEDI_MPI_VERSION_3_1
+# if defined(MPI_VERSION) && defined(MPI_SUBVERSION)
+#   define MEDI_MPI_TARGET (MPI_VERSION * 100 + MPI_SUBVERSION)
+# else
+#   warning MEDI: Could not detect MPI version please define MPI_VERSION and MPI_SUBVERSION. Using MPI 3.1 as default.
+#   define MEDI_MPI_TARGET MEDI_MPI_VERSION_3_1
+# endif
 #endif
 
 #ifdef MEDI_NO_CONST_SEND
