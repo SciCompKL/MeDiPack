@@ -25,13 +25,12 @@
 .-
 .- Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
 .-
-
+.
 .ignorecase = 0
+.
+.include "templates/medi/basicTemplates.gsl"
+.
 .template 0
-
-function modifyTypeName(type)
-  return string.replace(my.type, "MPI_|AMPI_")
-endfunction
 
 for definitions.operator as curOperator
   curOperator.ampiName = modifyTypeName(curOperator.name)
@@ -49,33 +48,54 @@ endfor
 
 #include <mpi.h>
 
+#include "../../include/medi/macros.h"
 #include "ampiDefinitions.h"
 
 namespace medi {
 
 .for definitions.operator as curOperator
+. startVersionGuard(curOperator)
+.
   AMPI_Op $(curOperator.ampiName);
+.
+. endVersionGuard(curOperator)
 .endfor
 
 .for definitions.datatype
+. startVersionGuard(datatype)
+.
   $(datatype.taType)_Type* $(datatype.taType);
+.
+. endVersionGuard(datatype)
 .endfor
 
   void initializeOperators() {
 .   for definitions.operator as curOperator
+.     startVersionGuard(curOperator)
+.
       $(curOperator.ampiName).init($(curOperator.name));
+.
+.     endVersionGuard(curOperator)
 .   endfor
   }
 
   void initTypes() {
 .   for definitions.datatype
+.     startVersionGuard(datatype)
+.
       $(datatype.taType) = new $(datatype.taType)_Type($(datatype.name));
+.
+.     endVersionGuard(datatype)
 .   endfor
   }
 
   void finalizeTypes() {
 .   for definitions.datatype
+.     startVersionGuard(datatype)
+.
      delete $(datatype.taType);
+.
+.    endVersionGuard(datatype)
 .   endfor
   }
 }

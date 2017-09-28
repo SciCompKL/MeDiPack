@@ -88,15 +88,24 @@ int main(int nargs, char** args) {
       }
       double val = getEvalSeed(curPoint, world_rank, i);
       std::cout << val;
-
-      y[i].setGradient(val);
+#if VECTOR
+      y[i].gradient()[0] = val;
+#else
+      y[i].gradient() = val;
+#endif
     }
     std::cout << "}\n";
 
     tape.evaluate();
 
     for(int curIn = 0; curIn < inputs; ++curIn) {
-      std::cout << curIn << " " << x[curIn].getGradient() << std::endl;
+      double grad;
+#if VECTOR
+      grad = x[curIn].gradient()[0];
+#else
+      grad = x[curIn].gradient();
+#endif
+      std::cout << curIn << " " << grad << std::endl;
     }
 
     tape.reset();

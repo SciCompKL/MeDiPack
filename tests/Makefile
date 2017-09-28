@@ -112,6 +112,12 @@ DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse
 $(eval $(value DRIVER_INST))
 
+# Driver for RealReverse
+DRIVER_NAME  := CoDiVec
+DRIVER_TESTS := $(BASIC_TESTS)
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseVec<2>" -DVECTOR
+$(eval $(value DRIVER_INST))
+
 # Driver for RealReverseIndex
 DRIVER_NAME  := CoDiIndex
 DRIVER_TESTS := $(BASIC_TESTS)

@@ -146,7 +146,7 @@ template <typename AT, typename PT>
 void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
   for(int i = 0; i < count; ++i) {
     if(rootPrimals[i] != primals[i]) {
-      adjoints[i] = 0.0; // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+      adjoints[i] = AT(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
     }
   }
 }
@@ -187,7 +187,10 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
     MPI_Type_commit(&MpiType);
 
     ModifiedMpiType = MpiType;
-    AdjointMpiType = MPI_DOUBLE;
+
+    // TODO: add proper type creation
+    MPI_Type_contiguous(sizeof(AdjointType), MPI_BYTE, &AdjointMpiType);
+    MPI_Type_commit(&AdjointMpiType);
   }
 
   static void initOperator(medi::AMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
@@ -201,8 +204,8 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
   static void initOperators() {
     initOperator(OP_SUM, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
     initOperator(OP_PROD, (MPI_User_function*)codiUnmodifiedMul<Type>);
-    initOperator(OP_MIN, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
-    initOperator(OP_MAX, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<double, double>);
+    initOperator(OP_MIN, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<AdjointType, PassiveType>);
+    initOperator(OP_MAX, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<AdjointType, PassiveType>);
   }
 
   static void init() {
@@ -265,7 +268,7 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
       IndexType index = indices[pos];
       AdjointType& grad = adjointTape->gradient(index);
       adjoints[pos] = grad;
-      grad = 0.0;
+      grad = AdjointType();
     }
   }
 

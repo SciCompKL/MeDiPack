@@ -25,13 +25,12 @@
 .-
 .- Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
 .-
-
+.
 .ignorecase = 0
+.
+.include "templates/medi/basicTemplates.gsl"
+.
 .template 0
-
-function modifyTypeName(type)
-  return string.replace(my.type, "MPI_|AMPI_")
-endfunction
 
 function addHandleData(handle, pack, del, name, type)
   new my.handle.item
@@ -126,7 +125,7 @@ for functions.function as curFunction
      if(name(item) =  "recv")
        addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
      endif
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::AdjointType*")
      if(defined(item.displs))
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Displs;", "$(item.name)Displs", "int*")
@@ -514,6 +513,8 @@ endfunction
 
 namespace medi {
 .for functions.function as curFunction where curFunction.mediHandle ?= "transform"
+. startVersionGuard(curFunction)
+.
 .- create the struct for the data store
   template<$(curFunction.tplDef)>
   struct $(curFunction.handleName) : public HandleBase {
@@ -776,9 +777,13 @@ namespace medi {
     return rStatus;
   }
 
+.
+. endVersionGuard(curFunction)
 .endfor
 
 .for functions.function as curFunction where "default" = (curFunction.mediHandle?"default")
+. startVersionGuard(curFunction)
+.
 . if("" <> curFunction.tplDef)
     template<$(curFunction.tplDef)>
 . endif
@@ -786,6 +791,7 @@ namespace medi {
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }
 
+. endVersionGuard(curFunction)
 .endfor
 
 .- All functions with curFunction.mediHandle equal to 'disable' or 'handled' are ignored
