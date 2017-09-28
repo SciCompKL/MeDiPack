@@ -147,7 +147,7 @@
         <datatype name="MPI_INT" type="int" version="1.0" />
         <datatype name="MPI_LONG" type="long" version="1.0" />
         <datatype name="MPI_LONG_LONG_INT" type="long long int" version="1.0" />
-        <datatype name="MPI_LONG_LONG" type="long long int" />
+        <datatype name="MPI_LONG_LONG" type="long long int" version="2.0" />
         <datatype name="MPI_SIGNED_CHAR" type="signed char" version="2.0" />
         <datatype name="MPI_UNSIGNED_CHAR" type="unsigned char" version="1.0" />
         <datatype name="MPI_UNSIGNED_SHORT" type="unsigned short" version="1.0" />
