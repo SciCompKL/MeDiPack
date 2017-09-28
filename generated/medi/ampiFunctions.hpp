@@ -75,7 +75,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Bsend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
+  int AMPI_Bsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                 AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -178,7 +179,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Ibsend_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -215,8 +216,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Ibsend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Ibsend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm,
-                  AMPI_Request* request) {
+  int AMPI_Ibsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -298,7 +299,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Ibsend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ibsend_AsyncHandle<DATATYPE>*>(handle);
-    const  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -580,7 +581,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Irsend_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -617,8 +618,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Irsend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Irsend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm,
-                  AMPI_Request* request) {
+  int AMPI_Irsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -700,7 +701,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Irsend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Irsend_AsyncHandle<DATATYPE>*>(handle);
-    const  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -772,7 +773,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Isend_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -809,8 +810,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Isend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Isend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm,
-                 AMPI_Request* request) {
+  int AMPI_Isend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                 AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -892,7 +893,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Isend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Isend_AsyncHandle<DATATYPE>*>(handle);
-    const  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -964,7 +965,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Issend_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -1001,8 +1002,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Issend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Issend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm,
-                  AMPI_Request* request) {
+  int AMPI_Issend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -1084,7 +1085,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Issend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Issend_AsyncHandle<DATATYPE>*>(handle);
-    const  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -1305,7 +1306,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Rsend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
+  int AMPI_Rsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                 AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -1421,7 +1423,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Send(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
+  int AMPI_Send(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -1571,9 +1574,9 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Sendrecv(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, int dest, int sendtag,
-                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag, AMPI_Comm comm,
-                    AMPI_Status* status) {
+  int AMPI_Sendrecv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, int dest,
+                    int sendtag, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag,
+                    AMPI_Comm comm, AMPI_Status* status) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -1725,7 +1728,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Ssend(const typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
+  int AMPI_Ssend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                 AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -1871,7 +1875,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Allgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -2076,7 +2080,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgatherv(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Allgatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -2299,7 +2303,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Allreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
+  int AMPI_Allreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                             DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
@@ -2504,7 +2508,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Alltoall(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Alltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -2717,7 +2721,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Alltoallv(const typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
+  int AMPI_Alltoallv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
                      SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                      AMPI_Comm comm) {
     int rStatus;
@@ -3162,7 +3166,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Gather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -3391,7 +3395,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gatherv(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Gatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                    AMPI_Comm comm) {
     int rStatus;
@@ -3605,7 +3609,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgather_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3656,7 +3660,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Iallgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -3784,7 +3788,7 @@ namespace medi {
 
     AMPI_Iallgather_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iallgather_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -3895,7 +3899,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgatherv_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -3949,7 +3953,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgatherv(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Iallgatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                        typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm,
                        AMPI_Request* request) {
     int rStatus;
@@ -4098,7 +4102,7 @@ namespace medi {
 
     AMPI_Iallgatherv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iallgatherv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -4209,7 +4213,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Iallreduce_global_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod;
@@ -4263,8 +4267,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Iallreduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Iallreduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
-                             DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+  int AMPI_Iallreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
+                             int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -4396,7 +4400,7 @@ namespace medi {
 
     AMPI_Iallreduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Iallreduce_global_AsyncHandle<DATATYPE>*>
         (handle);
-    const  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod = asyncHandle->recvbufMod;
@@ -4500,7 +4504,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoall_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -4550,7 +4554,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoall_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Ialltoall(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Ialltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -4677,7 +4681,7 @@ namespace medi {
 
     AMPI_Ialltoall_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Ialltoall_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -4798,7 +4802,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoallv_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     const int* sdisplsMod;
     const  int* sendcounts;
@@ -4853,7 +4857,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoallv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Ialltoallv(const typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
+  int AMPI_Ialltoallv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
                       SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
@@ -5015,7 +5019,7 @@ namespace medi {
 
     AMPI_Ialltoallv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Ialltoallv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     const int* sdisplsMod = asyncHandle->sdisplsMod;
     const  int* sendcounts = asyncHandle->sendcounts;
@@ -5418,7 +5422,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igather_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -5475,7 +5479,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igather(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Igather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!recvtype->getADTool().isActiveType()) {
@@ -5615,7 +5619,7 @@ namespace medi {
 
     AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle = static_cast<AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>*>
         (handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -5735,7 +5739,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igatherv_AsyncHandle : public HandleBase {
-    const  typename SENDTYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -5795,7 +5799,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igatherv(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Igatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                     AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
@@ -5956,7 +5960,7 @@ namespace medi {
 
     AMPI_Igatherv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Igatherv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -6076,7 +6080,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Ireduce_global_AsyncHandle : public HandleBase {
-    const  typename DATATYPE::Type* sendbuf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod;
@@ -6134,7 +6138,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Ireduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Ireduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
+  int AMPI_Ireduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                           DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
@@ -6280,7 +6284,7 @@ namespace medi {
 
     AMPI_Ireduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ireduce_global_AsyncHandle<DATATYPE>*>
         (handle);
-    const  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod = asyncHandle->recvbufMod;
@@ -7088,7 +7092,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Reduce_global(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
+  int AMPI_Reduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                          DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
     if(!datatype->getADTool().isActiveType()) {
