@@ -81,7 +81,8 @@
         <request name="request" type="MPI_Request*"/>
       </function>
 
-      <function name="Improbe" version="3.0">
+      <!-- handled in include/medi/ampi/message.hpp -->
+      <function name="Improbe" version="3.0" mediHandle="handled">
         <arg name="source" type="int" />
         <arg name="tag" type="int" />
         <arg name="comm" type="MPI_Comm" />
@@ -90,11 +91,11 @@
         <arg name="status" type="MPI_Status*" />
       </function>
 
-      <function name="Imrecv" version="3.0" async="request" mediHandle="disable">
+      <function name="Imrecv" version="3.0" async="request" mediHandle="transform">
         <recv name="buf" type="datatype" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
-        <arg name="message" type="MPI_Message*" />
+        <message name="message" type="MPI_Message*" />
         <request name="request" type="MPI_Request*" />
       </function>
 
@@ -146,7 +147,8 @@
         <request name="request" type="MPI_Request*"/>
       </function>
 
-      <function name="Mprobe" version="3.0">
+      <!-- handled in include/medi/ampi/message.hpp -->
+      <function name="Mprobe" version="3.0" mediHandle="handled">
         <arg name="source" type="int" />
         <arg name="tag" type="int" />
         <arg name="comm" type="MPI_Comm" />
@@ -154,11 +156,11 @@
         <arg name="status" type="MPI_Status*" />
       </function>
 
-      <function name="Mrecv" version="3.0" mediHandle="disable">
+      <function name="Mrecv" version="3.0" mediHandle="transform">
         <recv name="buf" type="datatype" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
-        <arg name="message" type="MPI_Message*" />
+        <message name="message" type="MPI_Message*" />
         <arg name="status" type="MPI_Status*" />
       </function>
 

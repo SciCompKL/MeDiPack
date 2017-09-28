@@ -416,7 +416,7 @@
         <define name="MPI_File" version="2.0" />
         <define name="MPI_Group" version="1.0" />
         <define name="MPI_Info" version="2.0" />
-        <define name="MPI_Message" version="3.0"/>
+        <define name="MPI_Message" special="include/medi/ampi/message.hpp" version="3.0" />
         <define name="MPI_Op" special="include/medi/mpiOp.hpp" version="1.0" />
         <define name="MPI_Request" special="include/medi/ampi/async.hpp" version="1.0" />
         <define name="MPI_Win" version="2.0" />

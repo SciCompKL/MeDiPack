@@ -32,12 +32,17 @@
 .
 .template 0
 
-function addHandleData(handle, pack, del, name, type)
+function addHandleData(handle, pack, del, name, type, cp)
   new my.handle.item
     define item.name = my.name
     define item.type = my.type
     define item.pack = my.pack
     define item.del = my.del
+    if(defined(my.cp))
+      define item.cp = my.cp
+    else
+      define item.cp = my.name
+    endif
   endnew
 endfunction
 
@@ -101,6 +106,8 @@ for functions.function as curFunction
      curFunction.argRev += "&h->$(item.name)Reverse"
    elsif(name(item) = "status")
      curFunction.argRev += "&$(item.name)"   # status is not stored
+   elsif(name(item) = "message")
+     curFunction.argRev += "&h->$(item.name)"   # directly stored
    else
      curFunction.argRev += "h->$(item.name)"
    endif
@@ -145,6 +152,9 @@ for functions.function as curFunction
      addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
    elsif(name(item) = "status")
      # status is not stored
+   elsif(name(item) = "message")
+     addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) AMPI_Message*")
+     addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) AMPI_Message", "*$(item.name)")
    else
      # add other items to both handles
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.taType)")
@@ -169,6 +179,8 @@ for functions.function as curFunction
      curFunction.argDef += "$(item.tplName)* $(item.name)"
    elsif(name(item) = "status")
      curFunction.argDef += "$(item.taType)* $(item.name)"
+   elsif(name(item) = "message")
+     curFunction.argDef += "AMPI_Message* $(item.name)"
    else
      curFunction.argDef += "$(item.taType) $(item.name)"
    endif
@@ -190,6 +202,8 @@ for functions.function as curFunction
      else
        curFunction.argReg += "&$(item.name)->request"
      endif
+   elsif(name(item) = "message")
+     curFunction.argReg += "&$(item.name)->message"
    else
      curFunction.argReg += "$(item.name)"
    endif
@@ -213,6 +227,8 @@ for functions.function as curFunction
      else
        curFunction.argArg += "&$(item.name)->request"
      endif
+   elsif(name(item) = "message")
+     curFunction.argArg += "&$(item.name)->message"
    else
      curFunction.argArg += "$(item.name)"
    endif
@@ -453,7 +469,7 @@ function packHandle(handle, name)
 # pack the arguments
   for my.handle. as item
     if 1 = item.pack
->     $(my.name)->$(item.name) = $(item.name);
+>     $(my.name)->$(item.name) = $(item.cp);
     endif
   endfor
 endfunction
@@ -518,6 +534,7 @@ endfunction
 #include "../../include/medi/medipack.h"
 #include "../../include/medi/reverseFunctions.hpp"
 #include "../../include/medi/ampi/async.hpp"
+#include "../../include/medi/ampi/message.hpp"
 
 namespace medi {
 .for functions.function as curFunction where curFunction.mediHandle ?= "transform"

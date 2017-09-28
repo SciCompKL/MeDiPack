@@ -30,6 +30,7 @@
 
 #include "medipack.h"
 #include "ampi/async.hpp"
+#include "ampi/message.hpp"
 
 namespace medi {
 
@@ -89,9 +90,22 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Mrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status) {
+    MEDI_UNUSED(count);
+    MEDI_UNUSED(status);
+    MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Imrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request) {
+    MEDI_UNUSED(count);
+    MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm, &request->request);
   }
 
   template<typename SENDTYPE, typename RECVTYPE>

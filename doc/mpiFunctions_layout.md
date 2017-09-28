@@ -4,7 +4,7 @@ element: functions
 
 element: function
   child of: functions
-  contains elements: send, recv, arg, type, request, operator
+  contains elements: arg, send, recv, despls, operator, request, type, message, status
   attributes:            name -> The name of the function. Used for naming handles, functions etc.
                       version -> The mpi version this function was added to the standard.
              [optional] async -> Defines that the function is asynchronous. The value defines the name of the
@@ -69,6 +69,13 @@ element: request
 
 element: type
   -> Special handling for datatype arguments. Depending on the interface they are treated as templates or normal arguments.
+  child of: function
+  attributes:             name -> The name of the argument.
+                          type -> The type of the argument.
+              [optional] const -> If defined indicates that the argument is constant.
+
+element: message
+  -> Special handling for message arguments. They are directly stored in the buffers.
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
