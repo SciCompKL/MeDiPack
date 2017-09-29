@@ -86,6 +86,9 @@ namespace medi {
        */
       typedef void IndexType;
 
+      //TODO: remove
+      typedef void AdjointType;
+
       /**
        * @brief Wrapper interface for MPI types in communications. See the class description for details.
        * @param[in]         mpiType  The MPI type for the data.
