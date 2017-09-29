@@ -32,6 +32,7 @@
 #include "mpiTypeInterface.hpp"
 #include "mpiTypeDefault.hpp"
 #include "ampi/async.hpp"
+#include "ampi/constructedDatatypes.hpp"
 #include "ampi/operatorFunctions.hpp"
 #include "ampi/wrappers.hpp"
 

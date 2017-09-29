@@ -356,39 +356,209 @@
 
     <!-- A.2.2 Datatypes C Bindings -->
 
-<!-- MPI_Aint MPI_Aint_add(MPI_Aint base, MPI_Aint disp) -->
-<!-- MPI_Aint MPI_Aint_diff(MPI_Aint addr1, MPI_Aint addr2) -->
-<!-- int MPI_Get_address(const void *location, MPI_Aint *address) -->
-<!-- int MPI_Get_elements(const MPI_Status *status, MPI_Datatype datatype, int *count) -->
-<!-- int MPI_Get_elements_x(const MPI_Status *status, MPI_Datatype datatype, MPI_Count *count) -->
-<!-- int MPI_Pack(const void* inbuf, int incount, MPI_Datatype datatype, void *outbuf, int outsize, int *position, MPI_Comm comm) -->
-<!-- int MPI_Pack_external(const char* datarep, const void *inbuf, int incount, MPI_Datatype datatype, void *outbuf, MPI_Aint outsize, MPI_Aint *position) -->
-<!-- int MPI_Pack_external_size(const char* datarep, int incount, MPI_Datatype datatype, MPI_Aint *size) -->
-<!-- int MPI_Pack_size(int incount, MPI_Datatype datatype, MPI_Comm comm, int *size) -->
-<!-- int MPI_Type_commit(MPI_Datatype *datatype) -->
-<!-- int MPI_Type_contiguous(int count, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_darray(int size, int rank, int ndims, const int* array_of_gsizes, const int* array_of_distribs, const int* array_of_dargs, const int* array_of_psizes, int order, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_hindexed(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_hindexed_block(int count, int blocklength, const MPI_Aint* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_hvector(int count, int blocklength, MPI_Aint stride, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_indexed_block(int count, int blocklength, const int* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_resized(MPI_Datatype oldtype, MPI_Aint lb, MPI_Aint extent, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_struct(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, const MPI_Datatype* array_of_types, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_create_subarray(int ndims, const int* array_of_sizes, const int* array_of_subsizes, const int* array_of_starts, int order, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_dup(MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_free(MPI_Datatype *datatype) -->
-<!-- int MPI_Type_get_contents(MPI_Datatype datatype, int max_integers, int max_addresses, int max_datatypes, int* array_of_integers, MPI_Aint* array_of_addresses, MPI_Datatype* array_of_datatypes) -->
-<!-- int MPI_Type_get_envelope(MPI_Datatype datatype, int *num_integers, int *num_addresses, int *num_datatypes, int *combiner) -->
-<!-- int MPI_Type_get_extent(MPI_Datatype datatype, MPI_Aint *lb, MPI_Aint *extent) -->
-<!-- int MPI_Type_get_extent_x(MPI_Datatype datatype, MPI_Count *lb, MPI_Count *extent) -->
-<!-- int MPI_Type_get_true_extent(MPI_Datatype datatype, MPI_Aint *true_lb, MPI_Aint *true_extent) -->
-<!-- int MPI_Type_get_true_extent_x(MPI_Datatype datatype, MPI_Count *true_lb, MPI_Count *true_extent) -->
-<!-- int MPI_Type_indexed(int count, const int* array_of_blocklengths, const int* array_of_displacements, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Type_size(MPI_Datatype datatype, int *size) -->
-<!-- int MPI_Type_size_x(MPI_Datatype datatype, MPI_Count *size) -->
-<!-- int MPI_Type_vector(int count, int blocklength, int stride, MPI_Datatype oldtype, MPI_Datatype *newtype) -->
-<!-- int MPI_Unpack(const void* inbuf, int insize, int *position, void *outbuf, int outcount, MPI_Datatype datatype, MPI_Comm comm) -->
-<!-- int MPI_Unpack_external(const char* datarep, const void *inbuf, MPI_Aint insize, MPI_Aint *position, void *outbuf, int outcount, MPI_Datatype datatype)  -->
+MPI_Aint MPI_Aint_add(MPI_Aint base, MPI_Aint disp)
+MPI_Aint MPI_Aint_diff(MPI_Aint addr1, MPI_Aint addr2)
+<function name="Get_address" mediHandle="disable">
+  <arg name="location" type="void " const="1"/>
+  <arg name="address" type="MPI_Aint " />
+</function>
+<function name="Get_elements" mediHandle="disable">
+  <arg name="status" type="MPI_Status " const="1"/>
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="count" type="int " />
+</function>
+<function name="Get_elements_x" mediHandle="disable">
+  <arg name="status" type="MPI_Status " const="1"/>
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="count" type="MPI_Count " />
+</function>
+<function name="Pack" mediHandle="disable">
+  <arg name="inbuf" type="void*" const="1"/>
+  <arg name="incount" type="int" />
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="outbuf" type="void " />
+  <arg name="outsize" type="int" />
+  <arg name="position" type="int " />
+  <arg name="comm" type="MPI_Comm" />
+</function>
+<function name="Pack_external" mediHandle="disable">
+  <arg name="datarep" type="char*" const="1"/>
+  <arg name="inbuf" type="void " const="1"/>
+  <arg name="incount" type="int" />
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="outbuf" type="void " />
+  <arg name="outsize" type="MPI_Aint" />
+  <arg name="position" type="MPI_Aint " />
+</function>
+<function name="Pack_external_size" mediHandle="disable">
+  <arg name="datarep" type="char*" const="1"/>
+  <arg name="incount" type="int" />
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="size" type="MPI_Aint " />
+</function>
+<function name="Pack_size" mediHandle="disable">
+  <arg name="incount" type="int" />
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="comm" type="MPI_Comm" />
+  <arg name="size" type="int " />
+</function>
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_commit" mediHandle="handled">
+        <arg name="datatype" type="MPI_Datatype*" />
+      </function>
+<function name="Type_contiguous" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_darray" mediHandle="disable">
+  <arg name="size" type="int" />
+  <arg name="rank" type="int" />
+  <arg name="ndims" type="int" />
+  <arg name="array_of_gsizes" type="int*" const="1"/>
+  <arg name="array_of_distribs" type="int*" const="1"/>
+  <arg name="array_of_dargs" type="int*" const="1"/>
+  <arg name="array_of_psizes" type="int*" const="1"/>
+  <arg name="order" type="int" />
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_hindexed" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="array_of_blocklengths" type="int*" const="1"/>
+  <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_hindexed_block" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="blocklength" type="int" />
+  <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_hvector" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="blocklength" type="int" />
+  <arg name="stride" type="MPI_Aint" />
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_indexed_block" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="blocklength" type="int" />
+  <arg name="array_of_displacements" type="int*" const="1"/>
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_create_resized" mediHandle="disable">
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="lb" type="MPI_Aint" />
+  <arg name="extent" type="MPI_Aint" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_create_struct" mediHandle="handled">
+        <arg name="count" type="int" />
+        <arg name="array_of_blocklengths" type="int*" const="1"/>
+        <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
+        <type name="array_of_types" type="MPI_Datatype*" const="1"/>
+        <type name="newtype" type="MPI_Datatype*" />
+      </function>
+<function name="Type_create_subarray" mediHandle="disable">
+  <arg name="ndims" type="int" />
+  <arg name="array_of_sizes" type="int*" const="1"/>
+  <arg name="array_of_subsizes" type="int*" const="1"/>
+  <arg name="array_of_starts" type="int*" const="1"/>
+  <arg name="order" type="int" />
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_dup" mediHandle="disable">
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_free" mediHandle="handled">
+        <type name="datatype" type="MPI_Datatype*" />
+      </function>
+<function name="Type_get_contents" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="max_integers" type="int" />
+  <arg name="max_addresses" type="int" />
+  <arg name="max_datatypes" type="int" />
+  <arg name="array_of_integers" type="int*" />
+  <arg name="array_of_addresses" type="MPI_Aint*" />
+  <arg name="array_of_datatypes" type="MPI_Datatype*" />
+</function>
+<function name="Type_get_envelope" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="num_integers" type="int " />
+  <arg name="num_addresses" type="int " />
+  <arg name="num_datatypes" type="int " />
+  <arg name="combiner" type="int " />
+</function>
+<function name="Type_get_extent" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="lb" type="MPI_Aint " />
+  <arg name="extent" type="MPI_Aint " />
+</function>
+<function name="Type_get_extent_x" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="lb" type="MPI_Count " />
+  <arg name="extent" type="MPI_Count " />
+</function>
+<function name="Type_get_true_extent" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="true_lb" type="MPI_Aint " />
+  <arg name="true_extent" type="MPI_Aint " />
+</function>
+<function name="Type_get_true_extent_x" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="true_lb" type="MPI_Count " />
+  <arg name="true_extent" type="MPI_Count " />
+</function>
+<function name="Type_indexed" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="array_of_blocklengths" type="int*" const="1"/>
+  <arg name="array_of_displacements" type="int*" const="1"/>
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Type_size" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="size" type="int " />
+</function>
+<function name="Type_size_x" mediHandle="disable">
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="size" type="MPI_Count " />
+</function>
+<function name="Type_vector" mediHandle="disable">
+  <arg name="count" type="int" />
+  <arg name="blocklength" type="int" />
+  <arg name="stride" type="int" />
+  <arg name="oldtype" type="MPI_Datatype" />
+  <arg name="newtype" type="MPI_Datatype*" />
+</function>
+<function name="Unpack" mediHandle="disable">
+  <arg name="inbuf" type="void*" const="1"/>
+  <arg name="insize" type="int" />
+  <arg name="position" type="int " />
+  <arg name="outbuf" type="void " />
+  <arg name="outcount" type="int" />
+  <arg name="datatype" type="MPI_Datatype" />
+  <arg name="comm" type="MPI_Comm" />
+</function>
+<function name="Unpack_external" mediHandle="disable">
+  <arg name="datarep" type="char*" const="1"/>
+  <arg name="inbuf" type="void " const="1"/>
+  <arg name="insize" type="MPI_Aint" />
+  <arg name="position" type="MPI_Aint " />
+  <arg name="outbuf" type="void " />
+  <arg name="outcount" type="int" />
+  <arg name="datatype)" type="MPI_Datatype" />
+</function>
 
     <!-- A.2.3 Collective Communication C Bindings -->
 
