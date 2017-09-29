@@ -178,7 +178,9 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   static void initTypes() {
     // create the mpi type for ADOL-c
-    MpiType = MPI_INT;
+    MPI_Type_contiguous(sizeof(adouble), MPI_BYTE, &MpiType);
+    MPI_Type_commit(&MpiType);
+
     ModifiedMpiType = MPI_DOUBLE;
     AdjointMpiType = MPI_DOUBLE;
   }

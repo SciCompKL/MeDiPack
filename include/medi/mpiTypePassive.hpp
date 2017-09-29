@@ -75,19 +75,15 @@ namespace medi {
       }
 
       inline void copyIntoModifiedBuffer(const Type* buf, size_t bufOffset, ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(bufOffset);
-        MEDI_UNUSED(bufMod);
-        MEDI_UNUSED(bufModOffset);
-        MEDI_UNUSED(elements);
+        for(int i = 0; i < elements; ++i) {
+          bufMod[bufModOffset + i] = buf[bufOffset + i];
+        }
       }
 
       inline void copyFromModifiedBuffer(Type* buf, size_t bufOffset, const ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(bufOffset);
-        MEDI_UNUSED(bufMod);
-        MEDI_UNUSED(bufModOffset);
-        MEDI_UNUSED(elements);
+        for(int i = 0; i < elements; ++i) {
+          buf[bufOffset + i] = bufMod[bufModOffset + i];
+        }
       }
 
       inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
@@ -130,11 +126,9 @@ namespace medi {
       }
 
       inline void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
-        MEDI_UNUSED(from);
-        MEDI_UNUSED(fromOffset);
-        MEDI_UNUSED(to);
-        MEDI_UNUSED(toOffset);
-        MEDI_UNUSED(count);
+        for(int i = 0; i < count; ++i) {
+          to[toOffset + i] = from[fromOffset + i];
+        }
       }
 
       inline void createTypeBuffer(Type* &buf, size_t size) const {
