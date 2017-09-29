@@ -59,7 +59,7 @@ namespace medi {
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
         adTool(Tool::AdjointMpiType) {}
 
-      Tool& getADTool() {
+      const Tool& getADTool() const {
         return adTool;
       }
 

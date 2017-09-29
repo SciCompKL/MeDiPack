@@ -247,12 +247,12 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
     return true;
   }
 
-  inline void startAssembly(medi::HandleBase* h) {
+  inline void startAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
 
   }
 
-  inline void addToolAction(medi::HandleBase* h) {
+  inline void addToolAction(medi::HandleBase* h) const {
     if(NULL != h) {
       // store the handle pointer in the int array
       int sizePointer = sizeof(medi::HandleBase*) / sizeof(int);
@@ -264,7 +264,7 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
     }
   }
 
-  inline void stopAssembly(medi::HandleBase* h) {
+  inline void stopAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
   }
 

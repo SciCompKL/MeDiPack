@@ -248,18 +248,18 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
     return primalRestore;
   }
 
-  inline void startAssembly(medi::HandleBase* h) {
+  inline void startAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
 
   }
 
-  inline void addToolAction(medi::HandleBase* h) {
+  inline void addToolAction(medi::HandleBase* h) const {
     if(NULL != h) {
       Type::getGlobalTape().pushExternalFunctionHandle(callFunc, h, deleteFunc);
     }
   }
 
-  inline void stopAssembly(medi::HandleBase* h) {
+  inline void stopAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
   }
 

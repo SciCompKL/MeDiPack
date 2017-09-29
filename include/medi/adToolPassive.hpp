@@ -51,9 +51,9 @@ namespace medi {
       inline bool isActiveType() const {return false;}
       inline bool isHandleRequired() const {return false;}
       inline bool isOldPrimalsRequired() const {return false;}
-      inline void startAssembly(HandleBase* h) {MEDI_UNUSED(h);}
-      inline void stopAssembly(HandleBase* h) {MEDI_UNUSED(h);}
-      inline void addToolAction(HandleBase* h) {MEDI_UNUSED(h);}
+      inline void startAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
+      inline void stopAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
+      inline void addToolAction(HandleBase* h) const {MEDI_UNUSED(h);}
 
       inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
         MEDI_UNUSED(indices);

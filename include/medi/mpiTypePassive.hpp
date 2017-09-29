@@ -61,7 +61,7 @@ namespace medi {
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
         adTool(type) {}
 
-      Tool& getADTool() {
+      const Tool& getADTool() const{
         return adTool;
       }
 
