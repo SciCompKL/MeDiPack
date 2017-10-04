@@ -55,6 +55,9 @@ namespace medi {
       inline void stopAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
       inline void addToolAction(HandleBase* h) const {MEDI_UNUSED(h);}
 
+      inline AMPI_Op convertOperator(AMPI_Op op) const {
+        return op;
+      }
       inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
         MEDI_UNUSED(indices);
         MEDI_UNUSED(adjoints);

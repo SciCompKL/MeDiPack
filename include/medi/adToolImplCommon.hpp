@@ -48,6 +48,25 @@ namespace medi {
         return restorePrimal;
       }
 
+      AMPI_Op convertOperator(AMPI_Op op) const {
+        if(MPI_SUM == op.primalFunction) {
+          return Impl::OP_SUM;
+        } else if(MPI_PROD == op.primalFunction) {
+          return Impl::OP_PROD;
+        } else if(MPI_MIN == op.primalFunction) {
+          return Impl::OP_MIN;
+        } else if(MPI_MAX == op.primalFunction) {
+          return Impl::OP_MAX;
+        } else if(MPI_MINLOC == op.primalFunction) {
+          return Impl::OP_MINLOC;
+        } else if(MPI_MAXLOC == op.primalFunction) {
+          return Impl::OP_MAXLOC;
+        } else {
+          // do not change the type if it is not one of the above
+          return op;
+        }
+      }
+
       inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
         buf = new AdjointType[size];
       }

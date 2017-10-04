@@ -37,6 +37,7 @@
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
+#include "mpiOp.hpp"
 
 template <typename T>
 void adolcModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
@@ -268,6 +269,11 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   inline void stopAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
+  }
+
+  medi::AMPI_Op convertOperator(medi::AMPI_Op op) const {
+    // TODO: Implement
+    return op;
   }
 
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {

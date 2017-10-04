@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include "mpiOp.hpp"
 #include "typeDefinitions.h"
 
 namespace medi {
@@ -60,6 +61,7 @@ namespace medi {
       virtual void startAssembly(HandleBase* h) const = 0;
       virtual void stopAssembly(HandleBase* h) const = 0;
       virtual void addToolAction(HandleBase* h) const = 0;
+      virtual AMPI_Op convertOperator(AMPI_Op op) const = 0;
 
       virtual void getAdjoints(const void* indices, void* adjoints, int elements) const = 0;
 

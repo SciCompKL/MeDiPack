@@ -32,6 +32,7 @@
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
+#include "mpiOp.hpp"
 
 template <typename T>
 void codiUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
@@ -169,6 +170,11 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 
   inline void stopAssembly(medi::HandleBase* h) {
     MEDI_UNUSED(h);
+  }
+
+  medi::AMPI_Op convertOperator(medi::AMPI_Op op) const {
+    // TODO: Implement
+    return op;
   }
 
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {

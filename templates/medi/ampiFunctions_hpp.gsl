@@ -195,7 +195,7 @@ for functions.function as curFunction
    if(name(item) = "type")
      curFunction.argReg += "$(item.name)->getMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
-     curFunction.argReg += "$(item.name).primalFunction"    # get the regular mpi type
+     curFunction.argReg += "convOp.primalFunction"    # get the regular mpi type
    elsif(name(item) = "request")
      if(defined(item.noptr))
        curFunction.argReg += "$(item.name).request"
@@ -218,7 +218,7 @@ for functions.function as curFunction
    elsif(name(item) = "type")
      curFunction.argArg += "$(item.name)->getModifiedMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
-     curFunction.argArg += "$(item.name).modifiedPrimalFunction"
+     curFunction.argArg += "convOp.modifiedPrimalFunction"
    elsif(name(item) = "displs")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "request")
@@ -383,7 +383,7 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
 >     h->$(my.curFunction.adType).getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
 >
       if(defined(my.curFunction->operator))
->       h->$(my.curFunction->operator.name).preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
+>       convOp.preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
       endif
     endif
   endRootReverse(my.buffer)
@@ -398,7 +398,7 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
       if(defined(my.curFunction->operator))
 >       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
 >       // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
->       h->$(my.curFunction->operator.name).postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize);
+>       convOp.postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize);
       endif
 >     // Adjoint buffers are always linear in space so they can be accessed in one sweep
 >     h->$(my.curFunction.adType).updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
@@ -509,6 +509,10 @@ function addPrimalAsyncSplit(curFunction)
 >
 >    if($(my.curFunction.adType).isActiveType()) {
 >
+       for my.curFunction.operator
+>        AMPI_Op convOp = $(my.curFunction.adType).convertOperator($(operator.name));
+       endfor
+
   endif
 endfunction
 
@@ -522,6 +526,9 @@ function addReverseAsyncSplit(curFunction)
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
 >    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
 >
+     for my.curFunction.operator
+>      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+     endfor
   endif
 endfunction
 
@@ -577,6 +584,9 @@ namespace medi {
       $(status.type) $(status.name);
 .   endfor
 .
+.   if(defined(curFunction->operator))
+      AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+.   endif
 .   for curFunction.recv
 .     createBufferReverseSetup(recv, curFunction, 1)
       if(h->$(curFunction.adType).isOldPrimalsRequired()) {
@@ -612,6 +622,10 @@ namespace medi {
   template<$(curFunction.tplDef)>
   int AMPI_$(curFunction.name)($(curFunction.argDef)) {
     int rStatus;
+.     if(defined(curFunction->operator))
+        AMPI_Op convOp = $(curFunction.adType).convertOperator($(curFunction->operator.name));
+.     endif
+
     if(!$(curFunction.adType).isActiveType()) {
       // call the regular function if the type is not active
       rStatus = $(curFunction.mpiName)($(curFunction.argReg));
@@ -703,14 +717,14 @@ namespace medi {
 .       endfor
 
 .-      if there is an operator in the arguments the primals might need to be extracted
-.       for curFunction.operator
+.       if(defined(curFunction->operator))
           // extract the primal values for the operator if required
-          if(op.requiresPrimal) {
+          if(convOp.requiresPrimal) {
 .           for curFunction.send
 .             createPrimalExtraction(send, curFunction, "Primals")
 .           endfor
           }
-.       endfor
+.       endif
 
 .       for curFunction.recv
           // extract the old primal values from the recv buffer if the AD tool
@@ -763,14 +777,14 @@ namespace medi {
 .       endfor
       }
 .
-.     for curFunction.operator
+.     if(defined(curFunction->operator))
         // extract the primal values for the operator if required
-        if(nullptr != h && op.requiresPrimal) {
+        if(nullptr != h && convOp.requiresPrimal) {
 .       for curFunction.recv
 .         createPrimalExtraction(recv, curFunction, "Primals")
 .       endfor
         }
-.     endfor
+.     endif
 
       $(curFunction.adType).stopAssembly(h);
 .
@@ -813,6 +827,9 @@ namespace medi {
     template<$(curFunction.tplDef)>
 . endif
   inline $(curFunction.type) AMPI_$(curFunction.name)($(curFunction.argDef)) {
+.   if(defined(curFunction->operator))
+      AMPI_Op convOp = op;
+.   endif
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }
 
