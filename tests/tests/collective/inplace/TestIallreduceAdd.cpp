@@ -43,7 +43,7 @@ void func(NUMBER* x, NUMBER* y) {
   for(int i = 0; i < 10; ++i) {
     y[i] = x[i];
   }
-  medi::AMPI_Iallreduce(medi::AMPI_IN_PLACE, &y[ 0], 10, mpiNumberType, TOOL::OP_SUM, MPI_COMM_WORLD, &request);
+  medi::AMPI_Iallreduce(medi::AMPI_IN_PLACE, &y[ 0], 10, mpiNumberType, medi::AMPI_SUM, MPI_COMM_WORLD, &request);
 
   medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
 }
