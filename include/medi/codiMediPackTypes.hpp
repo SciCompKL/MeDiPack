@@ -32,133 +32,20 @@
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
+#include "adToolImplCommon.hpp"
+#include "ampi/types/indexTypeHelper.hpp"
 
-template <typename T>
-void codiModifiedDependency(T& inval, T& inoutval) {
 
-  bool active = (0 != inoutval.getGradientData()) | (0 != inval.getGradientData());
-  if(active) {
-    inoutval.getGradientData() = -1; // TODO: Define invalid index in CoDiPack
-  } else {
-    inoutval.getGradientData() = 0; // TODO: Define passive index in CoDiPack
-  }
-}
-
-template <typename T>
-void codiModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i].value() += invec[i].value();
-    codiModifiedDependency(invec[i], inoutvec[i]);
-  }
-}
-
-template <typename T>
-void codiModifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i].value() *= invec[i].value();
-    codiModifiedDependency(invec[i], inoutvec[i]);
-  }
-}
-
-template <typename T>
-void codiModifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::max;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i].value() = max(inoutvec[i].value(), invec[i].value());
-    codiModifiedDependency(invec[i], inoutvec[i]);
-  }
-}
-
-template <typename T>
-void codiModifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::min;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i].value() = min(inoutvec[i].value(), invec[i].value());
-    codiModifiedDependency(invec[i], inoutvec[i]);
-  }
-}
-
-template <typename T>
-void codiUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] += invec[i];
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] *= invec[i];
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::max;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = max(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::min;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = min(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename AT, typename PT>
-void codiPreAdjMul(AT* adjoints, PT* primals, int count) {
-  for(int i = 0; i < count; ++i) {
-    adjoints[i] *= primals[i];
-  }
-}
-
-template <typename AT, typename PT>
-void codiPostAdjMul(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
-  CODI_UNUSED(rootPrimals);
-
-  for(int i = 0; i < count; ++i) {
-    if(0.0 != primals[i]) {
-      adjoints[i] /= primals[i];
-    }
-  }
-}
-
-template <typename AT, typename PT>
-void codiPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
-  for(int i = 0; i < count; ++i) {
-    if(rootPrimals[i] != primals[i]) {
-      adjoints[i] = AT(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
-    }
-  }
-}
 
 template<typename CoDiType, bool primalRestore, typename Impl>
-struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
+struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
-  typedef typename CoDiType::TapeType Tape;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
   typedef typename CoDiType::PassiveReal PassiveType;
   typedef typename CoDiType::GradientData IndexType;
+
+  typedef typename CoDiType::TapeType Tape;
 
   const static bool IS_ActiveType = true;
   const static bool IS_RequiresModifiedBuffer = false;
@@ -166,18 +53,24 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
+
   static medi::AMPI_Op OP_SUM;
   static medi::AMPI_Op OP_PROD;
   static medi::AMPI_Op OP_MIN;
   static medi::AMPI_Op OP_MAX;
+  static medi::AMPI_Op OP_MINLOC;
+  static medi::AMPI_Op OP_MAXLOC;
 
   typedef medi::MpiTypeDefault<Impl> MediType;
   static MediType* MPI_TYPE;
+  static medi::AMPI_Datatype MPI_INT_TYPE;
+
+  static medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > operatorHelper;
 
   static Tape* adjointTape;
 
   CoDiPackToolBase(MPI_Datatype adjointMpiType) :
-    medi::ADToolBase<Impl, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
+    medi::ADToolImplCommon<Impl, primalRestore, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -193,33 +86,20 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
     MPI_Type_commit(&AdjointMpiType);
   }
 
-  static void initOperator(medi::AMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
-    op.init(requiresPrimal, requiresPrimalSend, primalFunc, true, modifiedFunc, true, preAdjointOperation, postAdjointOperation);
-  }
-
-  static void initOperator(medi::AMPI_Op& op, MPI_User_function* primalFunc) {
-    op.init(primalFunc, true);
-  }
-
-  static void initOperators() {
-    initOperator(OP_SUM, false, false, (MPI_User_function*)codiModifiedAdd<Type>, (MPI_User_function*)codiUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
-    initOperator(OP_PROD, (MPI_User_function*)codiUnmodifiedMul<Type>);
-    initOperator(OP_MIN, true, true, (MPI_User_function*)codiModifiedMin<Type>, (MPI_User_function*)codiUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<AdjointType, PassiveType>);
-    initOperator(OP_MAX, true, true, (MPI_User_function*)codiModifiedMax<Type>, (MPI_User_function*)codiUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)codiPostAdjMinMax<AdjointType, PassiveType>);
-  }
-
   static void init() {
     initTypes();
-    initOperators();
 
     MPI_TYPE = new MediType();
-  }
 
-  static void finalizeOperators() {
-    OP_SUM.free();
-    OP_PROD.free();
-    OP_MIN.free();
-    OP_MAX.free();
+    operatorHelper.init(MPI_TYPE);
+    MPI_INT_TYPE = operatorHelper.MPI_INT_TYPE;
+
+    OP_SUM = operatorHelper.OP_SUM;
+    OP_PROD = operatorHelper.OP_PROD;
+    OP_MIN = operatorHelper.OP_MIN;
+    OP_MAX = operatorHelper.OP_MAX;
+    OP_MINLOC = operatorHelper.OP_MINLOC;
+    OP_MAXLOC = operatorHelper.OP_MAXLOC;
   }
 
   static void finalizeTypes() {
@@ -227,25 +107,19 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
   }
 
   static void finalize() {
+
+    operatorHelper.finalize();
+
     if(nullptr != MPI_TYPE) {
       delete MPI_TYPE;
       MPI_TYPE = nullptr;
     }
 
-    finalizeOperators();
     finalizeTypes();
-  }
-
-  inline bool isActiveType() const {
-    return true;
   }
 
   inline  bool isHandleRequired() const {
     return Type::getGlobalTape().isActive();
-  }
-
-  inline bool isOldPrimalsRequired() const {
-    return primalRestore;
   }
 
   inline void startAssembly(medi::HandleBase* h) const {
@@ -284,39 +158,6 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
       for(int curPos = 0; curPos < elements; ++curPos) {
         buf[curPos] += buf[elements * curRank + curPos];
       }
-    }
-  }
-
-  inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-    buf = new AdjointType[size];
-  }
-
-  inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
-    buf = new PassiveType[size];
-  }
-
-  inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
-    buf = new IndexType[size];
-  }
-
-  inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
-    if(NULL != buf) {
-      delete [] buf;
-      buf = NULL;
-    }
-  }
-
-  inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
-    if(NULL != buf) {
-      delete [] buf;
-      buf = NULL;
-    }
-  }
-
-  inline void deleteIndexTypeBuffer(IndexType* &buf) const {
-    if(NULL != buf) {
-      delete [] buf;
-      buf = NULL;
     }
   }
 
@@ -367,6 +208,24 @@ struct CoDiPackToolBase : public medi::ADToolBase<Impl, typename CoDiType::Gradi
 
   static bool isActive() {
     return Type::getGlobalTape().isActive();
+  }
+
+  static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
+    return modValue.value();
+  }
+
+  static void setPrimalToMod(ModifiedType& modValue, const PassiveType& value) {
+    modValue.value() = value;
+  }
+
+  static void modifyDependency(ModifiedType& inval, ModifiedType& inoutval) {
+
+    bool active = (0 != inoutval.getGradientData()) | (0 != inval.getGradientData());
+    if(active) {
+      inoutval.getGradientData() = -1; // TODO: Define invalid index in CoDiPack
+    } else {
+      inoutval.getGradientData() = 0; // TODO: Define passive index in CoDiPack
+    }
   }
 };
 
@@ -451,5 +310,9 @@ template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoD
 template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_PROD;
 template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MIN;
 template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MAX;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MINLOC;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MAXLOC;
 template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiPackToolBase<CoDiType, primalRestore, Impl>::MediType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_TYPE;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_INT_TYPE;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > CoDiPackToolBase<CoDiType, primalRestore, Impl>::operatorHelper;
 template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiType::TapeType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::adjointTape;
