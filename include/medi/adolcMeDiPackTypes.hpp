@@ -37,112 +37,10 @@
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
-#include "mpiOp.hpp"
+#include "adToolImplCommon.hpp"
+#include "ampi/types/indexTypeHelper.hpp"
 
-template <typename T>
-void adolcModifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] += invec[i];
-  }
-}
-
-template <typename T>
-void adolcModifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] *= invec[i];
-  }
-}
-
-template <typename T>
-void adolcModifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::max;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = max(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename T>
-void adolcModifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::min;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = min(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename T>
-void adolcUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] += invec[i];
-  }
-}
-
-template <typename T>
-void adolcUnmodifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] *= invec[i];
-  }
-}
-
-template <typename T>
-void adolcUnmodifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::max;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = max(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename T>
-void adolcUnmodifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::min;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = min(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename AT, typename PT>
-void adolcPreAdjMul(AT* adjoints, PT* primals, int count) {
-  for(int i = 0; i < count; ++i) {
-    adjoints[i] *= primals[i];
-  }
-}
-
-template <typename AT, typename PT>
-void adolcPostAdjMul(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
-  CODI_UNUSED(rootPrimals);
-
-  for(int i = 0; i < count; ++i) {
-    if(0.0 != primals[i]) {
-      adjoints[i] /= primals[i];
-    }
-  }
-}
-
-template <typename AT, typename PT>
-void adolcPostAdjMinMax(AT* adjoints, PT* primals, PT* rootPrimals, int count) {
-  for(int i = 0; i < count; ++i) {
-    if(rootPrimals[i] != primals[i]) {
-      adjoints[i] = 0.0; // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
-    }
-  }
-}
-
-struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int> {
+struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, double, double, int> {
   typedef adouble Type;
   typedef double AdjointType;
   typedef double ModifiedType;
@@ -155,10 +53,13 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
+
   static medi::AMPI_Op OP_SUM;
   static medi::AMPI_Op OP_PROD;
   static medi::AMPI_Op OP_MIN;
   static medi::AMPI_Op OP_MAX;
+  static medi::AMPI_Op OP_MINLOC;
+  static medi::AMPI_Op OP_MAXLOC;
 
   static double* adjointBase;
   static double* primalBase;
@@ -166,6 +67,9 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   typedef medi::MpiTypeDefault<AdolcTool> MediType;
   static MediType* MPI_TYPE;
+  static medi::AMPI_Datatype MPI_INT_TYPE;
+
+  static medi::OperatorHelper<medi::FunctionHelper<adouble, double, double, int, double, AdolcTool>> operatorHelper;
 
   static bool deleteReverseHandles;
 
@@ -186,21 +90,6 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
     AdjointMpiType = MPI_DOUBLE;
   }
 
-  static void initOperator(medi::AMPI_Op& op, bool requiresPrimal, bool requiresPrimalSend, MPI_User_function* modifiedFunc, MPI_User_function* primalFunc, const medi::PreAdjointOperation preAdjointOperation, const medi::PostAdjointOperation postAdjointOperation) {
-    op.init(requiresPrimal, requiresPrimalSend, primalFunc, true, modifiedFunc, true, preAdjointOperation, postAdjointOperation);
-  }
-
-  static void initOperator(medi::AMPI_Op& op, MPI_User_function* primalFunc) {
-    op.init(primalFunc, true);
-  }
-
-  static void initOperators() {
-    initOperator(OP_SUM, false, false, (MPI_User_function*)adolcModifiedAdd<ModifiedType>, (MPI_User_function*)adolcUnmodifiedAdd<Type>, medi::noPreAdjointOperation, medi::noPostAdjointOperation);
-    initOperator(OP_PROD, (MPI_User_function*)adolcUnmodifiedMul<Type>);
-    initOperator(OP_MIN, true, true, (MPI_User_function*)adolcModifiedMin<ModifiedType>, (MPI_User_function*)adolcUnmodifiedMin<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)adolcPostAdjMinMax<AdjointType, PassiveType>);
-    initOperator(OP_MAX, true, true, (MPI_User_function*)adolcModifiedMax<ModifiedType>, (MPI_User_function*)adolcUnmodifiedMax<Type>, medi::noPreAdjointOperation, (medi::PostAdjointOperation)adolcPostAdjMinMax<AdjointType, PassiveType>);
-  }
-
   static void initExternalFunction() {
     extFunc = reg_ext_fct(emptyPrimal);
     extFunc->fos_reverse = callHandle;
@@ -208,34 +97,38 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   static void init() {
     initTypes();
-    initOperators();
     initExternalFunction();
 
     MPI_TYPE = new MediType();
-  }
 
-  static void finalizeOperators() {
-    OP_SUM.free();
-    OP_PROD.free();
-    OP_MIN.free();
-    OP_MAX.free();
+    operatorHelper.init(MPI_TYPE);
+    MPI_INT_TYPE = operatorHelper.MPI_INT_TYPE;
+
+    OP_SUM = operatorHelper.OP_SUM;
+    OP_PROD = operatorHelper.OP_PROD;
+    OP_MIN = operatorHelper.OP_MIN;
+    OP_MAX = operatorHelper.OP_MAX;
+    OP_MINLOC = operatorHelper.OP_MINLOC;
+    OP_MAXLOC = operatorHelper.OP_MAXLOC;
   }
 
   static void finalizeTypes() {
   }
 
   static void finalize() {
+
+    operatorHelper.finalize();
+
     if(nullptr != MPI_TYPE) {
       delete MPI_TYPE;
       MPI_TYPE = nullptr;
     }
 
-    finalizeOperators();
     finalizeTypes();
   }
 
   AdolcTool(MPI_Datatype adjointMpiType) :
-    medi::ADToolBase<AdolcTool, double, double, int>(adjointMpiType) {}
+    medi::ADToolImplCommon<AdolcTool, true, double, double, double, int>(adjointMpiType) {}
 
 
   inline bool isActiveType() const {
@@ -269,11 +162,6 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   inline void stopAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
-  }
-
-  medi::AMPI_Op convertOperator(medi::AMPI_Op op) const {
-    // TODO: Implement
-    return op;
   }
 
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
@@ -404,5 +292,20 @@ struct AdolcTool final : public medi::ADToolBase<AdolcTool, double, double, int>
 
   static bool isActive() {
     return isTaping();
+  }
+
+  static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
+    return modValue;
+  }
+
+  static void setPrimalToMod(ModifiedType& modValue, const PassiveType& value) {
+    modValue = value;
+  }
+
+  static void modifyDependency(ModifiedType& inval, ModifiedType& inoutval) {
+    MEDI_UNUSED(inval);
+    MEDI_UNUSED(inoutval);
+
+    // no dependency tracking possible
   }
 };

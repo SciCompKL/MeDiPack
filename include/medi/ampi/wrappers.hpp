@@ -298,7 +298,7 @@ namespace medi {
   inline int AMPI_Iallreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
-    if(op.hasAdjoint || !datatype->getADTool().isActiveType()) {
+    if(convOp.hasAdjoint || !datatype->getADTool().isActiveType()) {
       return AMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, comm, request);
     } else {
       // perform a gather and apply the operator locally

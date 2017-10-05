@@ -65,7 +65,11 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
   static MediType* MPI_TYPE;
   static medi::AMPI_Datatype MPI_INT_TYPE;
 
-  static medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > operatorHelper;
+  static medi::OperatorHelper<
+            medi::FunctionHelper<
+                CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl
+            >
+          > operatorHelper;
 
   static Tape* adjointTape;
 

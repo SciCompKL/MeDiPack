@@ -35,7 +35,12 @@ medi::AMPI_Op AdolcTool::OP_SUM;
 medi::AMPI_Op AdolcTool::OP_PROD;
 medi::AMPI_Op AdolcTool::OP_MIN;
 medi::AMPI_Op AdolcTool::OP_MAX;
+medi::AMPI_Op AdolcTool::OP_MINLOC;
+medi::AMPI_Op AdolcTool::OP_MAXLOC;
 AdolcTool::MediType* AdolcTool::MPI_TYPE;
+medi::AMPI_Datatype AdolcTool::MPI_INT_TYPE;
+
+medi::OperatorHelper<medi::FunctionHelper<adouble, double, double, int, double, AdolcTool>> AdolcTool::operatorHelper;
 
 double* AdolcTool::adjointBase;
 double* AdolcTool::primalBase;
