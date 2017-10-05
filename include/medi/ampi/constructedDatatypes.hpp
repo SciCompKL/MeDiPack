@@ -93,8 +93,9 @@ namespace medi {
         MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, mpiTypes, &newMpiType);
 
         if(mdificationRequired) {
-          MPI_Aint* modifiedDisplacements = new MPI_Aint[count];
-          MPI_Datatype* modifiedMpiTypes = new MPI_Datatype[count];
+          MPI_Aint* modifiedDisplacements = new MPI_Aint[count + 1]; // We might need to add padding so add an extra element
+          MPI_Datatype* modifiedMpiTypes = new MPI_Datatype[count + 1];  // We might need to add padding so add an extra element
+          int* modifiedArrayLength = new int[count + 1];   // We might need to add padding so add an extra element
 
           modifiedBlockOffsets = new int[count];
 
@@ -109,13 +110,49 @@ namespace medi {
             mediAssert(0 == curLowerBound); // The modified types are always packed without any holes.
             modifiedDisplacements[i] = totalDisplacement;
             modifiedBlockOffsets[i] = totalDisplacement;
+            modifiedArrayLength[i] = array_of_blocklengths[i];
             totalDisplacement += curExtend * array_of_blocklengths[i];
           }
 
-          MPI_Type_create_struct(count, array_of_blocklengths, modifiedDisplacements, modifiedMpiTypes, &newModMpiType);
+          // TODO: This code assumes a 64-bit machine and if the last member of a struct is a byte, that these are
+          //       padding bytes
+          size_t paddingBytes = totalDisplacement % sizeof(double);
+          int numberOfTypes = count; // This is obvious default we might increase this in the ifs below
+          if(paddingBytes != 0) {
+            // yuck we have to add padding
+
+            // check if the last member was a byte, if yes recompute the total displacement
+            if(modifiedMpiTypes[count - 1] == MPI_BYTE) {
+              totalDisplacement -= array_of_blocklengths[count - 1]; // extend is one
+              paddingBytes = totalDisplacement % sizeof(double);
+
+              if(paddingBytes != 0) {
+                // we still have padding bytes so change the array size
+                modifiedArrayLength[count - 1] = paddingBytes;
+                totalDisplacement += paddingBytes;
+              } else {
+                // no padding bytes left remove the padding bytes from the creation
+                modifiedArrayLength[count - 1] = 0;
+              }
+
+              // since we assume now that the last type are padding bytes, we can remove it from the iterations
+              blockLengths[count - 1] = 0;
+            } else {
+              // The last type is now padding type so we have to add a new type to the lists
+              modifiedMpiTypes[count] = MPI_BYTE;
+              modifiedDisplacements[count] = totalDisplacement;
+              modifiedArrayLength[count] = paddingBytes;
+              totalDisplacement += paddingBytes;
+
+              numberOfTypes += 1;
+            }
+          }
+
+          MPI_Type_create_struct(numberOfTypes, modifiedArrayLength, modifiedDisplacements, modifiedMpiTypes, &newModMpiType);
 
           delete [] modifiedMpiTypes;
           delete [] modifiedDisplacements;
+          delete [] modifiedArrayLength;
         } else {
 
           modifiedBlockOffsets = nullptr;

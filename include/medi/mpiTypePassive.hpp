@@ -66,8 +66,9 @@ namespace medi {
       }
 
       int computeActiveElements(const int count) const {
+        MEDI_UNUSED(count);
 
-        return count;
+        return 0;
       }
 
       bool isModifiedBufferRequired() const {
