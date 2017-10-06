@@ -414,4 +414,11 @@ namespace medi {
     *d = nullptr;
     return 0;
   }
+
+  inline int AMPI_Type_dup(MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+
+    *newtype  = oldtype->clone();
+
+    return 0;
+  }
 }
