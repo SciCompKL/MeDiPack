@@ -60,14 +60,8 @@ namespace medi {
       typedef void PassiveType;
       typedef void IndexType;
 
-      MpiStructType(const MpiStructType* other) :
-        MpiTypeInterface(MPI_INT, MPI_INT)
-      {
-        adInterface = other->adInterface;
-        typeExtend = other->typeExtend;
-        typeOffset = other->typeOffset;
-        modifiedExtend = other->modifiedExtend;
-
+    private:
+      void cloneInternal(const MpiStructType* other) {
         nTypes = other->nTypes;
         blockLengths = new int [nTypes];
         blockOffsets = new int [nTypes];
@@ -86,11 +80,53 @@ namespace medi {
             modifiedBlockOffsets[i] = other->modifiedBlockOffsets[i];
           }
         }
+      }
+
+    public:
+
+
+      MpiStructType(const MpiStructType* other) :
+        MpiTypeInterface(MPI_INT, MPI_INT)
+      {
+        adInterface = other->adInterface;
+        typeExtend = other->typeExtend;
+        typeOffset = other->typeOffset;
+        modifiedExtend = other->modifiedExtend;
+
+        cloneInternal(other);
 
         MPI_Datatype type;
         MPI_Datatype modType;
 
         MPI_Type_dup(this->getMpiType(), &type);
+        if(this->getMpiType() != this->getModifiedMpiType()) {
+          MPI_Type_dup(this->getModifiedMpiType(), &modType);
+        } else {
+          modType = type;
+        }
+
+        setMpiTypes(type, modType);
+
+      }
+
+      MpiStructType(const MpiStructType* other, size_t offset, size_t extend) :
+        MpiTypeInterface(MPI_INT, MPI_INT)
+      {
+        adInterface = other->adInterface;
+        typeExtend = extend;
+        typeOffset = offset;
+        if(nullptr != modifiedBlockOffsets) {
+          modifiedExtend = other->modifiedExtend;
+        } else {
+          modifiedExtend = extend;
+        }
+
+        cloneInternal(other);
+
+        MPI_Datatype type;
+        MPI_Datatype modType;
+
+        MPI_Type_create_resized(this->getMpiType(), offset, extend, &type);
         if(this->getMpiType() != this->getModifiedMpiType()) {
           MPI_Type_dup(this->getModifiedMpiType(), &modType);
         } else {
@@ -386,6 +422,264 @@ namespace medi {
         return new MpiStructType(this);
       }
   };
+
+  inline int AMPI_Type_create_contiguous(int count, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = 1;
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    array_of_blocklengths[0] = count;
+    array_of_displacements[0] = 0;
+    array_of_types[0] = oldtype;
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_vector(int count, int blocklength, int stride, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    for(int i = 0; i < count; ++i) {
+      array_of_blocklengths[i] = blocklength;
+      array_of_displacements[i] = stride * extent * i;
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_create_hvector(int count, int blocklength, MPI_Aint stride, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    for(int i = 0; i < count; ++i) {
+      array_of_blocklengths[i] = blocklength;
+      array_of_displacements[i] = stride * i;
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_indexed(int count, int* array_of_blocklengths, int* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    for(int i = 0; i < count; ++i) {
+      array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements_byte, array_of_types);
+
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_create_hindexed(int count, int* array_of_blocklengths, MPI_Aint* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    for(int i = 0; i < count; ++i) {
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_indexed_block(int count, int blocklength, int* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    for(int i = 0; i < count; ++i) {
+      array_of_blocklengths[i] = blocklength;
+      array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements_byte, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_create_hindexed_block(int count, int blocklength, MPI_Aint* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    int typeCount = count;
+    int* array_of_blocklengths = new int [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    for(int i = 0; i < count; ++i) {
+      array_of_blocklengths[i] = blocklength;
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
+  inline int dimToOrderDim(int dim, const int dimBase, const int dimStep) {
+    return dim * dimStep + dimBase;
+  }
+
+  inline void add_subarray(const int curDim,
+                          const int dimBase,
+                          const int dimStep,
+                          const int ndims,
+                          const int* array_of_subsizes,
+                          const int* array_of_starts,
+                          int& arrayPos,
+                          const MPI_Aint* extends,
+                          MPI_Aint dimDisplacement,
+                          MPI_Aint* array_of_displacements) {
+    int orderDim = dimToOrderDim(curDim, dimBase, dimStep);
+    if(ndims == curDim + 1) {
+      // I am the last so add the location
+      array_of_displacements[arrayPos] = dimDisplacement + extends[orderDim] * array_of_starts[orderDim];
+      arrayPos += 1;
+    } else {
+      // I am not the last so compute the sub array offset
+      for(int pos = 0; pos < array_of_subsizes[orderDim]; ++pos) {
+        MPI_Aint curDimDisplacement = dimDisplacement + (array_of_starts[orderDim] + pos) * extends[orderDim];
+        add_subarray(curDim + 1, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extends,
+                     curDimDisplacement, array_of_displacements);
+      }
+    }
+  }
+
+  inline int AMPI_Type_create_subarray(int ndims,
+                                       const int* array_of_sizes,
+                                       const int* array_of_subsizes,
+                                       const int* array_of_starts,
+                                       int order,
+                                       MpiTypeInterface* oldtype,
+                                       MpiTypeInterface** newtype) {
+
+    // decide if to loop from 0 to ndim or ndim to zero
+    int dimBase = 0;
+    int dimStep = 0;
+    if(order == MPI_ORDER_FORTRAN) {
+      dimStep = -1;
+      dimBase = ndims - 1;
+
+    } else if(order == MPI_ORDER_C) {
+      dimStep = 1;
+      dimBase = 0;
+
+    } else {
+      MEDI_EXCEPTION("Unknown order enumerator %d.", order);
+    }
+
+    // compute the total extend of all the blocks
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Aint* extends = new MPI_Aint [ndims];
+    MPI_Aint curExtent = extent;
+    for(int i = ndims - 1; i >= 0; --i) {
+      int orderDim = dimToOrderDim(i, dimBase, dimStep);
+      extends[orderDim] = curExtent;
+      curExtent *= array_of_sizes[orderDim];
+    }
+
+    // compute the total number of types
+    int typeCount = 1;
+    for(int i = 0; i < ndims - 1; ++i) { // last dimension is used as blocklength
+      typeCount *= array_of_subsizes[dimToOrderDim(i, dimBase, dimStep)];
+    }
+
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    int arrayPos = 0;
+    add_subarray(0, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extends, 0,
+                 array_of_displacements);
+
+
+    for(int i = 0; i < typeCount; ++i) {
+      array_of_blocklengths[i] = array_of_subsizes[dimToOrderDim(ndims - 1, dimBase, dimStep)];
+      array_of_types[i] = oldtype;
+    }
+
+    *newtype = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    delete [] extends;
+
+    return 0;
+  }
+
+  inline int AMPI_Type_create_resized(MpiTypeInterface* oldtype, MPI_Aint lb, MPI_Aint extent, MPI_Datatype *newtype) {
+
+    int typeCount = 1;
+    int* array_of_blocklengths = new int [typeCount];
+    MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
+    MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
+
+    array_of_blocklengths[0] = count;
+    array_of_displacements[0] = 0;
+    array_of_types[0] = oldtype;
+
+    MpiStructType* tempType = new MpiStructType(typeCount, array_of_blocklengths, array_of_displacements, array_of_types);
+
+    *newtype = new MpiStructType(tempType, lb, extent);
+
+    delete tempType;
+
+    delete [] array_of_blocklengths;
+    delete [] array_of_displacements;
+    delete [] array_of_types;
+
+    return 0;
+  }
+
 
   inline int AMPI_Type_create_struct(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const* array_of_types, MpiTypeInterface** newtype) {
 
