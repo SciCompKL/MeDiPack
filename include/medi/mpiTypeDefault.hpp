@@ -53,11 +53,34 @@ namespace medi {
 
       typedef ADTool Tool;
 
+      bool isClone;
+
       Tool adTool;
 
       MpiTypeDefault() :
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
+        isClone(false),
         adTool(Tool::AdjointMpiType) {}
+
+    private:
+      MpiTypeDefault(MPI_Datatype type, MPI_Datatype modType) :
+        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
+        isClone(true),
+        adTool(Tool::AdjointMpiType) {}
+
+    public:
+
+      ~MpiTypeDefault() {
+        if(isClone) {
+          MPI_Datatype temp;
+          if(this->getModifiedMpiType() != this->getMpiType()) {
+            temp = this->getModifiedMpiType();
+            MPI_Type_free(&temp);
+          }
+          temp = this->getMpiType();
+          MPI_Type_free(&temp);
+        }
+      }
 
       const Tool& getADTool() const {
         return adTool;
@@ -154,6 +177,20 @@ namespace medi {
           delete [] buf;
           buf = NULL;
         }
+      }
+
+      inline MpiTypeDefault* clone() const {
+        MPI_Datatype type;
+        MPI_Datatype modType;
+
+        MPI_Type_dup(this->getMpiType(), &type);
+        if(this->getMpiType() != this->getModifiedMpiType()) {
+          MPI_Type_dup(this->getModifiedMpiType(), &modType);
+        } else {
+          modType = type;
+        }
+
+        return new MpiTypeDefault(type, modType);
       }
   };
 }

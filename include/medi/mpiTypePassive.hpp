@@ -55,11 +55,28 @@ namespace medi {
 
       typedef ADToolPassive Tool;
 
+      bool isClone;
+
       Tool adTool;
 
       MpiTypePassive(MPI_Datatype type) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        isClone(false),
         adTool(type) {}
+
+    private:
+      MpiTypePassive(MPI_Datatype type, bool clone) :
+        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        isClone(clone),
+        adTool(type) {}
+
+    public:
+      ~MpiTypePassive() {
+        if(isClone) {
+          MPI_Datatype temp = this->getMpiType();
+          MPI_Type_free(&temp);
+        }
+      }
 
       const Tool& getADTool() const{
         return adTool;
@@ -152,6 +169,13 @@ namespace medi {
           delete [] buf;
           buf = NULL;
         }
+      }
+
+      inline MpiTypePassive* clone() const {
+        MPI_Datatype type;
+        MPI_Type_dup(this->getMpiType(), &type);
+
+        return new MpiTypePassive(type, true);
       }
   };
 }

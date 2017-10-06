@@ -30,6 +30,7 @@
 
 #include "../macros.h"
 #include "../mpiTypeInterface.hpp"
+#include "../exceptions.hpp"
 
 namespace medi {
 
@@ -59,6 +60,46 @@ namespace medi {
       typedef void PassiveType;
       typedef void IndexType;
 
+      MpiStructType(const MpiStructType* other) :
+        MpiTypeInterface(MPI_INT, MPI_INT)
+      {
+        adInterface = other->adInterface;
+        typeExtend = other->typeExtend;
+        typeOffset = other->typeOffset;
+        modifiedExtend = other->modifiedExtend;
+
+        nTypes = other->nTypes;
+        blockLengths = new int [nTypes];
+        blockOffsets = new int [nTypes];
+        types = new MpiTypeInterface* [nTypes];
+
+        if(nullptr != other->modifiedBlockOffsets) {
+          modifiedBlockOffsets = new int [nTypes];
+        }
+
+        for(int i = 0; i < nTypes; ++i) {
+          blockLengths[i] = other->blockLengths[i];
+          blockOffsets[i] = other->blockOffsets[i];
+          types[i] = other->types[i]->clone();
+
+          if(nullptr != modifiedBlockOffsets) {
+            modifiedBlockOffsets[i] = other->modifiedBlockOffsets[i];
+          }
+        }
+
+        MPI_Datatype type;
+        MPI_Datatype modType;
+
+        MPI_Type_dup(this->getMpiType(), &type);
+        if(this->getMpiType() != this->getModifiedMpiType()) {
+          MPI_Type_dup(this->getModifiedMpiType(), &modType);
+        } else {
+          modType = type;
+        }
+
+        setMpiTypes(type, modType);
+      }
+
 
       MpiStructType(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const * array_of_types) :
         MpiTypeInterface(MPI_INT, MPI_INT) {
@@ -87,7 +128,7 @@ namespace medi {
           blockLengths[i] = array_of_blocklengths[i];
           blockOffsets[i] = array_of_displacements[i];
           mpiTypes[i] = array_of_types[i]->getMpiType();
-          types[i] = array_of_types[i];
+          types[i] = array_of_types[i]->clone();
         }
 
         MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, mpiTypes, &newMpiType);
@@ -174,6 +215,19 @@ namespace medi {
       }
 
       ~MpiStructType() {
+
+        MPI_Datatype temp;
+        if(this->getModifiedMpiType() != this->getMpiType()) {
+          temp = this->getModifiedMpiType();
+          MPI_Type_free(&temp);
+        }
+        temp = this->getMpiType();
+        MPI_Type_free(&temp);
+
+        for(int i = 0; i < nTypes; ++i) {
+          delete types[i];
+        }
+
         if(nullptr != modifiedBlockOffsets) {
           delete [] modifiedBlockOffsets;
         }
@@ -327,6 +381,10 @@ namespace medi {
         free(buf);
         buf = nullptr;
       }
+
+      MpiStructType* clone() const {
+        return new MpiStructType(this);
+      }
   };
 
   inline int AMPI_Type_create_struct(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const* array_of_types, MpiTypeInterface** newtype) {
@@ -350,16 +408,10 @@ namespace medi {
 
   inline int AMPI_Type_free(MpiTypeInterface** d) {
     MpiTypeInterface* datatype = *d;
-    if(datatype->isModifiedBufferRequired()) {
-      MPI_Datatype modType = datatype->getModifiedMpiType();
-      MPI_Type_free(&modType);
-    }
-
-    MPI_Datatype type = datatype->getMpiType();
-    int ret = MPI_Type_free(&type);
 
     delete datatype;
 
-    return ret;
+    *d = nullptr;
+    return 0;
   }
 }

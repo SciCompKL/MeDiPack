@@ -273,6 +273,13 @@ namespace medi {
        * @param[in,out] buf  The location for the buffer
        */
       virtual void deleteModifiedTypeBuffer(void* &buf) const = 0;
+
+      /**
+       * @brief Creates a clone of the mpi type also calling MPI_Type_dub
+       *
+       * @return The cloned interface.
+       */
+      virtual MpiTypeInterface* clone() const = 0;
   };
 
   /**
