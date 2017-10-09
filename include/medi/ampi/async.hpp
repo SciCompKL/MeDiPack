@@ -249,4 +249,12 @@ namespace medi {
 
     return rStatus;
   }
+
+  inline int AMPI_Ibarrier(AMPI_Comm comm, AMPI_Request *request) {
+
+    int rStatus = MPI_Ibarrier(comm, &request->request);
+    request->func = nullptr;
+
+    return rStatus;
+  }
 }

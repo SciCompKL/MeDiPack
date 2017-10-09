@@ -836,5 +836,14 @@ namespace medi {
 . endVersionGuard(curFunction)
 .endfor
 
+.for functions.function as curFunction where "forward" = (curFunction.mediHandle?"default")
+. startVersionGuard(curFunction)
+.
+  #define AMPI_$(curFunction.name) MPI_$(curFunction.name)
+.
+. endVersionGuard(curFunction)
+.endfor
+
+
 .- All functions with curFunction.mediHandle equal to 'disable' or 'handled' are ignored
 }
