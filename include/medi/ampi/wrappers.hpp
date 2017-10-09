@@ -376,5 +376,12 @@ namespace medi {
     return result;
   }
 
+  template<typename DATATYPE>
+  inline int AMPI_Reduce_local(const typename DATATYPE::Type* inbuf, typename DATATYPE::Type* inoutbuf, int count, DATATYPE* datatype, AMPI_Comm comm, AMPI_Op op) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
+    return MPI_Reduce_local(inbuf, inoutbuf, count, datatype->getMpiType(), convOp.primalFunction);
+  }
+
 
 }

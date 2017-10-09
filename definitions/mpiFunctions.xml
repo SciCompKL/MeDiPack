@@ -432,7 +432,7 @@
         <arg name="newtype" type="MPI_Datatype*" />
       </function>
       <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
-<function name="Type_create_darray" version="2.0" mediHandle="disabled">
+<function name="Type_create_darray" version="2.0" mediHandle="disable">
   <arg name="size" type="int" />
   <arg name="rank" type="int" />
   <arg name="ndims" type="int" />
@@ -941,12 +941,13 @@
         <arg name="comm" type="MPI_Comm"/>
       </function>
 
-      <function name="Reduce_local" version="2.2" mediHandle="disable">
+      <!-- Implemented in ampi/wrappers.hpp -->
+      <function name="Reduce_local" version="2.2" mediHandle="handled">
         <arg name="inbuf" type="void*" const="1"/>
         <arg name="inoutbuf" type="void*" />
         <arg name="count" type="int" />
-        <arg name="datatype" type="MPI_Datatype" />
-        <arg name="op" type="MPI_Op" />
+        <type name="datatype" type="MPI_Datatype" />
+        <operator name="op" type="MPI_Op" />
       </function>
 
       <function name="Reduce_scatter" version="1.0" mediHandle="disable">
