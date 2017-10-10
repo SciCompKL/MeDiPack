@@ -656,14 +656,14 @@ namespace medi {
     return 0;
   }
 
-  inline int AMPI_Type_create_resized(MpiTypeInterface* oldtype, MPI_Aint lb, MPI_Aint extent, MPI_Datatype *newtype) {
+  inline int AMPI_Type_create_resized(MpiTypeInterface* oldtype, MPI_Aint lb, MPI_Aint extent, MpiTypeInterface** newtype) {
 
     int typeCount = 1;
     int* array_of_blocklengths = new int [typeCount];
     MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
-    array_of_blocklengths[0] = count;
+    array_of_blocklengths[0] = 1;
     array_of_displacements[0] = 0;
     array_of_types[0] = oldtype;
 

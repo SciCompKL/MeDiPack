@@ -17,6 +17,7 @@ element: function
                                       disable: Ignores the function
                                       handled: Ignores the function, but indicates that the function is handled in a wrapper.
                                       forward: Creates a define for the function forwarding.
+                                       ignore: Ignores the function because it is not required.
                                       default: Just produce a forward handling to the normal MPI function. [default value]
 
 
