@@ -492,6 +492,10 @@ namespace medi {
     return 0;
   }
 
+  inline int AMPI_Type_hvector(int count, int blocklength, MPI_Aint stride, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    return AMPI_Type_create_hvector(count, blocklength, stride, oldtype, newtype);
+  }
+
   inline int AMPI_Type_indexed(int count, int* array_of_blocklengths, int* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
     int typeCount = count;
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
@@ -525,6 +529,10 @@ namespace medi {
     delete [] array_of_types;
 
     return 0;
+  }
+
+  inline int AMPI_Type_hindexed(int count, int blocklength, MPI_Aint* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    return AMPI_Type_create_hindexed(count, blocklength, array_of_displacements, oldtype, newtype);
   }
 
   inline int AMPI_Type_indexed_block(int count, int blocklength, int* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
@@ -692,6 +700,10 @@ namespace medi {
     *newtype = new MpiStructType(count, array_of_blocklengths, array_of_displacements, array_of_types);
 
     return 0;
+  }
+
+  inline int AMPI_Type_struct(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const* array_of_types, MpiTypeInterface** newtype) {
+    return AMPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, newtype);
   }
 
   inline int AMPI_Type_commit(MpiTypeInterface** d) {

@@ -38,10 +38,10 @@ complete:
      See the tutorial for further information.
 
 Statistics about the handled functions:
-- MPI 1.* 114/126 (90 %)
+- MPI 1.* 117/129 (90 %)
 - MPI 2.* 153/183 (83 %)
 - MPI 3.* 70/109 (64 %)
-- Total  337/418 (80 %)
+- Total  340/421 (80 %)
 
 ### Unsupported
 

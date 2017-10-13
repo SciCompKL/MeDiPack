@@ -563,8 +563,26 @@
         <arg name="count" type="int" />
         <arg name="array_of_blocklengths" type="int*" const="1"/>
         <arg name="array_of_displacements" type="int*" const="1"/>
-        <arg name="oldtype" type="MPI_Datatype" />
-        <arg name="newtype" type="MPI_Datatype*" />
+        <type name="oldtype" type="MPI_Datatype" />
+        <type name="newtype" type="MPI_Datatype*" />
+      </function>
+
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_hindexed" version="1.0">
+        <arg name="count" type="int" />
+        <arg name="array_of_blocklengths" type="int*" const="1"/>
+        <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
+        <type name="oldtype" type="MPI_Datatype" />
+        <type name="newtype" type="MPI_Datatype*" />
+      </function>
+
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_hvector" version="1.0">
+        <arg name="count" type="int" />
+        <arg name="blocklength" type="int" />
+        <arg name="stride" type="MPI_Aint" />
+        <type name="oldtype" type="MPI_Datatype" />
+        <type name="newtype" type="MPI_Datatype*" />
       </function>
 
       <function name="Type_size" version="1.0" >
@@ -575,6 +593,15 @@
       <function name="Type_size_x" version="3.0" >
         <type name="datatype" type="MPI_Datatype" />
         <arg name="size" type="MPI_Count*" />
+      </function>
+
+      <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
+      <function name="Type_struct" version="1.0">
+        <arg name="count" type="int" />
+        <arg name="array_of_blocklengths" type="int*" const="1"/>
+        <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
+        <type name="array_of_types" type="MPI_Datatype*" const="1"/>
+        <type name="newtype" type="MPI_Datatype*" />
       </function>
 
       <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
