@@ -29,22 +29,39 @@
 #pragma once
 
 
-#include <mpi.h>
-
 #include "macros.h"
-#include "mpiTypeInterface.hpp"
-#include "typeDefinitions.h"
 
 namespace medi {
 
-  typedef int Range[3];
-
-  typedef MpiTypeInterface* AMPI_Datatype;
-
+  /**
+   * @brief Helper structure for the easy creation of a linear displacement with a
+   * the same length.
+   */
   struct LinearDisplacements {
+
+      /**
+       * @brief The array with the displacements.
+       */
       int* displs;
+
+      /**
+       * @brief The array with the counts
+       */
       int* counts;
 
+      /**
+       * @brief Create displacemnts where each displacement has the size length.
+       *
+       * displs[0] = 0;
+       * displs[1] = length;
+       * displs[2] = 2 * length;
+       * ...
+       *
+       * counts[i] = length;
+       *
+       * @param[in] commSize  The size of the communication object.
+       * @param[in]   length  The length of each displacement.
+       */
       inline LinearDisplacements(int commSize, int length) {
         counts = new int[commSize];
         displs = new int[commSize];
@@ -54,11 +71,19 @@ namespace medi {
         }
       }
 
+      /**
+       * @brief Destroy the structure.
+       */
       inline ~LinearDisplacements() {
         delete [] displs;
         delete [] counts;
       }
 
+      /**
+       * @brief Helper function for deleting a LinearDisplacements structure.
+       *
+       * @param[in] d  The pointer to a LinearDisplacements structure that will be deleted.
+       */
       static inline void deleteFunc(void* d) {
         LinearDisplacements* data = reinterpret_cast<LinearDisplacements*>(d);
 
@@ -66,6 +91,14 @@ namespace medi {
       }
   };
 
+  /**
+   * @brief Compute the total size of a message that has a different size on each rank.
+   *
+   * @param[in] counts  The size of each rank.
+   * @param[in]  ranks  The number of the ranks.
+   *
+   * @return The sum over all counts.
+   */
   inline int computeDisplacementsTotalSize(const int* counts, int ranks) {
     int totalSize = 0;
     for(int i = 0; i < ranks; ++i) {
@@ -75,6 +108,14 @@ namespace medi {
     return totalSize;
   }
 
+  /**
+   * @brief Creates the linearized displacements of a message with a different size on each rank.
+   *
+   * @param[in] counts  The size of each rank.
+   * @param[in]  ranks  The number of the ranks.
+   *
+   * @return A new displacements array that starts at 0 and increases by the counts on each rank.
+   */
   inline int* createLinearDisplacements(const int* counts, int ranks) {
     int* displs = new int[ranks];
 
@@ -86,6 +127,19 @@ namespace medi {
     return displs;
   }
 
+  /**
+   * @brief Creates the displacements and counts for a message with a different size on each rank.
+   *
+   * The counts are computed by the type such that the result can hold all indices, passive values, etc.
+   *
+   * @param[out] linearCounts  The linearized counts.
+   * @param[out] linearDispls  The linearized displacements.
+   * @param[in]        counts  The size of each rank.
+   * @param[in]         ranks  The number of ranks.
+   * @param[in]          type  The mpi data type.
+   *
+   * @tparam Datatype  The type for the datatype.
+   */
   template<typename Datatype>
   inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, int ranks, Datatype* type) {
     linearCounts = new int[ranks];
@@ -96,27 +150,6 @@ namespace medi {
     for(int i = 1; i < ranks; ++i) {
       linearCounts[i] = type->computeActiveElements(counts[i]);
       linearDispls[i] = linearCounts[i - 1] +  linearDispls[i - 1];
-    }
-  }
-
-  inline int getCommRank(MPI_Comm comm) {
-    int rank;
-    MEDI_CHECK_ERROR(MPI_Comm_rank(comm, &rank));
-
-    return rank;
-  }
-
-  inline int getCommSize(MPI_Comm comm) {
-    int size;
-    MEDI_CHECK_ERROR(MPI_Comm_size(comm, &size));
-
-    return size;
-  }
-
-  template<typename T>
-  inline void copyPrimals(T* res, const T* values, int count) {
-    for(int pos = 0; pos < count; ++pos) {
-      res[pos] = values[pos];
     }
   }
 }

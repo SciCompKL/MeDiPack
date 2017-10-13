@@ -73,7 +73,7 @@
     #define mediAssert(x) assert(x)
   #else
     /**
-     * @brief The assert function for CoDiPack it can be enabled with the preprocessor macro MEDI_EnableAssert=true
+     * @brief The assert function for MeDiPack it can be enabled with the preprocessor macro MEDI_EnableAssert=true
      *
      * It can be set with the preprocessor macro MEDI_EnableAssert=<true/false>
      *

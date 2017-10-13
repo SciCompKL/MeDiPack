@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "medipack.h"
+#include "ampi/ampiMisc.h"
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
@@ -138,7 +138,7 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
     }
   }
 
-  AMPI_Op convertOperator(AMPI_Op op) const {
+  medi::AMPI_Op convertOperator(medi::AMPI_Op op) const {
     return operatorHelper.convertOperator(op);
   }
 

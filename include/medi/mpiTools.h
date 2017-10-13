@@ -28,36 +28,38 @@
 
 #pragma once
 
-#include "ampiMisc.h"
 
-#include "../../../generated/medi/ampiDefinitions.h"
+#include <mpi.h>
+
+#include "macros.h"
+#include "typeDefinitions.h"
 
 namespace medi {
 
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
-  struct AMPI_Message {
-      MPI_Message message;
-
-      int tag;
-      int src;
-      AMPI_Comm comm;
-  };
+  typedef int Range[3];
 
 
-  inline int AMPI_Mprobe(int source, int tag, AMPI_Comm comm, AMPI_Message* message, AMPI_Status* status) {
-    message->src = source;
-    message->tag = tag;
-    message->comm = comm;
+  /**
+   * @brief Helper function that gets the own rank number from the communicator.
+   * @param[in] comm  The communicator.
+   * @return The rank number of this process in the communicator.
+   */
+  inline int getCommRank(MPI_Comm comm) {
+    int rank;
+    MEDI_CHECK_ERROR(MPI_Comm_rank(comm, &rank));
 
-    return MPI_Mprobe(source, tag, comm, &message->message, status);
+    return rank;
   }
 
-  inline int AMPI_Improbe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Message* message, AMPI_Status* status) {
-    message->src = source;
-    message->tag = tag;
-    message->comm = comm;
+  /**
+   * @brief Helper function that gets the number of ranks from the communicator.
+   * @param[in] comm  The communicator.
+   * @return The number of ranks in this communicator.
+   */
+  inline int getCommSize(MPI_Comm comm) {
+    int size;
+    MEDI_CHECK_ERROR(MPI_Comm_size(comm, &size));
 
-    return MPI_Improbe(source, tag, comm, flag, &message->message, status);
+    return size;
   }
-#endif
 }

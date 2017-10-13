@@ -29,35 +29,7 @@
 #pragma once
 
 #include "ampiMisc.h"
-
-#include "../../../generated/medi/ampiDefinitions.h"
-
-namespace medi {
-
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
-  struct AMPI_Message {
-      MPI_Message message;
-
-      int tag;
-      int src;
-      AMPI_Comm comm;
-  };
-
-
-  inline int AMPI_Mprobe(int source, int tag, AMPI_Comm comm, AMPI_Message* message, AMPI_Status* status) {
-    message->src = source;
-    message->tag = tag;
-    message->comm = comm;
-
-    return MPI_Mprobe(source, tag, comm, &message->message, status);
-  }
-
-  inline int AMPI_Improbe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Message* message, AMPI_Status* status) {
-    message->src = source;
-    message->tag = tag;
-    message->comm = comm;
-
-    return MPI_Improbe(source, tag, comm, flag, &message->message, status);
-  }
-#endif
-}
+#include "async.hpp"
+#include "constructedDatatypes.hpp"
+#include "operatorFunctions.hpp"
+#include "wrappers.hpp"

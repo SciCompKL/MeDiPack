@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "medipack.h"
+#include "ampi/ampiMisc.h"
 
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"

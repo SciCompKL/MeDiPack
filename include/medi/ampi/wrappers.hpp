@@ -29,8 +29,9 @@
 #pragma once
 
 #include "async.hpp"
-#include "../medipack.h"
+#include "ampiMisc.h"
 #include "../mpiInPlace.hpp"
+#include "../mpiTools.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
 

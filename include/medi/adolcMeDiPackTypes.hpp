@@ -31,7 +31,7 @@
 #include <adolc/adolc.h>
 #include <adolc/externfcts2.h>
 
-#include "medipack.h"
+#include "ampi/ampiMisc.h"
 #include "ampi/async.hpp"
 #include "exceptions.hpp"
 

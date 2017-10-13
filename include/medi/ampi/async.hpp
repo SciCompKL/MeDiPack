@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "../medipack.h"
+#include "ampiMisc.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
 
