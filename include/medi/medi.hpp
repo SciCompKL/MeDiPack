@@ -30,9 +30,4 @@
 
 #include <mpi.h>
 
-#include "mpiTypeInterface.hpp"
-#include "mpiTypeDefault.hpp"
 #include "ampi/ampi.hpp"
-
-#include "../../generated/medi/ampiDefinitions.h"
-#include "../../generated/medi/ampiFunctions.hpp"

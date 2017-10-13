@@ -30,8 +30,8 @@
 
 #include <mpi.h>
 
-#include "adToolInterface.h"
-#include "mpiOp.hpp"
+#include "../adToolInterface.h"
+#include "op.hpp"
 
 namespace medi {
 

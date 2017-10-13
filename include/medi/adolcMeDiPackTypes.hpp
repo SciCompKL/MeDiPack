@@ -36,7 +36,7 @@
 #include "exceptions.hpp"
 
 #include "adToolInterface.h"
-#include "mpiTypeDefault.hpp"
+#include "ampi/typeDefault.hpp"
 #include "adToolImplCommon.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 

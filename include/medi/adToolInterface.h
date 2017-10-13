@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "mpiOp.hpp"
+#include "ampi/op.hpp"
 #include "typeDefinitions.h"
 
 namespace medi {

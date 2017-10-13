@@ -28,8 +28,14 @@
 
 #pragma once
 
+
 #include "ampiMisc.h"
 #include "async.hpp"
 #include "constructedDatatypes.hpp"
 #include "operatorFunctions.hpp"
+#include "typeInterface.hpp"
+#include "typeDefault.hpp"
 #include "wrappers.hpp"
+
+#include "../../../generated/medi/ampiDefinitions.h"
+#include "../../../generated/medi/ampiFunctions.hpp"

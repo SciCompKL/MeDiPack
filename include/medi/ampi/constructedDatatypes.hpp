@@ -29,7 +29,7 @@
 #pragma once
 
 #include "../macros.h"
-#include "../mpiTypeInterface.hpp"
+#include "typeInterface.hpp"
 #include "../exceptions.hpp"
 
 namespace medi {

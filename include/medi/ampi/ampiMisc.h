@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "../mpiTypeInterface.hpp"
+#include "typeInterface.hpp"
 
 namespace medi {
 

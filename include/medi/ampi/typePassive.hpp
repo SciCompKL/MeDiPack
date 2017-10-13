@@ -30,10 +30,10 @@
 
 #include <mpi.h>
 
-#include "adToolPassive.hpp"
+#include "../adToolPassive.hpp"
 #include "macros.h"
-#include "mpiTypeInterface.hpp"
-#include "mpiOp.hpp"
+#include "typeInterface.hpp"
+#include "op.hpp"
 
 namespace medi {
 

@@ -30,8 +30,8 @@
 
 #include <mpi.h>
 
-#include "macros.h"
-#include "typeDefinitions.h"
+#include "../macros.h"
+#include "../typeDefinitions.h"
 
 namespace medi {
 

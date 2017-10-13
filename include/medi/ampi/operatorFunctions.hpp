@@ -29,7 +29,7 @@
 #pragma once
 
 #include "../macros.h"
-#include "../mpiOp.hpp"
+#include "op.hpp"
 #include "../../../generated/medi/ampiDefinitions.h"
 
 namespace medi {

@@ -31,7 +31,7 @@
 #include "ampi/ampiMisc.h"
 
 #include "adToolInterface.h"
-#include "mpiTypeDefault.hpp"
+#include "ampi/typeDefault.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 
 template <typename T>

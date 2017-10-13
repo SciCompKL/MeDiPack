@@ -29,8 +29,8 @@
 #pragma once
 
 #include "macros.h"
-#include "mpiTypeInterface.hpp"
-#include "mpiOp.hpp"
+#include "typeInterface.hpp"
+#include "op.hpp"
 
 namespace medi {
 

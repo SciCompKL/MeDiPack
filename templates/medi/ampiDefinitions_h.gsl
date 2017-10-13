@@ -62,7 +62,7 @@ endfor
 
 #include <mpi.h>
 
-#include "../../include/medi/mpiTypePassive.hpp"
+#include "../../include/medi/ampi/typePassive.hpp"
 
 namespace medi {
 .for definitions.define as curDefine
