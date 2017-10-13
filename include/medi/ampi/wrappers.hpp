@@ -30,7 +30,7 @@
 
 #include "async.hpp"
 #include "ampiMisc.h"
-#include "../mpiInPlace.hpp"
+#include "inPlace.hpp"
 #include "../mpiTools.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
