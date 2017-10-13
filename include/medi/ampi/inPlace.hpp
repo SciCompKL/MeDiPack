@@ -31,6 +31,12 @@
 #include <mpi.h>
 
 namespace medi {
+
+  /**
+   * @brief Implementation of the MPI_IN_PLACE structure.
+   *
+   * This structures implements cast operators such that it can be used by any type.
+   */
   struct AMPI_IN_PLACE_IMPL {
 
       template<typename T>
@@ -45,5 +51,8 @@ namespace medi {
 
   };
 
+  /**
+   * @brief This structure is able to be cast to any type.
+   */
   extern const AMPI_IN_PLACE_IMPL AMPI_IN_PLACE;
 }

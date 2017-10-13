@@ -34,10 +34,16 @@
 
 namespace medi {
 
+  /**
+   * @brief Handling for costum MPI_Datatypes crated by the user.
+   *
+   * The type stores the special intefaces of the types used to construct the datatype. It then uses these types
+   * to forward all calls to the implementations.
+   */
   class MpiStructType final : public MpiTypeInterface {
 
     private:
-      bool mdificationRequired;
+      bool modificationRequired;
       int valuesPerElement;
 
       const ADToolInterface* adInterface;
@@ -151,10 +157,10 @@ namespace medi {
         types = new MpiTypeInterface*[count];
 
         // check if a modified buffer is required and populate the mpiTypes as well as the arrayes
-        mdificationRequired = false;
+        modificationRequired = false;
         valuesPerElement = 0;
         for(int i = 0; i < count; ++i) {
-          mdificationRequired |= array_of_types[i]->isModifiedBufferRequired();
+          modificationRequired |= array_of_types[i]->isModifiedBufferRequired();
           if(array_of_types[i]->getADTool().isActiveType()) {
             adInterface = &array_of_types[i]->getADTool();
           }
@@ -169,7 +175,7 @@ namespace medi {
 
         MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, mpiTypes, &newMpiType);
 
-        if(mdificationRequired) {
+        if(modificationRequired) {
           MPI_Aint* modifiedDisplacements = new MPI_Aint[count + 1]; // We might need to add padding so add an extra element
           MPI_Datatype* modifiedMpiTypes = new MPI_Datatype[count + 1];  // We might need to add padding so add an extra element
           int* modifiedArrayLength = new int[count + 1];   // We might need to add padding so add an extra element
@@ -289,7 +295,7 @@ namespace medi {
       }
 
       bool isModifiedBufferRequired() const {
-        return mdificationRequired;
+        return modificationRequired;
       }
 
       int computeActiveElements(const int count) const {
