@@ -33,6 +33,7 @@
 #include "adToolInterface.h"
 #include "mpiTypeDefault.hpp"
 #include "adToolImplCommon.hpp"
+#include "mpiOp.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 
 
@@ -135,6 +136,10 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
     if(NULL != h) {
       Type::getGlobalTape().pushExternalFunctionHandle(callFunc, h, deleteFunc);
     }
+  }
+
+  AMPI_Op convertOperator(AMPI_Op op) const {
+    return operatorHelper.convertOperator(op);
   }
 
   inline void stopAssembly(medi::HandleBase* h) const {

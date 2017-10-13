@@ -35,7 +35,9 @@
 namespace medi {
 
   /**
-   * @brief The interface for the AD tool that is accessed by MeDiPack.
+   * @brief Implementation for the AD tool interface of a type that is no AD type.
+   *
+   * All methods in this implementation contain no logic.
    */
   class ADToolPassive final : public ADToolBase<ADToolPassive, void, void, void> {
     public:

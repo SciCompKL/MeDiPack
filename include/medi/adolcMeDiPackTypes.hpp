@@ -164,6 +164,10 @@ struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, 
     MEDI_UNUSED(h);
   }
 
+  medi::AMPI_Op convertOperator(medi::AMPI_Op op) const {
+    return operatorHelper.convertOperator(op);
+  }
+
   inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
     for(int pos = 0; pos < elements; ++pos) {
       adjoints[pos] = adjointBase[indices[pos]];
