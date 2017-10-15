@@ -86,4 +86,12 @@
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)
+
+  #ifdef DEV
+    #define INTERFACE_ARG(name) bool __p
+    #define INTERFACE_DEF(interface, name, ...) typedef interface<__VA_ARGS__> name;
+  #else
+    #define INTERFACE_ARG(name) typename name
+    #define INTERFACE_DEF(interface, name, ...) /* empty */
+  #endif
 }

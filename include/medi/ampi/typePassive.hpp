@@ -31,7 +31,7 @@
 #include <mpi.h>
 
 #include "../adToolPassive.hpp"
-#include "macros.h"
+#include "../macros.h"
 #include "typeInterface.hpp"
 #include "op.hpp"
 

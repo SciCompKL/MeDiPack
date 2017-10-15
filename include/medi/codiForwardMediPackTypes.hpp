@@ -34,44 +34,6 @@
 #include "ampi/typeDefault.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 
-template <typename T>
-void codiUnmodifiedAdd(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] += invec[i];
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMul(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] *= invec[i];
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMax(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::max;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = max(inoutvec[i], invec[i]);
-  }
-}
-
-template <typename T>
-void codiUnmodifiedMin(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {
-  MEDI_UNUSED(datatype);
-
-  using std::min;
-  for(int i = 0; i < *len; ++i) {
-    inoutvec[i] = min(inoutvec[i], invec[i]);
-  }
-}
-
 template<typename CoDiType>
 struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int> {
   typedef CoDiType Type;
@@ -80,19 +42,9 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
   typedef typename CoDiType::PassiveReal PassiveType;
   typedef int IndexType;
 
-  const static bool IS_ActiveType = false;
-  const static bool IS_RequiresModifiedBuffer = false;
-
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
-
-  static medi::AMPI_Op OP_SUM;
-  static medi::AMPI_Op OP_PROD;
-  static medi::AMPI_Op OP_MIN;
-  static medi::AMPI_Op OP_MAX;
-  static medi::AMPI_Op OP_MINLOC;
-  static medi::AMPI_Op OP_MAXLOC;
 
   typedef medi::MpiTypeDefault<CoDiPackForwardTool> MediType;
   static MediType* MPI_TYPE;
@@ -122,13 +74,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 
     operatorHelper.init(MPI_TYPE);
     MPI_INT_TYPE = operatorHelper.MPI_INT_TYPE;
-
-    OP_SUM = operatorHelper.OP_SUM;
-    OP_PROD = operatorHelper.OP_PROD;
-    OP_MIN = operatorHelper.OP_MIN;
-    OP_MAX = operatorHelper.OP_MAX;
-    OP_MINLOC = operatorHelper.OP_MINLOC;
-    OP_MAXLOC = operatorHelper.OP_MAXLOC;
   }
 
   static void finalizeTypes() {
@@ -156,6 +101,10 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
   }
 
   inline  bool isHandleRequired() const {
+    return false;
+  }
+
+  inline bool isModifiedBufferRequired() const {
     return false;
   }
 
@@ -239,16 +188,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     }
   }
 
-  static void callFunc(void* h) {
-    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-    handle->func(handle);
-  }
-
-  static void deleteFunc(void* h) {
-    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-    delete handle;
-  }
-
   static inline int getIndex(const Type& value) {
     return value.getGradientData();
   }
@@ -260,11 +199,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 
   static inline PassiveType getValue(const Type& value) {
     return value.getValue();
-  }
-
-  static inline void setValue(const IndexType& index, const PassiveType& primal) {
-    MEDI_UNUSED(index);
-    MEDI_UNUSED(primal);
   }
 
   static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) {
@@ -281,10 +215,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MEDI_UNUSED(value);
     MEDI_UNUSED(oldValue);
     return 0;
-  }
-
-  static bool isActive() {
-    return false;
   }
 
   static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
@@ -304,12 +234,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::MpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::ModifiedMpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::AdjointMpiType;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_SUM;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_PROD;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MIN;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MAX;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MINLOC;
-template<typename CoDiType> medi::AMPI_Op CoDiPackForwardTool<CoDiType>::OP_MAXLOC;
 template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_TYPE;
 template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_INT_TYPE;
 template<typename CoDiType> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackForwardTool<CoDiType> > CoDiPackForwardTool<CoDiType>::operatorHelper;

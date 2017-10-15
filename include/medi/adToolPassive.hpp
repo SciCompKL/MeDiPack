@@ -52,6 +52,7 @@ namespace medi {
 
       inline bool isActiveType() const {return false;}
       inline bool isHandleRequired() const {return false;}
+      inline bool isModifiedBufferRequired() const {return false;}
       inline bool isOldPrimalsRequired() const {return false;}
       inline void startAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
       inline void stopAssembly(HandleBase* h) const {MEDI_UNUSED(h);}

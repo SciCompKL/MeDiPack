@@ -39,7 +39,7 @@
 
 
 template<typename CoDiType, bool primalRestore, typename Impl>
-struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
+struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
@@ -48,19 +48,9 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
 
   typedef typename CoDiType::TapeType Tape;
 
-  const static bool IS_ActiveType = true;
-  const static bool IS_RequiresModifiedBuffer = false;
-
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
-
-  static medi::AMPI_Op OP_SUM;
-  static medi::AMPI_Op OP_PROD;
-  static medi::AMPI_Op OP_MIN;
-  static medi::AMPI_Op OP_MAX;
-  static medi::AMPI_Op OP_MINLOC;
-  static medi::AMPI_Op OP_MAXLOC;
 
   typedef medi::MpiTypeDefault<Impl> MediType;
   static MediType* MPI_TYPE;
@@ -75,7 +65,7 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
   static Tape* adjointTape;
 
   CoDiPackToolBase(MPI_Datatype adjointMpiType) :
-    medi::ADToolImplCommon<Impl, primalRestore, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
+    medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -98,13 +88,6 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
 
     operatorHelper.init(MPI_TYPE);
     MPI_INT_TYPE = operatorHelper.MPI_INT_TYPE;
-
-    OP_SUM = operatorHelper.OP_SUM;
-    OP_PROD = operatorHelper.OP_PROD;
-    OP_MIN = operatorHelper.OP_MIN;
-    OP_MAX = operatorHelper.OP_MAX;
-    OP_MINLOC = operatorHelper.OP_MINLOC;
-    OP_MAXLOC = operatorHelper.OP_MAXLOC;
   }
 
   static void finalizeTypes() {
@@ -197,11 +180,6 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
     return value.getValue();
   }
 
-  static inline void setValue(const IndexType& index, const PassiveType& primal) {
-    MEDI_UNUSED(index);
-    MEDI_UNUSED(primal);
-  }
-
   static inline void setIntoModifyBuffer(ModifiedType& modValue, const Type& value) {
     MEDI_UNUSED(modValue);
     MEDI_UNUSED(value);
@@ -213,10 +191,6 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, CoD
       value.getGradientData() = IndexType();
       Type::getGlobalTape().registerInput(value);
     }
-  }
-
-  static bool isActive() {
-    return Type::getGlobalTape().isActive();
   }
 
   static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
@@ -315,12 +289,6 @@ struct CoDiPackToolPrimalRestore final : public CoDiPackToolBase<CoDiType, true,
 template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::MpiType;
 template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::ModifiedMpiType;
 template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::AdjointMpiType;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_SUM;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_PROD;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MIN;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MAX;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MINLOC;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Op CoDiPackToolBase<CoDiType, primalRestore, Impl>::OP_MAXLOC;
 template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiPackToolBase<CoDiType, primalRestore, Impl>::MediType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_TYPE;
 template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_INT_TYPE;
 template<typename CoDiType, bool primalRestore, typename Impl> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > CoDiPackToolBase<CoDiType, primalRestore, Impl>::operatorHelper;

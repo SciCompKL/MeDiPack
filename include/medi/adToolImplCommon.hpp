@@ -33,7 +33,7 @@
 
 namespace medi {
 
-  template <typename Impl, bool restorePrimal, typename Type, typename AdjointType, typename PassiveType, typename IndexType>
+  template <typename Impl, bool restorePrimal, bool modifiedBuffer, typename Type, typename AdjointType, typename PassiveType, typename IndexType>
   class ADToolImplCommon : public ADToolBase<Impl, AdjointType, PassiveType, IndexType> {
     public:
 
@@ -42,6 +42,10 @@ namespace medi {
 
       inline bool isActiveType() const {
         return true;
+      }
+
+      inline bool isModifiedBufferRequired() const {
+        return modifiedBuffer;
       }
 
       inline bool isOldPrimalsRequired() const {

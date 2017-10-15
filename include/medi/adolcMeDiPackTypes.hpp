@@ -40,26 +40,16 @@
 #include "adToolImplCommon.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 
-struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, double, double, int> {
+struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, true, double, double, double, int> {
   typedef adouble Type;
   typedef double AdjointType;
   typedef double ModifiedType;
   typedef double PassiveType;
   typedef int IndexType;
 
-  const static bool IS_ActiveType = true;
-  const static bool IS_RequiresModifiedBuffer = true;
-
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
-
-  static medi::AMPI_Op OP_SUM;
-  static medi::AMPI_Op OP_PROD;
-  static medi::AMPI_Op OP_MIN;
-  static medi::AMPI_Op OP_MAX;
-  static medi::AMPI_Op OP_MINLOC;
-  static medi::AMPI_Op OP_MAXLOC;
 
   static double* adjointBase;
   static double* primalBase;
@@ -103,13 +93,6 @@ struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, 
 
     operatorHelper.init(MPI_TYPE);
     MPI_INT_TYPE = operatorHelper.MPI_INT_TYPE;
-
-    OP_SUM = operatorHelper.OP_SUM;
-    OP_PROD = operatorHelper.OP_PROD;
-    OP_MIN = operatorHelper.OP_MIN;
-    OP_MAX = operatorHelper.OP_MAX;
-    OP_MINLOC = operatorHelper.OP_MINLOC;
-    OP_MAXLOC = operatorHelper.OP_MAXLOC;
   }
 
   static void finalizeTypes() {
@@ -128,7 +111,7 @@ struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, 
   }
 
   AdolcTool(MPI_Datatype adjointMpiType) :
-    medi::ADToolImplCommon<AdolcTool, true, double, double, double, int>(adjointMpiType) {}
+    medi::ADToolImplCommon<AdolcTool, true, true, double, double, double, int>(adjointMpiType) {}
 
 
   inline bool isActiveType() const {
@@ -292,10 +275,6 @@ struct AdolcTool final : public medi::ADToolImplCommon<AdolcTool, true, double, 
     // do nothing value should have an index
 
     return value.loc();
-  }
-
-  static bool isActive() {
-    return isTaping();
   }
 
   static PassiveType getPrimalFromMod(const ModifiedType& modValue) {

@@ -43,6 +43,16 @@ namespace medi {
     public:
 
       /**
+       * @brief The actual type that the AD implementation uses.
+       */
+      typedef void Type;
+
+      /**
+       * @brief The type that is send through the modified buffers.
+       */
+      typedef void ModifiedType;
+
+      /**
        * @brief The data type that is used for the adjoint variables.
        */
       typedef void AdjointType;
@@ -86,6 +96,12 @@ namespace medi {
        * @return True if an adjoint action is required.
        */
       virtual bool isHandleRequired() const  = 0;
+
+      /**
+       * @brief Indicates if the AD tool needs to modify the buffer in order to send the correct data.
+       * @return true if a new buffer needs to be created.
+       */
+      virtual bool isModifiedBufferRequired() const = 0;
 
       /**
        * @brief Indicates if MeDiPack needs store the overwritten primal values for the AD tool
@@ -215,6 +231,85 @@ namespace medi {
        */
       virtual void deleteIndexTypeBuffer(void* &buf) const = 0;
   };
+
+  /**
+   * @brief The static methods for the AD tool interface.
+   *
+   * All these static methods need to be implemented by the AD tool
+   */
+  struct StaticADToolInterface : public ADToolInterface {
+
+      /**
+       * @brief The actual type that the AD implementation uses.
+       */
+      typedef double Type;
+
+      /**
+       * @brief The type that is send through the modified buffers.
+       */
+      typedef double ModifiedType;
+
+      /**
+       * @brief The data type used for the floating point data.
+       */
+      typedef double PassiveType;
+
+      /**
+       * @brief The data type that is used for the adjoint variables.
+       */
+      typedef double AdjointType;
+
+      /**
+       * @brief The data type from the AD tool for the identification of AD variables.
+       */
+      typedef int IndexType;
+
+      /**
+       * @brief Copies the nescessary data from the user buffer into the buffer crated by MeDiPack.
+       *
+       * @param[out] modValue  The value in the modified buffer
+       * @param[in]     value  The value in the user buffer.
+       */
+      static void setIntoModifyBuffer(ModifiedType& modValue, const Type& value);
+
+      /**
+       * @brief Copies the nescessary data from the received MeDiPack buffer into the user buffer.
+       *
+       * @param[in]  modValue  The value in the modified buffer
+       * @param[out]    value  The value in the user buffer.
+       */
+      static void getFromModifyBuffer(const ModifiedType& modValue, Type& value);
+
+      /**
+       * @brief Get the AD identifier for this value.
+       * @param[in] value  The AD value.
+       * @return The identifier for the AD value.
+       */
+      static IndexType getIndex(const Type& value);
+
+      /**
+       * @brief Register an AD value on the receiving side of the communication.
+       *
+       * @param[in,out]    value  The AD value in the user buffer on the receiving side.
+       * @param[out]   oldPrimal  The old primal value that was overwritten by this value.
+       * @return THe identifier for the registered AD value.
+       */
+      static IndexType registerValue(Type& value, PassiveType& oldPrimal);
+
+      /**
+       * @brief Delete the index in a buffer such that the buffer can be overwritten.
+       * @param[in,out] value  The AD value in the buffer.
+       */
+      static void clearIndex(Type& value);
+
+      /**
+       * @brief Get the primal floating point value of the AD value.
+       * @param[in] value  The AD value.
+       * @return The primal floating point value that is represented by the AD value.
+       */
+      static PassiveType getValue(const Type& value);
+  };
+
 
   /**
    * A type save implementation of the AD tool interface.

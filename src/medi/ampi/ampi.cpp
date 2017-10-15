@@ -26,7 +26,7 @@
  * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
  */
 
-#include "../../generated/medi/ampiDefinitions.cpp"
+#include "../../../generated/medi/ampiDefinitions.cpp"
 #include "async.cpp"
 
 #include "../../../include/medi/ampi/inPlace.hpp"

@@ -28,12 +28,17 @@
 
 #pragma once
 
-#include "macros.h"
+#include "../macros.h"
 #include "typeInterface.hpp"
 #include "op.hpp"
 
 namespace medi {
 
+  /**
+   * @brief The default implementation of a MPI type that is represented by an AD type.
+   *
+   * @tparam ADTool This class needs to implement the ADToolInterface and the StaticADToolInterface.
+   */
   template<typename ADTool>
   class MpiTypeDefault final
       : public MpiTypeBase<
@@ -42,6 +47,7 @@ namespace medi {
           typename ADTool::ModifiedType,
           ADTool>
   {
+      INTERFACE_DEF(StaticADToolInterface, ADTool, void)
 
     public:
 
@@ -91,11 +97,11 @@ namespace medi {
       }
 
       bool isModifiedBufferRequired() const {
-        return Tool::IS_RequiresModifiedBuffer;
+        return adTool.isModifiedBufferRequired();
       }
 
       inline void copyIntoModifiedBuffer(const Type* buf, size_t bufOffset, ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(ADTool::IS_RequiresModifiedBuffer) {
+        if(adTool.isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::setIntoModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }
@@ -103,7 +109,7 @@ namespace medi {
       }
 
       inline void copyFromModifiedBuffer(Type* buf, size_t bufOffset, const ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(ADTool::IS_RequiresModifiedBuffer) {
+        if(adTool.isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::getFromModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }

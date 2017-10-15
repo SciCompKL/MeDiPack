@@ -28,10 +28,10 @@
 
 #pragma once
 
-#include "ampi/ampiMisc.h"
-#include "ampi/async.hpp"
-#include "ampi/message.hpp"
-#include "displacementTools.hpp"
+#include "ampiMisc.h"
+#include "async.hpp"
+#include "message.hpp"
+#include "../displacementTools.hpp"
 
 namespace medi {
 

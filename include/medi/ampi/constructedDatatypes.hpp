@@ -531,8 +531,8 @@ namespace medi {
     return 0;
   }
 
-  inline int AMPI_Type_hindexed(int count, int blocklength, MPI_Aint* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
-    return AMPI_Type_create_hindexed(count, blocklength, array_of_displacements, oldtype, newtype);
+  inline int AMPI_Type_hindexed(int count, int* array_of_blocklength, MPI_Aint* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {
+    return AMPI_Type_create_hindexed(count, array_of_blocklength, array_of_displacements, oldtype, newtype);
   }
 
   inline int AMPI_Type_indexed_block(int count, int blocklength, int* array_of_displacements, MpiTypeInterface* oldtype, MpiTypeInterface** newtype) {

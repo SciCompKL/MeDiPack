@@ -31,12 +31,6 @@
 MPI_Datatype AdolcTool::MpiType;
 MPI_Datatype AdolcTool::ModifiedMpiType;
 MPI_Datatype AdolcTool::AdjointMpiType;
-medi::AMPI_Op AdolcTool::OP_SUM;
-medi::AMPI_Op AdolcTool::OP_PROD;
-medi::AMPI_Op AdolcTool::OP_MIN;
-medi::AMPI_Op AdolcTool::OP_MAX;
-medi::AMPI_Op AdolcTool::OP_MINLOC;
-medi::AMPI_Op AdolcTool::OP_MAXLOC;
 AdolcTool::MediType* AdolcTool::MPI_TYPE;
 medi::AMPI_Datatype AdolcTool::MPI_INT_TYPE;
 
