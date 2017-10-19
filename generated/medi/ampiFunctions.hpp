@@ -28,9 +28,11 @@
 
 #pragma once
 
-#include "../../include/medi/medipack.h"
-#include "../../include/medi/reverseFunctions.hpp"
 #include "../../include/medi/ampi/async.hpp"
+#include "../../include/medi/ampi/message.hpp"
+#include "../../include/medi/ampi/reverseFunctions.hpp"
+#include "../../include/medi/displacementTools.hpp"
+#include "../../include/medi/mpiTools.h"
 
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -78,6 +80,7 @@ namespace medi {
   int AMPI_Bsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Bsend(buf, count, datatype->getMpiType(), dest, tag, comm);
@@ -219,6 +222,7 @@ namespace medi {
   int AMPI_Ibsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ibsend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
@@ -342,6 +346,204 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  struct AMPI_Imrecv_AdjointHandle : public HandleBase {
+    int bufTotalSize;
+    typename DATATYPE::IndexType* bufIndices;
+    typename DATATYPE::PassiveType* bufPrimals;
+    typename DATATYPE::PassiveType* bufOldPrimals;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
+    int bufCount;
+    int count;
+    DATATYPE* datatype;
+    AMPI_Message message;
+    AMPI_Request requestReverse;
+
+    ~AMPI_Imrecv_AdjointHandle () {
+      if(nullptr != bufIndices) {
+        datatype->getADTool().deleteIndexTypeBuffer(bufIndices);
+        bufIndices = nullptr;
+      }
+      if(nullptr != bufPrimals) {
+        datatype->getADTool().deletePassiveTypeBuffer(bufPrimals);
+        bufPrimals = nullptr;
+      }
+      if(nullptr != bufOldPrimals) {
+        datatype->getADTool().deletePassiveTypeBuffer(bufOldPrimals);
+        bufOldPrimals = nullptr;
+      }
+    }
+  };
+
+  template<typename DATATYPE>
+  struct AMPI_Imrecv_AsyncHandle : public HandleBase {
+    typename DATATYPE::Type* buf;
+    typename DATATYPE::ModifiedType* bufMod;
+    int count;
+    DATATYPE* datatype;
+    AMPI_Message* message;
+    AMPI_Request* request;
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h;
+  };
+
+  template<typename DATATYPE>
+  void AMPI_Imrecv_b(HandleBase* handle) {
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->datatype->getADTool().createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    h->datatype->getADTool().getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+      h->datatype->getADTool().setReverseValues(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
+    }
+
+    AMPI_Imrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCount, h->count, h->datatype, &h->message, &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Imrecv_b_finish(HandleBase* handle) {
+
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    h->datatype->getADTool().deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Imrecv_finish(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Imrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
+                  AMPI_Request* request) {
+    int rStatus;
+
+    if(!datatype->getADTool().isActiveType()) {
+      // call the regular function if the type is not active
+      rStatus = MPI_Imrecv(buf, count, datatype->getMpiType(), &message->message, &request->request);
+    } else {
+
+      // the type is an AD type so handle the buffers
+      AMPI_Imrecv_AdjointHandle<DATATYPE>* h = nullptr;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
+      if(datatype->getADTool().isHandleRequired()) {
+        h = new AMPI_Imrecv_AdjointHandle<DATATYPE>();
+      }
+      datatype->getADTool().startAssembly(h);
+      typename DATATYPE::ModifiedType* bufMod = nullptr;
+      int bufElements = 0;
+
+      // compute the total size of the buffer
+      bufElements = count;
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->createModifiedTypeBuffer(bufMod, bufElements);
+      } else {
+        bufMod = reinterpret_cast<typename DATATYPE::ModifiedType*>(const_cast<typename DATATYPE::Type*>(buf));
+      }
+
+
+      if(nullptr != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+        h->bufCount = datatype->computeActiveElements(count);
+        h->bufTotalSize = datatype->computeActiveElements(bufElements);
+        datatype->getADTool().createIndexTypeBuffer(h->bufIndices, h->bufTotalSize);
+
+
+        // extract the old primal values from the recv buffer if the AD tool
+        // needs the primal values reset
+        if(datatype->getADTool().isOldPrimalsRequired()) {
+          datatype->getADTool().createPassiveTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
+          datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
+        }
+
+
+
+        if(!datatype->isModifiedBufferRequired()) {
+          datatype->clearIndices(buf, 0, count);
+        }
+
+        // pack all the variables in the handle
+        h->func = AMPI_Imrecv_b<DATATYPE>;
+        h->count = count;
+        h->datatype = datatype;
+        h->message = *message;
+      }
+
+      rStatus = MPI_Imrecv(bufMod, count, datatype->getModifiedMpiType(), &message->message, &request->request);
+
+      AMPI_Imrecv_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Imrecv_AsyncHandle<DATATYPE>();
+      asyncHandle->buf = buf;
+      asyncHandle->bufMod = bufMod;
+      asyncHandle->count = count;
+      asyncHandle->datatype = datatype;
+      asyncHandle->message = message;
+      asyncHandle->h = h;
+      request->handle = asyncHandle;
+      request->func = (ContinueFunction)AMPI_Imrecv_finish<DATATYPE>;
+
+      // create adjoint wait
+      if(nullptr != h) {
+        WaitHandle* waitH = new WaitHandle((ContinueFunction)AMPI_Imrecv_b_finish<DATATYPE>, h);
+        datatype->getADTool().addToolAction(waitH);
+      }
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Imrecv_finish(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Imrecv_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Imrecv_AsyncHandle<DATATYPE>*>(handle);
+    typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    AMPI_Message* message = asyncHandle->message;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(message); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+    delete asyncHandle;
+
+    if(datatype->getADTool().isActiveType()) {
+
+      datatype->getADTool().addToolAction(h);
+
+      if(datatype->isModifiedBufferRequired()) {
+        datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
+      }
+
+      if(nullptr != h) {
+        // handle the recv buffers
+        datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
+      }
+
+      datatype->getADTool().stopAssembly(h);
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->deleteModifiedTypeBuffer(bufMod);
+      }
+
+      // handle is deleted by the AD tool
+    }
+
+    return rStatus;
+  }
+
+#endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Irecv_AdjointHandle : public HandleBase {
@@ -420,6 +622,7 @@ namespace medi {
   int AMPI_Irecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                  AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Irecv(buf, count, datatype->getMpiType(), source, tag, comm, &request->request);
@@ -621,6 +824,7 @@ namespace medi {
   int AMPI_Irsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Irsend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
@@ -813,6 +1017,7 @@ namespace medi {
   int AMPI_Isend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Isend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
@@ -1005,6 +1210,7 @@ namespace medi {
   int AMPI_Issend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Issend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
@@ -1128,6 +1334,140 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  struct AMPI_Mrecv_AdjointHandle : public HandleBase {
+    int bufTotalSize;
+    typename DATATYPE::IndexType* bufIndices;
+    typename DATATYPE::PassiveType* bufPrimals;
+    typename DATATYPE::PassiveType* bufOldPrimals;
+    /* required for async */ typename DATATYPE::AdjointType* bufAdjoints;
+    int bufCount;
+    int count;
+    DATATYPE* datatype;
+    AMPI_Message message;
+    AMPI_Status* status;
+
+    ~AMPI_Mrecv_AdjointHandle () {
+      if(nullptr != bufIndices) {
+        datatype->getADTool().deleteIndexTypeBuffer(bufIndices);
+        bufIndices = nullptr;
+      }
+      if(nullptr != bufPrimals) {
+        datatype->getADTool().deletePassiveTypeBuffer(bufPrimals);
+        bufPrimals = nullptr;
+      }
+      if(nullptr != bufOldPrimals) {
+        datatype->getADTool().deletePassiveTypeBuffer(bufOldPrimals);
+        bufOldPrimals = nullptr;
+      }
+    }
+  };
+
+
+  template<typename DATATYPE>
+  void AMPI_Mrecv_b(HandleBase* handle) {
+    AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->datatype->getADTool().createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    h->datatype->getADTool().getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+      h->datatype->getADTool().setReverseValues(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
+    }
+
+    AMPI_Mrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCount, h->count, h->datatype, &h->message, h->status);
+
+    h->datatype->getADTool().deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Mrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
+                 AMPI_Status* status) {
+    int rStatus;
+
+    if(!datatype->getADTool().isActiveType()) {
+      // call the regular function if the type is not active
+      rStatus = MPI_Mrecv(buf, count, datatype->getMpiType(), &message->message, status);
+    } else {
+
+      // the type is an AD type so handle the buffers
+      AMPI_Mrecv_AdjointHandle<DATATYPE>* h = nullptr;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
+      if(datatype->getADTool().isHandleRequired()) {
+        h = new AMPI_Mrecv_AdjointHandle<DATATYPE>();
+      }
+      datatype->getADTool().startAssembly(h);
+      typename DATATYPE::ModifiedType* bufMod = nullptr;
+      int bufElements = 0;
+
+      // compute the total size of the buffer
+      bufElements = count;
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->createModifiedTypeBuffer(bufMod, bufElements);
+      } else {
+        bufMod = reinterpret_cast<typename DATATYPE::ModifiedType*>(const_cast<typename DATATYPE::Type*>(buf));
+      }
+
+
+      if(nullptr != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+        h->bufCount = datatype->computeActiveElements(count);
+        h->bufTotalSize = datatype->computeActiveElements(bufElements);
+        datatype->getADTool().createIndexTypeBuffer(h->bufIndices, h->bufTotalSize);
+
+
+        // extract the old primal values from the recv buffer if the AD tool
+        // needs the primal values reset
+        if(datatype->getADTool().isOldPrimalsRequired()) {
+          datatype->getADTool().createPassiveTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
+          datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
+        }
+
+
+
+        if(!datatype->isModifiedBufferRequired()) {
+          datatype->clearIndices(buf, 0, count);
+        }
+
+        // pack all the variables in the handle
+        h->func = AMPI_Mrecv_b<DATATYPE>;
+        h->count = count;
+        h->datatype = datatype;
+        h->message = *message;
+        h->status = status;
+      }
+
+      rStatus = MPI_Mrecv(bufMod, count, datatype->getModifiedMpiType(), &message->message, status);
+      datatype->getADTool().addToolAction(h);
+
+      if(datatype->isModifiedBufferRequired()) {
+        datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
+      }
+
+      if(nullptr != h) {
+        // handle the recv buffers
+        datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
+      }
+
+      datatype->getADTool().stopAssembly(h);
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->deleteModifiedTypeBuffer(bufMod);
+      }
+
+      // handle is deleted by the AD tool
+    }
+
+    return rStatus;
+  }
+
+#endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Recv_AdjointHandle : public HandleBase {
@@ -1183,6 +1523,7 @@ namespace medi {
   int AMPI_Recv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                 AMPI_Status* status) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Recv(buf, count, datatype->getMpiType(), source, tag, comm, status);
@@ -1309,6 +1650,7 @@ namespace medi {
   int AMPI_Rsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Rsend(buf, count, datatype->getMpiType(), dest, tag, comm);
@@ -1426,6 +1768,7 @@ namespace medi {
   int AMPI_Send(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                 AMPI_Comm comm) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Send(buf, count, datatype->getMpiType(), dest, tag, comm);
@@ -1578,6 +1921,7 @@ namespace medi {
                     int sendtag, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag,
                     AMPI_Comm comm, AMPI_Status* status) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Sendrecv(sendbuf, sendcount, sendtype->getMpiType(), dest, sendtag, recvbuf, recvcount,
@@ -1731,6 +2075,7 @@ namespace medi {
   int AMPI_Ssend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ssend(buf, count, datatype->getMpiType(), dest, tag, comm);
@@ -1878,6 +2223,7 @@ namespace medi {
   int AMPI_Allgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Allgather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm);
@@ -2083,6 +2429,7 @@ namespace medi {
   int AMPI_Allgatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Allgatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs,
@@ -2277,12 +2624,13 @@ namespace medi {
   void AMPI_Allreduce_global_b(HandleBase* handle) {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     h->recvbufAdjoints = nullptr;
     h->datatype->getADTool().createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     h->datatype->getADTool().getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    h->op.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
+    convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       h->datatype->getADTool().setReverseValues(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
@@ -2295,7 +2643,7 @@ namespace medi {
     h->datatype->getADTool().combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
-    h->op.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
+    convOp.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
     // Adjoint buffers are always linear in space so they can be accessed in one sweep
     h->datatype->getADTool().updateAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
     h->datatype->getADTool().deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -2306,9 +2654,11 @@ namespace medi {
   int AMPI_Allreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                             DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
-      rStatus = MPI_Allreduce(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm);
+      rStatus = MPI_Allreduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm);
     } else {
 
       // the type is an AD type so handle the buffers
@@ -2369,7 +2719,7 @@ namespace medi {
         datatype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
         // extract the primal values for the operator if required
-        if(op.requiresPrimal) {
+        if(convOp.requiresPrimal) {
           datatype->getADTool().createPassiveTypeBuffer(h->sendbufPrimals, h->sendbufTotalSize);
           if(AMPI_IN_PLACE != sendbuf) {
             datatype->getValues(sendbuf, 0, h->sendbufPrimals, 0, count);
@@ -2404,7 +2754,8 @@ namespace medi {
         h->comm = comm;
       }
 
-      rStatus = MPI_Allreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), op.modifiedPrimalFunction, comm);
+      rStatus = MPI_Allreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
+                              comm);
       datatype->getADTool().addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
@@ -2416,7 +2767,7 @@ namespace medi {
         datatype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, count);
       }
       // extract the primal values for the operator if required
-      if(nullptr != h && op.requiresPrimal) {
+      if(nullptr != h && convOp.requiresPrimal) {
         datatype->getADTool().createPassiveTypeBuffer(h->recvbufPrimals, h->recvbufTotalSize);
         datatype->getValues(recvbuf, 0, h->recvbufPrimals, 0, count);
       }
@@ -2511,6 +2862,7 @@ namespace medi {
   int AMPI_Alltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Alltoall(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm);
@@ -2725,6 +3077,7 @@ namespace medi {
                      SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                      AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Alltoallv(sendbuf, sendcounts, sdispls, sendtype->getMpiType(), recvbuf, recvcounts, rdispls,
@@ -2962,6 +3315,7 @@ namespace medi {
   int AMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
                       DATATYPE* datatype, int root, AMPI_Comm comm) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Bcast_wrap(bufferSend, bufferRecv, count, datatype->getMpiType(), root, comm);
@@ -3169,6 +3523,7 @@ namespace medi {
   int AMPI_Gather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Gather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
@@ -3399,6 +3754,7 @@ namespace medi {
                    typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                    AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Gatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs, recvtype->getMpiType(),
@@ -3663,6 +4019,7 @@ namespace medi {
   int AMPI_Iallgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iallgather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm,
@@ -3957,6 +4314,7 @@ namespace medi {
                        typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm,
                        AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iallgatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs,
@@ -4230,12 +4588,13 @@ namespace medi {
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
         (handle);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     h->recvbufAdjoints = nullptr;
     h->datatype->getADTool().createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     h->datatype->getADTool().getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    h->op.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
+    convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       h->datatype->getADTool().setReverseValues(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
@@ -4254,10 +4613,11 @@ namespace medi {
         (handle);
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     h->datatype->getADTool().combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
-    h->op.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
+    convOp.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
     // Adjoint buffers are always linear in space so they can be accessed in one sweep
     h->datatype->getADTool().updateAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
     h->datatype->getADTool().deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -4270,9 +4630,12 @@ namespace medi {
   int AMPI_Iallreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                              int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
-      rStatus = MPI_Iallreduce(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm, &request->request);
+      rStatus = MPI_Iallreduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm,
+                               &request->request);
     } else {
 
       // the type is an AD type so handle the buffers
@@ -4333,7 +4696,7 @@ namespace medi {
         datatype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
         // extract the primal values for the operator if required
-        if(op.requiresPrimal) {
+        if(convOp.requiresPrimal) {
           datatype->getADTool().createPassiveTypeBuffer(h->sendbufPrimals, h->sendbufTotalSize);
           if(AMPI_IN_PLACE != sendbuf) {
             datatype->getValues(sendbuf, 0, h->sendbufPrimals, 0, count);
@@ -4368,8 +4731,8 @@ namespace medi {
         h->comm = comm;
       }
 
-      rStatus = MPI_Iallreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), op.modifiedPrimalFunction, comm,
-                               &request->request);
+      rStatus = MPI_Iallreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
+                               comm, &request->request);
 
       AMPI_Iallreduce_global_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Iallreduce_global_AsyncHandle<DATATYPE>();
       asyncHandle->sendbuf = sendbuf;
@@ -4425,6 +4788,7 @@ namespace medi {
 
     if(datatype->getADTool().isActiveType()) {
 
+      AMPI_Op convOp = datatype->getADTool().convertOperator(op);
       datatype->getADTool().addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
@@ -4436,7 +4800,7 @@ namespace medi {
         datatype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, count);
       }
       // extract the primal values for the operator if required
-      if(nullptr != h && op.requiresPrimal) {
+      if(nullptr != h && convOp.requiresPrimal) {
         datatype->getADTool().createPassiveTypeBuffer(h->recvbufPrimals, h->recvbufTotalSize);
         datatype->getValues(recvbuf, 0, h->recvbufPrimals, 0, count);
       }
@@ -4557,6 +4921,7 @@ namespace medi {
   int AMPI_Ialltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ialltoall(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm,
@@ -4861,6 +5226,7 @@ namespace medi {
                       SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ialltoallv(sendbuf, sendcounts, sdispls, sendtype->getMpiType(), recvbuf, recvcounts, rdispls,
@@ -5192,6 +5558,7 @@ namespace medi {
   int AMPI_Ibcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
                        DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ibcast_wrap(bufferSend, bufferRecv, count, datatype->getMpiType(), root, comm, &request->request);
@@ -5482,6 +5849,7 @@ namespace medi {
   int AMPI_Igather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Igather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
@@ -5803,6 +6171,7 @@ namespace medi {
                     typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                     AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Igatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs, recvtype->getMpiType(),
@@ -6097,13 +6466,14 @@ namespace medi {
   void AMPI_Ireduce_global_b(HandleBase* handle) {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->datatype->getADTool().createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
       // Adjoint buffers are always linear in space so we can accesses them in one sweep
       h->datatype->getADTool().getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-      h->op.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
+      convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
     }
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
@@ -6124,9 +6494,10 @@ namespace medi {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
-    h->op.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
+    convOp.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
     // Adjoint buffers are always linear in space so they can be accessed in one sweep
     h->datatype->getADTool().updateAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
     h->datatype->getADTool().deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -6141,9 +6512,11 @@ namespace medi {
   int AMPI_Ireduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                           DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
-      rStatus = MPI_Ireduce(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, root, comm,
+      rStatus = MPI_Ireduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, root, comm,
                             &request->request);
     } else {
 
@@ -6209,7 +6582,7 @@ namespace medi {
         }
 
         // extract the primal values for the operator if required
-        if(op.requiresPrimal) {
+        if(convOp.requiresPrimal) {
           datatype->getADTool().createPassiveTypeBuffer(h->sendbufPrimals, h->sendbufTotalSize);
           if(AMPI_IN_PLACE != sendbuf) {
             datatype->getValues(sendbuf, 0, h->sendbufPrimals, 0, count);
@@ -6251,8 +6624,8 @@ namespace medi {
         h->comm = comm;
       }
 
-      rStatus = MPI_Ireduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), op.modifiedPrimalFunction, root,
-                            comm, &request->request);
+      rStatus = MPI_Ireduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
+                            root, comm, &request->request);
 
       AMPI_Ireduce_global_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Ireduce_global_AsyncHandle<DATATYPE>();
       asyncHandle->sendbuf = sendbuf;
@@ -6311,6 +6684,7 @@ namespace medi {
 
     if(datatype->getADTool().isActiveType()) {
 
+      AMPI_Op convOp = datatype->getADTool().convertOperator(op);
       datatype->getADTool().addToolAction(h);
 
       if(root == getCommRank(comm)) {
@@ -6326,7 +6700,7 @@ namespace medi {
         }
       }
       // extract the primal values for the operator if required
-      if(nullptr != h && op.requiresPrimal) {
+      if(nullptr != h && convOp.requiresPrimal) {
         if(root == getCommRank(comm)) {
           datatype->getADTool().createPassiveTypeBuffer(h->recvbufPrimals, h->recvbufTotalSize);
           if(root == getCommRank(comm)) {
@@ -6459,6 +6833,7 @@ namespace medi {
   int AMPI_Iscatter(typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
                     int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iscatter(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
@@ -6778,6 +7153,7 @@ namespace medi {
   int AMPI_Iscatterv(typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iscatterv(sendbuf, sendcounts, displs, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(),
@@ -7061,13 +7437,14 @@ namespace medi {
   void AMPI_Reduce_global_b(HandleBase* handle) {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
 
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->datatype->getADTool().createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
       // Adjoint buffers are always linear in space so we can accesses them in one sweep
       h->datatype->getADTool().getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-      h->op.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
+      convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount);
     }
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
@@ -7082,7 +7459,7 @@ namespace medi {
 
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
-    h->op.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
+    convOp.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize);
     // Adjoint buffers are always linear in space so they can be accessed in one sweep
     h->datatype->getADTool().updateAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
     h->datatype->getADTool().deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -7095,9 +7472,11 @@ namespace medi {
   int AMPI_Reduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
                          DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
-      rStatus = MPI_Reduce(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, root, comm);
+      rStatus = MPI_Reduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, root, comm);
     } else {
 
       // the type is an AD type so handle the buffers
@@ -7162,7 +7541,7 @@ namespace medi {
         }
 
         // extract the primal values for the operator if required
-        if(op.requiresPrimal) {
+        if(convOp.requiresPrimal) {
           datatype->getADTool().createPassiveTypeBuffer(h->sendbufPrimals, h->sendbufTotalSize);
           if(AMPI_IN_PLACE != sendbuf) {
             datatype->getValues(sendbuf, 0, h->sendbufPrimals, 0, count);
@@ -7204,7 +7583,7 @@ namespace medi {
         h->comm = comm;
       }
 
-      rStatus = MPI_Reduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), op.modifiedPrimalFunction, root,
+      rStatus = MPI_Reduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction, root,
                            comm);
       datatype->getADTool().addToolAction(h);
 
@@ -7221,7 +7600,7 @@ namespace medi {
         }
       }
       // extract the primal values for the operator if required
-      if(nullptr != h && op.requiresPrimal) {
+      if(nullptr != h && convOp.requiresPrimal) {
         if(root == getCommRank(comm)) {
           datatype->getADTool().createPassiveTypeBuffer(h->recvbufPrimals, h->recvbufTotalSize);
           if(root == getCommRank(comm)) {
@@ -7327,6 +7706,7 @@ namespace medi {
   int AMPI_Scatter(typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
                    int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Scatter(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
@@ -7556,6 +7936,7 @@ namespace medi {
   int AMPI_Scatterv(typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+
     if(!recvtype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Scatterv(sendbuf, sendcounts, displs, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(),
@@ -7749,21 +8130,9 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Improbe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Message* message, AMPI_Status* status) {
-    return MPI_Improbe(source, tag, comm, flag, message, status);
-  }
-
-#endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Iprobe(int source, int tag, AMPI_Comm comm, int* flag, AMPI_Status* status) {
     return MPI_Iprobe(source, tag, comm, flag, status);
-  }
-
-#endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Mprobe(int source, int tag, AMPI_Comm comm, AMPI_Message* message, AMPI_Status* status) {
-    return MPI_Mprobe(source, tag, comm, message, status);
   }
 
 #endif
@@ -7785,9 +8154,132 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  inline MPI_Aint AMPI_Aint_add(AMPI_Aint base, AMPI_Aint disp) {
+    return MPI_Aint_add(base, disp);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
+  inline MPI_Aint AMPI_Aint_diff(AMPI_Aint addr1, AMPI_Aint addr2) {
+    return MPI_Aint_diff(addr1, addr2);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Get_address(const void* location, AMPI_Aint* address) {
+    return MPI_Get_address(location, address);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Get_elements(const AMPI_Status* status, DATATYPE* datatype, int* count) {
+    return MPI_Get_elements(status, datatype->getModifiedMpiType(), count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Get_elements_x(const AMPI_Status* status, DATATYPE* datatype, AMPI_Count* count) {
+    return MPI_Get_elements_x(status, datatype->getModifiedMpiType(), count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_contents(DATATYPE* datatype, int max_integers, int max_addresses, int max_datatypes,
+                                    int* array_of_integers, AMPI_Aint* array_of_addresses, AMPI_Datatype* array_of_datatypes) {
+    return MPI_Type_get_contents(datatype->getModifiedMpiType(), max_integers, max_addresses, max_datatypes,
+                                 array_of_integers, array_of_addresses, array_of_datatypes);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_envelope(DATATYPE* datatype, int* num_integers, int* num_addresses, int* num_datatypes,
+                                    int* combiner) {
+    return MPI_Type_get_envelope(datatype->getModifiedMpiType(), num_integers, num_addresses, num_datatypes, combiner);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_extent(DATATYPE* datatype, AMPI_Aint* lb, AMPI_Aint* extent) {
+    return MPI_Type_get_extent(datatype->getModifiedMpiType(), lb, extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_extent_x(DATATYPE* datatype, AMPI_Count* lb, AMPI_Count* extent) {
+    return MPI_Type_get_extent_x(datatype->getModifiedMpiType(), lb, extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_true_extent(DATATYPE* datatype, AMPI_Aint* true_lb, AMPI_Aint* true_extent) {
+    return MPI_Type_get_true_extent(datatype->getModifiedMpiType(), true_lb, true_extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_get_true_extent_x(DATATYPE* datatype, AMPI_Count* true_lb, AMPI_Count* true_extent) {
+    return MPI_Type_get_true_extent_x(datatype->getModifiedMpiType(), true_lb, true_extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename OLDTYPE, typename NEWTYPE>
+  inline int AMPI_Type_hindexed(int count, const int* array_of_blocklengths, const AMPI_Aint* array_of_displacements,
+                                OLDTYPE* oldtype, NEWTYPE* newtype) {
+    return MPI_Type_hindexed(count, array_of_blocklengths, array_of_displacements, oldtype->getModifiedMpiType(),
+                             newtype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename OLDTYPE, typename NEWTYPE>
+  inline int AMPI_Type_hvector(int count, int blocklength, AMPI_Aint stride, OLDTYPE* oldtype, NEWTYPE* newtype) {
+    return MPI_Type_hvector(count, blocklength, stride, oldtype->getModifiedMpiType(), newtype->getModifiedMpiType());
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_size(DATATYPE* datatype, int* size) {
+    return MPI_Type_size(datatype->getModifiedMpiType(), size);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Type_size_x(DATATYPE* datatype, AMPI_Count* size) {
+    return MPI_Type_size_x(datatype->getModifiedMpiType(), size);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename ARRAY_OF_TYPES, typename NEWTYPE>
+  inline int AMPI_Type_struct(int count, const int* array_of_blocklengths, const AMPI_Aint* array_of_displacements,
+                              const ARRAY_OF_TYPES* array_of_types, NEWTYPE* newtype) {
+    return MPI_Type_struct(count, array_of_blocklengths, array_of_displacements, array_of_types->getModifiedMpiType(),
+                           newtype->getModifiedMpiType());
+  }
+
+#endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Barrier(AMPI_Comm comm) {
     return MPI_Barrier(comm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+  inline int AMPI_Op_commutative(AMPI_Op op, int* commute) {
+    AMPI_Op convOp = op;
+    return MPI_Op_commutative(convOp.modifiedPrimalFunction, commute);
   }
 
 #endif
@@ -8109,6 +8601,133 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Win_set_name(AMPI_Win win, const char* win_name) {
     return MPI_Win_set_name(win, win_name);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_coords(AMPI_Comm comm, int rank, int maxdims, int* coords) {
+    return MPI_Cart_coords(comm, rank, maxdims, coords);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_create(AMPI_Comm comm_old, int ndims, const int* dims, const int* periods, int reorder,
+                              AMPI_Comm* comm_cart) {
+    return MPI_Cart_create(comm_old, ndims, dims, periods, reorder, comm_cart);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_get(AMPI_Comm comm, int maxdims, int* dims, int* periods, int* coords) {
+    return MPI_Cart_get(comm, maxdims, dims, periods, coords);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_map(AMPI_Comm comm, int ndims, const int* dims, const int* periods, int* newrank) {
+    return MPI_Cart_map(comm, ndims, dims, periods, newrank);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_rank(AMPI_Comm comm, const int* coords, int* rank) {
+    return MPI_Cart_rank(comm, coords, rank);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_shift(AMPI_Comm comm, int direction, int disp, int* rank_source, int* rank_dest) {
+    return MPI_Cart_shift(comm, direction, disp, rank_source, rank_dest);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cart_sub(AMPI_Comm comm, const int* remain_dims, AMPI_Comm* newcomm) {
+    return MPI_Cart_sub(comm, remain_dims, newcomm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Cartdim_get(AMPI_Comm comm, int* ndims) {
+    return MPI_Cartdim_get(comm, ndims);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Dims_create(int nnodes, int ndims, int* dims) {
+    return MPI_Dims_create(nnodes, ndims, dims);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+  inline int AMPI_Dist_graph_create(AMPI_Comm comm_old, int n, const int* sources, const int* degrees,
+                                    const int* destinations, const int* weights, AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
+    return MPI_Dist_graph_create(comm_old, n, sources, degrees, destinations, weights, info, reorder, comm_dist_graph);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+  inline int AMPI_Dist_graph_create_adjacent(AMPI_Comm comm_old, int indegree, const int* sources,
+      const int* sourceweights, int outdegree, const int* destinations, const int* destweights, AMPI_Info info, int reorder,
+      AMPI_Comm* comm_dist_graph) {
+    return MPI_Dist_graph_create_adjacent(comm_old, indegree, sources, sourceweights, outdegree, destinations, destweights,
+                                          info, reorder, comm_dist_graph);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+  inline int AMPI_Dist_graph_neighbors(AMPI_Comm comm, int maxindegree, int* sources, int* sourceweights,
+                                       int maxoutdegree, int* destinations, int* destweights) {
+    return MPI_Dist_graph_neighbors(comm, maxindegree, sources, sourceweights, maxoutdegree, destinations, destweights);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+  inline int AMPI_Dist_graph_neighbors_count(AMPI_Comm comm, int* indegree, int* outdegree, int* weighted) {
+    return MPI_Dist_graph_neighbors_count(comm, indegree, outdegree, weighted);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graph_create(AMPI_Comm comm_old, int nnodes, const int* index, const int* edges, int reorder,
+                               AMPI_Comm* comm_graph) {
+    return MPI_Graph_create(comm_old, nnodes, index, edges, reorder, comm_graph);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graph_get(AMPI_Comm comm, int maxindex, int maxedges, int* index, int* edges) {
+    return MPI_Graph_get(comm, maxindex, maxedges, index, edges);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graph_map(AMPI_Comm comm, int nnodes, const int* index, const int* edges, int* newrank) {
+    return MPI_Graph_map(comm, nnodes, index, edges, newrank);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graph_neighbors(AMPI_Comm comm, int rank, int maxneighbors, int* neighbors) {
+    return MPI_Graph_neighbors(comm, rank, maxneighbors, neighbors);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graph_neighbors_count(AMPI_Comm comm, int rank, int* nneighbors) {
+    return MPI_Graph_neighbors_count(comm, rank, nneighbors);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Graphdims_get(AMPI_Comm comm, int* nnodes, int* nedges) {
+    return MPI_Graphdims_get(comm, nnodes, nedges);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Topo_test(AMPI_Comm comm, int* status) {
+    return MPI_Topo_test(comm, status);
   }
 
 #endif
@@ -8841,5 +9460,346 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_Comm_c2f(AMPI_Comm comm) {
+    return MPI_Comm_c2f(comm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Comm AMPI_Comm_f2c(AMPI_Fint comm) {
+    return MPI_Comm_f2c(comm);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_1 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_Errhandler_c2f(AMPI_Errhandler errhandler) {
+    return MPI_Errhandler_c2f(errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_1 <= MEDI_MPI_TARGET
+  inline MPI_Errhandler AMPI_Errhandler_f2c(AMPI_Fint errhandler) {
+    return MPI_Errhandler_f2c(errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_File_c2f(AMPI_File file) {
+    return MPI_File_c2f(file);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_File AMPI_File_f2c(AMPI_Fint file) {
+    return MPI_File_f2c(file);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_Group_c2f(AMPI_Group group) {
+    return MPI_Group_c2f(group);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Group AMPI_Group_f2c(AMPI_Fint group) {
+    return MPI_Group_f2c(group);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_Info_c2f(AMPI_Info info) {
+    return MPI_Info_c2f(info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Info AMPI_Info_f2c(AMPI_Fint info) {
+    return MPI_Info_f2c(info);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Status_c2f(const AMPI_Status* c_status, AMPI_Fint* f_status) {
+    return MPI_Status_c2f(c_status, f_status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Status_f2c(const AMPI_Fint* f_status, AMPI_Status* c_status) {
+    return MPI_Status_f2c(f_status, c_status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Fint AMPI_Win_c2f(AMPI_Win win) {
+    return MPI_Win_c2f(win);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+  inline MPI_Win AMPI_Win_f2c(AMPI_Fint win) {
+    return MPI_Win_f2c(win);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_changed(int* stamp) {
+    return MPI_T_category_changed(stamp);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_categories(int cat_index, int len, int* indices) {
+    return MPI_T_category_get_categories(cat_index, len, indices);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_cvars(int cat_index, int len, int* indices) {
+    return MPI_T_category_get_cvars(cat_index, len, indices);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_index(const char* name, int* cat_index) {
+    return MPI_T_category_get_index(name, cat_index);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_info(int cat_index, char* name, int* name_len, char* desc, int* desc_len, int* num_cvars,
+                                      int* num_pvars, int* num_categories) {
+    return MPI_T_category_get_info(cat_index, name, name_len, desc, desc_len, num_cvars, num_pvars, num_categories);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_num(int* num_cat) {
+    return MPI_T_category_get_num(num_cat);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_category_get_pvars(int cat_index, int len, int* indices) {
+    return MPI_T_category_get_pvars(cat_index, len, indices);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_get_index(const char* name, int* cvar_index) {
+    return MPI_T_cvar_get_index(name, cvar_index);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_get_num(int* num_cvar) {
+    return MPI_T_cvar_get_num(num_cvar);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_handle_alloc(int cvar_index, void* obj_handle, AMPI_T_cvar_handle* handle, int* count) {
+    return MPI_T_cvar_handle_alloc(cvar_index, obj_handle, handle, count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_handle_free(AMPI_T_cvar_handle* handle) {
+    return MPI_T_cvar_handle_free(handle);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_read(AMPI_T_cvar_handle handle, void* buf) {
+    return MPI_T_cvar_read(handle, buf);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_cvar_write(AMPI_T_cvar_handle handle, const void* buf) {
+    return MPI_T_cvar_write(handle, buf);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_enum_get_info(AMPI_T_enum enumtype, int* num, char* name, int* name_len) {
+    return MPI_T_enum_get_info(enumtype, num, name, name_len);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_enum_get_item(AMPI_T_enum enumtype, int index, int* value, char* name, int* name_len) {
+    return MPI_T_enum_get_item(enumtype, index, value, name, name_len);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_finalize() {
+    return MPI_T_finalize();
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_init_thread(int required, int* provided) {
+    return MPI_T_init_thread(required, provided);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_get_index(const char* name, int var_class, int* pvar_index) {
+    return MPI_T_pvar_get_index(name, var_class, pvar_index);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_get_num(int* num_pvar) {
+    return MPI_T_pvar_get_num(num_pvar);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_handle_alloc(AMPI_T_pvar_session session, int pvar_index, void* obj_handle,
+                                      AMPI_T_pvar_handle* handle, int* count) {
+    return MPI_T_pvar_handle_alloc(session, pvar_index, obj_handle, handle, count);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_handle_free(AMPI_T_pvar_session session, AMPI_T_pvar_handle* handle) {
+    return MPI_T_pvar_handle_free(session, handle);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_read(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle, void* buf) {
+    return MPI_T_pvar_read(session, handle, buf);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_readreset(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle, void* buf) {
+    return MPI_T_pvar_readreset(session, handle, buf);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_reset(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle) {
+    return MPI_T_pvar_reset(session, handle);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_session_create(AMPI_T_pvar_session* session) {
+    return MPI_T_pvar_session_create(session);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_session_free(AMPI_T_pvar_session* session) {
+    return MPI_T_pvar_session_free(session);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_start(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle) {
+    return MPI_T_pvar_start(session, handle);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_stop(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle) {
+    return MPI_T_pvar_stop(session, handle);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  inline int AMPI_T_pvar_write(AMPI_T_pvar_session session, AMPI_T_pvar_handle handle, const void* buf) {
+    return MPI_T_pvar_write(session, handle, buf);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  inline int AMPI_Address(void* location, AMPI_Aint* address) {
+    return MPI_Address(location, address);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Attr_delete(AMPI_Comm comm, int keyval) {
+    return MPI_Attr_delete(comm, keyval);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Attr_get(AMPI_Comm comm, int keyval, void* attribute_val, int* flag) {
+    return MPI_Attr_get(comm, keyval, attribute_val, flag);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Attr_put(AMPI_Comm comm, int keyval, void* attribute_val) {
+    return MPI_Attr_put(comm, keyval, attribute_val);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Keyval_create(AMPI_Copy_function* copy_fn, AMPI_Delete_function* delete_fn, int* keyval,
+                                void* extra_state) {
+    return MPI_Keyval_create(copy_fn, delete_fn, keyval, extra_state);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Keyval_free(int* keyval) {
+    return MPI_Keyval_free(keyval);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  inline int AMPI_Errhandler_create(AMPI_Handler_function* function, AMPI_Errhandler* errhandler) {
+    return MPI_Errhandler_create(function, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  inline int AMPI_Errhandler_get(AMPI_Comm comm, AMPI_Errhandler* errhandler) {
+    return MPI_Errhandler_get(comm, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  inline int AMPI_Errhandler_set(AMPI_Comm comm, AMPI_Errhandler errhandler) {
+    return MPI_Errhandler_set(comm, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  template<typename DATATYPE>
+  inline int AMPI_Type_extent(DATATYPE* datatype, AMPI_Aint* extent) {
+    return MPI_Type_extent(datatype->getModifiedMpiType(), extent);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  template<typename DATATYPE>
+  inline int AMPI_Type_lb(DATATYPE* datatype, AMPI_Aint* displacement) {
+    return MPI_Type_lb(datatype->getModifiedMpiType(), displacement);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
+  template<typename DATATYPE>
+  inline int AMPI_Type_ub(DATATYPE* datatype, AMPI_Aint* displacement) {
+    return MPI_Type_ub(datatype->getModifiedMpiType(), displacement);
+  }
+
+#endif
+
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+#define AMPI_Pcontrol MPI_Pcontrol
+#endif
+
 
 }

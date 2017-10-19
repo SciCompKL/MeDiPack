@@ -30,7 +30,7 @@
 
 #include <mpi.h>
 
-#include "../../include/medi/mpiTypePassive.hpp"
+#include "../../include/medi/ampi/typePassive.hpp"
 
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -786,9 +786,6 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
 #define AMPI_Info MPI_Info
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
-#define AMPI_Message MPI_Message
-#endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
 #define AMPI_Win MPI_Win
 #endif
@@ -868,13 +865,13 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   typedef MPI_Datarep_conversion_function AMPI_Datarep_conversion_function;
 #endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   typedef MPI_Copy_function AMPI_Copy_function;
 #endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   typedef MPI_Delete_function AMPI_Delete_function;
 #endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   typedef MPI_Handler_function AMPI_Handler_function;
 #endif
 
