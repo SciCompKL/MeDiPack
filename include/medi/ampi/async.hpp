@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "../medipack.h"
+#include "ampiMisc.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
 
@@ -246,6 +246,14 @@ namespace medi {
     }
 
     delete [] array;
+
+    return rStatus;
+  }
+
+  inline int AMPI_Ibarrier(AMPI_Comm comm, AMPI_Request *request) {
+
+    int rStatus = MPI_Ibarrier(comm, &request->request);
+    request->func = nullptr;
 
     return rStatus;
   }

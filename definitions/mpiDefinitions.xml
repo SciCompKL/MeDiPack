@@ -416,7 +416,7 @@
         <define name="MPI_File" version="2.0" />
         <define name="MPI_Group" version="1.0" />
         <define name="MPI_Info" version="2.0" />
-        <define name="MPI_Message" version="3.0"/>
+        <define name="MPI_Message" special="include/medi/ampi/message.hpp" version="3.0" />
         <define name="MPI_Op" special="include/medi/mpiOp.hpp" version="1.0" />
         <define name="MPI_Request" special="include/medi/ampi/async.hpp" version="1.0" />
         <define name="MPI_Win" version="2.0" />
@@ -452,7 +452,7 @@
     <define name="MPI_COMBINER_HINDEXED_INTEGER" version="2.0" deprecated="3.0" />
     <define name="MPI_COMBINER_HVECTOR_INTEGER" version="2.0" deprecated="3.0" />
     <define name="MPI_COMBINER_STRUCT_INTEGER" version="2.0" deprecated="3.0" />
-    <typedef name="MPI_Copy_function" version="1.0" deprecated="2.0" />
-    <typedef name="MPI_Delete_function" version="1.0" deprecated="2.0" />
-    <typedef name="MPI_Handler_function" version="1.0" deprecated="2.0" />
+    <typedef name="MPI_Copy_function" version="1.0"/>
+    <typedef name="MPI_Delete_function" version="1.0"/>
+    <typedef name="MPI_Handler_function" version="1.0"/>
 </definitions>

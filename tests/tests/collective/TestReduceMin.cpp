@@ -39,5 +39,5 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-  medi::AMPI_Reduce(x, &y[ 0], 10, mpiNumberType, TOOL::OP_MIN, 0, MPI_COMM_WORLD);
+  medi::AMPI_Reduce(x, &y[ 0], 10, mpiNumberType, medi::AMPI_MIN, 0, MPI_COMM_WORLD);
 }

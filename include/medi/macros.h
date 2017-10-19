@@ -56,7 +56,42 @@
 # define MEDI_CONST_SEND const
 #endif
 
+#ifndef MEDI_EnableAssert
+  #define MEDI_EnableAssert 1
+#endif
+#ifndef mediAssert
+  #if MEDI_EnableAssert
+
+#include <assert.h>
+    /**
+     * @brief The assert function for MeDiPack it can be enabled with the preprocessor macro MEDI_EnableAssert=true
+     *
+     * @param x The expression that is checked in the assert.
+     *
+     * It can be set with the preprocessor macro MEDI_EnableAssert=<true/false>
+     */
+    #define mediAssert(x) assert(x)
+  #else
+    /**
+     * @brief The assert function for MeDiPack it can be enabled with the preprocessor macro MEDI_EnableAssert=true
+     *
+     * It can be set with the preprocessor macro MEDI_EnableAssert=<true/false>
+     *
+     * @param x The expression that is checked in the assert.
+     */
+    #define mediAssert(x) /* disabled by MEDI_EnableAssert */
+  #endif
+#endif
+
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)
+
+  #ifdef DEV
+    #define INTERFACE_ARG(name) bool __p
+    #define INTERFACE_DEF(interface, name, ...) typedef interface<__VA_ARGS__> name;
+  #else
+    #define INTERFACE_ARG(name) typename name
+    #define INTERFACE_DEF(interface, name, ...) /* empty */
+  #endif
 }

@@ -43,8 +43,8 @@ void func(NUMBER* x, NUMBER* y) {
     for(int i = 0; i < 10; ++i) {
       y[i] = x[i];
     }
-    medi::AMPI_Reduce(medi::AMPI_IN_PLACE, y, 10, mpiNumberType, TOOL::OP_PROD, 0, MPI_COMM_WORLD);
+    medi::AMPI_Reduce(medi::AMPI_IN_PLACE, y, 10, mpiNumberType, medi::AMPI_PROD, 0, MPI_COMM_WORLD);
   } else {
-    medi::AMPI_Reduce(x, NULL, 10, mpiNumberType, TOOL::OP_PROD, 0, MPI_COMM_WORLD);
+    medi::AMPI_Reduce(x, NULL, 10, mpiNumberType, medi::AMPI_PROD, 0, MPI_COMM_WORLD);
   }
 }

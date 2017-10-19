@@ -29,8 +29,9 @@
 #pragma once
 
 #include "async.hpp"
-#include "../medipack.h"
-#include "../mpiInPlace.hpp"
+#include "ampiMisc.h"
+#include "inPlace.hpp"
+#include "../mpiTools.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
 
@@ -217,17 +218,19 @@ namespace medi {
 
   template<typename DATATYPE>
   inline int AMPI_Reduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return AMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm);
-    } else if(op.hasAdjoint) {
+      return AMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, root, comm);
+    } else if(convOp.hasAdjoint) {
       // operator has an adjoint formulation
-      if(op.requiresPrimalSend) {
+      if(convOp.requiresPrimalSend) {
         // need to modify the call to an allreduce
         typename DATATYPE::Type* tempBuf = recvbuf;
         if(root != getCommRank(comm)) {
           datatype->createTypeBuffer(tempBuf, count);
         }
-        int result = AMPI_Allreduce_global<DATATYPE>(sendbuf, tempBuf, count, datatype, op, comm);
+        int result = AMPI_Allreduce_global<DATATYPE>(sendbuf, tempBuf, count, datatype, convOp, comm);
         if(root != getCommRank(comm)) {
           datatype->deleteTypeBuffer(tempBuf);
         }
@@ -235,26 +238,28 @@ namespace medi {
         return result;
       } else {
         // just perfrom the normal call
-        return AMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm);
+        return AMPI_Reduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, root, comm);
       }
     } else {
       // perform a gather and apply the operator locally
-      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, root, comm, getCommSize(comm));
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, root, comm, getCommSize(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Ireduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return AMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm, request);
-    } else if(op.hasAdjoint) {
-      if(op.requiresPrimalSend) {
+      return AMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, root, comm, request);
+    } else if(convOp.hasAdjoint) {
+      if(convOp.requiresPrimalSend) {
         // need to modify the call to an allreduce
         typename DATATYPE::Type* tempBuf = recvbuf;
         if(root != getCommRank(comm)) {
           datatype->createTypeBuffer(tempBuf, count);
         }
-        int result = AMPI_Iallreduce_global<DATATYPE>(sendbuf, tempBuf, count, datatype, op, comm, request);
+        int result = AMPI_Iallreduce_global<DATATYPE>(sendbuf, tempBuf, count, datatype, convOp, comm, request);
         AMPI_Ireduce_modified_Handle<DATATYPE>* curHandle = new AMPI_Ireduce_modified_Handle<DATATYPE>();
         curHandle->tempBuf = tempBuf;
         curHandle->comm = comm;
@@ -270,71 +275,83 @@ namespace medi {
         return result;
       } else {
         // just perfrom the normal call
-        return AMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, root, comm, request);
+        return AMPI_Ireduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, root, comm, request);
       }
     } else {
       // perform a gather and apply the operator locally
-      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, root, comm, request, getCommSize(comm));
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, root, comm, request, getCommSize(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Allreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
-    if(op.hasAdjoint || !datatype->getADTool().isActiveType()) {
-      return AMPI_Allreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm);
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
+    if(convOp.hasAdjoint || !datatype->getADTool().isActiveType()) {
+      return AMPI_Allreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, comm);
     } else {
       // perform a gather and apply the operator locally
-      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommSize(comm));
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, getCommSize(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Iallreduce(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
-    if(op.hasAdjoint || !datatype->getADTool().isActiveType()) {
-      return AMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, op, comm, request);
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
+    if(convOp.hasAdjoint || !datatype->getADTool().isActiveType()) {
+      return AMPI_Iallreduce_global<DATATYPE>(sendbuf, recvbuf, count, datatype, convOp, comm, request);
     } else {
       // perform a gather and apply the operator locally
-      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommSize(comm));
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, request, getCommSize(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Exscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return MPI_Exscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm);
+      return MPI_Exscan(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm);
     } else {
       // perform a gather and apply the operator locally
-      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommRank(comm));
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, getCommRank(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Iexscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return MPI_Iexscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm, &request->request);
+      return MPI_Iexscan(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm, &request->request);
     } else {
       // perform a gather and apply the operator locally
-      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommRank(comm));
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, request, getCommRank(comm));
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Scan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return MPI_Scan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm);
+      return MPI_Scan(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm);
     } else {
       // perform a gather and apply the operator locally
-      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, getCommRank(comm) + 1);
+      return GatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, getCommRank(comm) + 1);
     }
   }
 
   template<typename DATATYPE>
   inline int AMPI_Iscan(const typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
     if(!datatype->getADTool().isActiveType()) {
-      return MPI_Iscan(sendbuf, recvbuf, count, datatype->getMpiType(), op.primalFunction, comm, &request->request);
+      return MPI_Iscan(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm, &request->request);
     } else {
       // perform a gather and apply the operator locally
-      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, op, -1, comm, request, getCommRank(comm) + 1);
+      return IgatherAndPerformOperationLocal(sendbuf, recvbuf, count, datatype, convOp, -1, comm, request, getCommRank(comm) + 1);
     }
   }
 
@@ -358,6 +375,13 @@ namespace medi {
     AMPI_Init_common();
 
     return result;
+  }
+
+  template<typename DATATYPE>
+  inline int AMPI_Reduce_local(const typename DATATYPE::Type* inbuf, typename DATATYPE::Type* inoutbuf, int count, DATATYPE* datatype, AMPI_Comm comm, AMPI_Op op) {
+    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+
+    return MPI_Reduce_local(inbuf, inoutbuf, count, datatype->getMpiType(), convOp.primalFunction);
   }
 
 

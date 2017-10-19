@@ -29,8 +29,8 @@
 #pragma once
 
 #include <adolc/adolc.h>
+#include <adolc/medipacksupport.h>
 #include <medi/medi.hpp>
-#include <medi/adolcMeDiPackTypes.hpp>
 
 typedef adouble NUMBER;
 

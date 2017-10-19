@@ -30,10 +30,10 @@
 
 #include <mpi.h>
 
-#include "adToolPassive.hpp"
-#include "macros.h"
-#include "mpiTypeInterface.hpp"
-#include "mpiOp.hpp"
+#include "../adToolPassive.hpp"
+#include "../macros.h"
+#include "typeInterface.hpp"
+#include "op.hpp"
 
 namespace medi {
 
@@ -55,19 +55,37 @@ namespace medi {
 
       typedef ADToolPassive Tool;
 
+      bool isClone;
+
       Tool adTool;
 
       MpiTypePassive(MPI_Datatype type) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        isClone(false),
         adTool(type) {}
 
-      Tool& getADTool() {
+    private:
+      MpiTypePassive(MPI_Datatype type, bool clone) :
+        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        isClone(clone),
+        adTool(type) {}
+
+    public:
+      ~MpiTypePassive() {
+        if(isClone) {
+          MPI_Datatype temp = this->getMpiType();
+          MPI_Type_free(&temp);
+        }
+      }
+
+      const Tool& getADTool() const{
         return adTool;
       }
 
       int computeActiveElements(const int count) const {
+        MEDI_UNUSED(count);
 
-        return count;
+        return 0;
       }
 
       bool isModifiedBufferRequired() const {
@@ -75,19 +93,15 @@ namespace medi {
       }
 
       inline void copyIntoModifiedBuffer(const Type* buf, size_t bufOffset, ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(bufOffset);
-        MEDI_UNUSED(bufMod);
-        MEDI_UNUSED(bufModOffset);
-        MEDI_UNUSED(elements);
+        for(int i = 0; i < elements; ++i) {
+          bufMod[bufModOffset + i] = buf[bufOffset + i];
+        }
       }
 
       inline void copyFromModifiedBuffer(Type* buf, size_t bufOffset, const ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(bufOffset);
-        MEDI_UNUSED(bufMod);
-        MEDI_UNUSED(bufModOffset);
-        MEDI_UNUSED(elements);
+        for(int i = 0; i < elements; ++i) {
+          buf[bufOffset + i] = bufMod[bufModOffset + i];
+        }
       }
 
       inline void getIndices(const Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
@@ -130,11 +144,9 @@ namespace medi {
       }
 
       inline void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
-        MEDI_UNUSED(from);
-        MEDI_UNUSED(fromOffset);
-        MEDI_UNUSED(to);
-        MEDI_UNUSED(toOffset);
-        MEDI_UNUSED(count);
+        for(int i = 0; i < count; ++i) {
+          to[toOffset + i] = from[fromOffset + i];
+        }
       }
 
       inline void createTypeBuffer(Type* &buf, size_t size) const {
@@ -157,6 +169,13 @@ namespace medi {
           delete [] buf;
           buf = NULL;
         }
+      }
+
+      inline MpiTypePassive* clone() const {
+        MPI_Datatype type;
+        MPI_Type_dup(this->getMpiType(), &type);
+
+        return new MpiTypePassive(type, true);
       }
   };
 }

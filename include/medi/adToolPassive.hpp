@@ -35,7 +35,9 @@
 namespace medi {
 
   /**
-   * @brief The interface for the AD tool that is accessed by MeDiPack.
+   * @brief Implementation for the AD tool interface of a type that is no AD type.
+   *
+   * All methods in this implementation contain no logic.
    */
   class ADToolPassive final : public ADToolBase<ADToolPassive, void, void, void> {
     public:
@@ -50,11 +52,15 @@ namespace medi {
 
       inline bool isActiveType() const {return false;}
       inline bool isHandleRequired() const {return false;}
+      inline bool isModifiedBufferRequired() const {return false;}
       inline bool isOldPrimalsRequired() const {return false;}
-      inline void startAssembly(HandleBase* h) {MEDI_UNUSED(h);}
-      inline void stopAssembly(HandleBase* h) {MEDI_UNUSED(h);}
-      inline void addToolAction(HandleBase* h) {MEDI_UNUSED(h);}
+      inline void startAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
+      inline void stopAssembly(HandleBase* h) const {MEDI_UNUSED(h);}
+      inline void addToolAction(HandleBase* h) const {MEDI_UNUSED(h);}
 
+      inline AMPI_Op convertOperator(AMPI_Op op) const {
+        return op;
+      }
       inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
         MEDI_UNUSED(indices);
         MEDI_UNUSED(adjoints);

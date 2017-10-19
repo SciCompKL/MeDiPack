@@ -26,15 +26,40 @@
  * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
  */
 
-#include "../../../include/medi/ampi/operatorFunctions.hpp"
+#pragma once
+
+
+#include <mpi.h>
+
+#include "macros.h"
+#include "typeDefinitions.h"
 
 namespace medi {
 
-  void emptyFunction(T* invec, T* inoutvec, int* len, MPI_Datatype* datatype) {}
+  typedef int Range[3];
 
-  AMPI_Op AMPI_OP_NULL;
 
-  void initializeOperators() {
-    AMPI_OP_NULL.init(MPI_OP_NULL);
+  /**
+   * @brief Helper function that gets the own rank number from the communicator.
+   * @param[in] comm  The communicator.
+   * @return The rank number of this process in the communicator.
+   */
+  inline int getCommRank(MPI_Comm comm) {
+    int rank;
+    MEDI_CHECK_ERROR(MPI_Comm_rank(comm, &rank));
+
+    return rank;
+  }
+
+  /**
+   * @brief Helper function that gets the number of ranks from the communicator.
+   * @param[in] comm  The communicator.
+   * @return The number of ranks in this communicator.
+   */
+  inline int getCommSize(MPI_Comm comm) {
+    int size;
+    MEDI_CHECK_ERROR(MPI_Comm_size(comm, &size));
+
+    return size;
   }
 }

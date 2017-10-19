@@ -26,19 +26,24 @@
  * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
  */
 
-#include "../../include/medi/adolcMeDiPackTypes.hpp"
+#include <toolDefines.h>
 
-MPI_Datatype AdolcTool::MpiType;
-MPI_Datatype AdolcTool::ModifiedMpiType;
-MPI_Datatype AdolcTool::AdjointMpiType;
-medi::AMPI_Op AdolcTool::OP_SUM;
-medi::AMPI_Op AdolcTool::OP_PROD;
-medi::AMPI_Op AdolcTool::OP_MIN;
-medi::AMPI_Op AdolcTool::OP_MAX;
-AdolcTool::MediType* AdolcTool::MPI_TYPE;
+IN(10)
+OUT(10)
+POINTS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}, {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}}};
+SEEDS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}, {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}}};
 
-double* AdolcTool::adjointBase;
-double* AdolcTool::primalBase;
-ext_diff_fct_v2* AdolcTool::extFunc;
+void func(NUMBER* x, NUMBER* y) {
+  int world_rank;
+  medi::AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
+  int world_size;
+  medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-bool AdolcTool::deleteReverseHandles = true;
+  if(world_rank == 0) {
+    medi::AMPI_Send(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD);
+  } else {
+    medi::AMPI_Message m;
+    medi::AMPI_Mprobe( 0, 42, AMPI_COMM_WORLD, &m, AMPI_STATUS_IGNORE);
+    medi::AMPI_Mrecv(y, 10, mpiNumberType, &m, AMPI_STATUS_IGNORE);
+  }
+}

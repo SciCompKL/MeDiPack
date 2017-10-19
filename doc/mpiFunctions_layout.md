@@ -4,16 +4,20 @@ element: functions
 
 element: function
   child of: functions
-  contains elements: send, recv, arg, type, request, operator
+  contains elements: arg, send, recv, despls, operator, request, type, message, status
   attributes:            name -> The name of the function. Used for naming handles, functions etc.
                       version -> The mpi version this function was added to the standard.
+        [optional] deprecated -> The mpi version this definition was removed from the standard.
              [optional] async -> Defines that the function is asynchronous. The value defines the name of the
                                  argument that is the mpi request.
+              [optional] type -> The return type of the function. (Default: int)
             [optinal] mpiName -> Defines the name that is used for the real mpi function in the generation process. If not defined the name of the function will be taken.
          [optinal] mediHandle -> Defines the handling type of MeDiPack for this function possible options are:
                                     transform: Preforms AD handling
                                       disable: Ignores the function
                                       handled: Ignores the function, but indicates that the function is handled in a wrapper.
+                                      forward: Creates a define for the function forwarding.
+                                       ignore: Ignores the function because it is not required.
                                       default: Just produce a forward handling to the normal MPI function. [default value]
 
 
@@ -69,6 +73,13 @@ element: request
 
 element: type
   -> Special handling for datatype arguments. Depending on the interface they are treated as templates or normal arguments.
+  child of: function
+  attributes:             name -> The name of the argument.
+                          type -> The type of the argument.
+              [optional] const -> If defined indicates that the argument is constant.
+
+element: message
+  -> Special handling for message arguments. They are directly stored in the buffers.
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.

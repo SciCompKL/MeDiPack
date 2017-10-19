@@ -28,12 +28,17 @@
 
 #pragma once
 
-#include "macros.h"
-#include "mpiTypeInterface.hpp"
-#include "mpiOp.hpp"
+#include "../macros.h"
+#include "typeInterface.hpp"
+#include "op.hpp"
 
 namespace medi {
 
+  /**
+   * @brief The default implementation of a MPI type that is represented by an AD type.
+   *
+   * @tparam ADTool This class needs to implement the ADToolInterface and the StaticADToolInterface.
+   */
   template<typename ADTool>
   class MpiTypeDefault final
       : public MpiTypeBase<
@@ -42,6 +47,7 @@ namespace medi {
           typename ADTool::ModifiedType,
           ADTool>
   {
+      INTERFACE_DEF(StaticADToolInterface, ADTool, void)
 
     public:
 
@@ -53,13 +59,36 @@ namespace medi {
 
       typedef ADTool Tool;
 
+      bool isClone;
+
       Tool adTool;
 
       MpiTypeDefault() :
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
+        isClone(false),
         adTool(Tool::AdjointMpiType) {}
 
-      Tool& getADTool() {
+    private:
+      MpiTypeDefault(MPI_Datatype type, MPI_Datatype modType) :
+        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
+        isClone(true),
+        adTool(Tool::AdjointMpiType) {}
+
+    public:
+
+      ~MpiTypeDefault() {
+        if(isClone) {
+          MPI_Datatype temp;
+          if(this->getModifiedMpiType() != this->getMpiType()) {
+            temp = this->getModifiedMpiType();
+            MPI_Type_free(&temp);
+          }
+          temp = this->getMpiType();
+          MPI_Type_free(&temp);
+        }
+      }
+
+      const Tool& getADTool() const {
         return adTool;
       }
 
@@ -68,11 +97,11 @@ namespace medi {
       }
 
       bool isModifiedBufferRequired() const {
-        return Tool::IS_RequiresModifiedBuffer;
+        return adTool.isModifiedBufferRequired();
       }
 
       inline void copyIntoModifiedBuffer(const Type* buf, size_t bufOffset, ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(ADTool::IS_RequiresModifiedBuffer) {
+        if(adTool.isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::setIntoModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }
@@ -80,7 +109,7 @@ namespace medi {
       }
 
       inline void copyFromModifiedBuffer(Type* buf, size_t bufOffset, const ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(ADTool::IS_RequiresModifiedBuffer) {
+        if(adTool.isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::getFromModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }
@@ -154,6 +183,20 @@ namespace medi {
           delete [] buf;
           buf = NULL;
         }
+      }
+
+      inline MpiTypeDefault* clone() const {
+        MPI_Datatype type;
+        MPI_Datatype modType;
+
+        MPI_Type_dup(this->getMpiType(), &type);
+        if(this->getMpiType() != this->getModifiedMpiType()) {
+          MPI_Type_dup(this->getModifiedMpiType(), &modType);
+        } else {
+          modType = type;
+        }
+
+        return new MpiTypeDefault(type, modType);
       }
   };
 }
