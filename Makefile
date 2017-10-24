@@ -30,6 +30,9 @@ INCLUDE_DIR=include
 SRC_DIR=src
 TEMPL_DIR=templates
 DEF_DIR=definitions
+BUILD_DIR = build
+DOC_DIR   = doc
+MEDI_DIR := .
 
 GEN_DIR=generated
 
@@ -39,6 +42,27 @@ GENERATED_FILES= \
   $(GEN_DIR)/medi/ampiDefinitions.h
 
 ASTYLE_FILE=template.style
+
+#list all source files in DOC_DIR
+DOC_FILES   = $(wildcard $(DOC_DIR)/*.cpp)
+#list all dependency files in BUILD_DIR
+DEP_FILES   = $(wildcard $(BUILD_DIR)/*.d)
+# Complete list of test files
+TUTORIALS = $(patsubst $(DOC_DIR)/%.cpp,$(BUILD_DIR)/%.exe,$(DOC_FILES))
+
+FLAGS = -Wall -pedantic -std=c++11 -I$(CODI_DIR)/include -I$(MEDI_DIR)/include -I$(MEDI_DIR)/src
+
+ifeq ($(OPT), yes)
+  CXX_FLAGS := -O3 $(FLAGS)
+else
+  CXX_FLAGS := -O0 -g $(FLAGS)
+endif
+
+ifeq ($(MPICXX), )
+	MPICXX := mpic++
+else
+	MPICXX := $(MPICXX)
+endif
 
 all: $(GEN_DIR)/medi $(GENERATED_FILES)
 
@@ -70,10 +94,18 @@ $(GEN_DIR)/%.cpp:$(TEMPL_DIR)/%_cpp.gsl
 	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
 	@rm $@.tmp
 
+#rules for the tutorial files
+$(BUILD_DIR)/%.exe : $(DOC_DIR)/%.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CXX_FLAGS) $< -o $@
+	@$(MPICXX) $(CXX_FLAGS) $< -MM -MP -MT $@ -MF $@.d
+
+tutorials: $(TUTORIALS)
+	@mkdir -p $(BUILD_DIR)
+
 .PHONY: clean
 clean:
 	rm -fr $(GEN_DIR)/*
+	rm -fr $(BUILD_DIR)
 
-.PHONY: test
-test:
-	mpic++ -std=c++11 test.cpp -o test -I../CoDi/include -I. -Iinclude
+-include $(DEP_FILES)
