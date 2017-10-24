@@ -238,7 +238,10 @@ namespace medi {
           delete [] modifiedArrayLength;
         } else {
 
-          modifiedBlockOffsets = nullptr;
+          modifiedBlockOffsets = new int[count];
+          for(int i = 0; i < count; ++i) {
+            modifiedBlockOffsets[count] = blockOffsets[i];
+          }
           newModMpiType = newMpiType;
         }
 
