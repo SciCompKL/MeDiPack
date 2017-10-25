@@ -31,6 +31,9 @@
 #include "typeDefinitions.h"
 #include "adToolInterface.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   template <typename Impl, bool restorePrimal, bool modifiedBuffer, typename Type, typename AdjointType, typename PassiveType, typename IndexType>

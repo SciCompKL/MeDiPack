@@ -32,6 +32,9 @@
 
 #include "../../../generated/medi/ampiDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   typedef void (*DeleteReverseData)(void* data);

@@ -28,6 +28,9 @@
 
 #include "../../../include/medi/ampi/async.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
   const AMPI_Request AMPI_REQUEST_NULL;
 }

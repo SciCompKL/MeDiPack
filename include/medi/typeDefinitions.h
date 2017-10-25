@@ -28,6 +28,9 @@
 
 #pragma once
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   enum class ManualDeleteType {

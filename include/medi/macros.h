@@ -83,6 +83,9 @@
   #endif
 #endif
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
   #define MEDI_UNUSED(name) (void)(name)
   #define MEDI_CHECK_ERROR(expr) (expr)

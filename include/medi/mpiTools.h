@@ -34,6 +34,9 @@
 #include "macros.h"
 #include "typeDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   typedef int Range[3];

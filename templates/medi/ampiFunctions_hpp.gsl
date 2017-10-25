@@ -544,6 +544,9 @@ endfunction
 #include "../../include/medi/displacementTools.hpp"
 #include "../../include/medi/mpiTools.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 .for functions.function as curFunction where curFunction.mediHandle ?= "transform"
 . startVersionGuard(curFunction)

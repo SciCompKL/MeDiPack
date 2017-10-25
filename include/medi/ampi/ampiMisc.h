@@ -30,6 +30,9 @@
 
 #include "typeInterface.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   typedef MpiTypeInterface* AMPI_Datatype;

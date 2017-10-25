@@ -31,6 +31,9 @@
 #include "ampi/op.hpp"
 #include "typeDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   /**

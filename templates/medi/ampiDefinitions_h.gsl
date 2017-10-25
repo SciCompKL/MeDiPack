@@ -64,6 +64,9 @@ endfor
 
 #include "../../include/medi/ampi/typePassive.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 .for definitions.define as curDefine
 . startVersionGuard(curDefine)

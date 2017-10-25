@@ -51,6 +51,9 @@ endfor
 #include "../../include/medi/macros.h"
 #include "ampiDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
 .for definitions.operator as curOperator

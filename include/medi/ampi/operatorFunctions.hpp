@@ -32,6 +32,9 @@
 #include "op.hpp"
 #include "../../../generated/medi/ampiDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
   /**
    * @brief Default forward of the operator creation.

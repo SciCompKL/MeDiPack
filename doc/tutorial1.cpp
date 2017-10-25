@@ -4,7 +4,10 @@
 
 #include <iostream>
 
-using namespace medi;
+using /**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
+namespace medi ;
 
 #define TOOL CoDiPackTool<codi::RealReverse>
 

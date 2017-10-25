@@ -32,6 +32,9 @@
 
 #include "../../include/medi/ampi/typePassive.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 #define AMPI_SUCCESS MPI_SUCCESS

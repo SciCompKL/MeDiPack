@@ -33,6 +33,9 @@
 #include "../../include/medi/macros.h"
 #include "ampiDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET

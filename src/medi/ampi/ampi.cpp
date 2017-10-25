@@ -31,6 +31,9 @@
 
 #include "../../../include/medi/ampi/inPlace.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   const AMPI_IN_PLACE_IMPL AMPI_IN_PLACE;

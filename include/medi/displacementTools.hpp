@@ -31,6 +31,9 @@
 
 #include "macros.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   /**

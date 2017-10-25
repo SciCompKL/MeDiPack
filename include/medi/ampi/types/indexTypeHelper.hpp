@@ -35,6 +35,9 @@
 #include "../typeInterface.hpp"
 #include "../op.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   template <typename Type, typename ModifiedType, typename PassiveType, typename IndexType>

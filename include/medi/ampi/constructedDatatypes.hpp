@@ -32,6 +32,9 @@
 #include "typeInterface.hpp"
 #include "../exceptions.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   /**

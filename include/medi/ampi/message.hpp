@@ -32,6 +32,9 @@
 
 #include "../../../generated/medi/ampiDefinitions.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
@@ -45,7 +48,6 @@ namespace medi {
       int src;
       AMPI_Comm comm;
   };
-
 
   inline int AMPI_Mprobe(int source, int tag, AMPI_Comm comm, AMPI_Message* message, AMPI_Status* status) {
     message->src = source;

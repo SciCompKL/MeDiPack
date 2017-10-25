@@ -30,6 +30,9 @@
 
 #include <mpi.h>
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   /**

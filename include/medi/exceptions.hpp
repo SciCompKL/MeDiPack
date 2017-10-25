@@ -32,6 +32,9 @@
 #include <cstdarg>
 
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
   /**
    * @brief Generates an exception.

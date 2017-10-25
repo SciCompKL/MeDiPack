@@ -34,6 +34,9 @@
 #include "../../include/medi/displacementTools.hpp"
 #include "../../include/medi/mpiTools.h"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>

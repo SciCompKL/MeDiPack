@@ -33,6 +33,9 @@
 #include "message.hpp"
 #include "../displacementTools.hpp"
 
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
 namespace medi {
 
   template<typename DATATYPE>
