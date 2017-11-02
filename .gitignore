@@ -12,3 +12,4 @@ mpi31-report.pdf
 setup_env.txt
 tests/build
 tests/results
+updateDocumentation.sh
