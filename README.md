@@ -34,7 +34,7 @@ complete:
  - In place buffers
  - Operators
    - Here the interface needed to be extended for AD handling. The default creation of operators will still work but the
-     reduction operations for AD types are send handled by performing a gather. Afterwards a local reduce is performed.
+     reduction operations for AD types are handled by performing a gather. Afterwards a local reduce is performed.
      See the tutorial for further information.
 
 Statistics about the handled functions:
