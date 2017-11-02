@@ -125,7 +125,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Bsend_b<DATATYPE>;
         h->count = count;
@@ -134,6 +133,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Bsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
       datatype->getADTool().addToolAction(h);
@@ -267,7 +267,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Ibsend_b<DATATYPE>;
         h->count = count;
@@ -276,6 +275,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Ibsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
 
@@ -466,15 +466,15 @@ namespace medi {
 
 
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(buf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Imrecv_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(buf, 0, count);
       }
 
       rStatus = MPI_Imrecv(bufMod, count, datatype->getModifiedMpiType(), &message->message, &request->request);
@@ -669,10 +669,6 @@ namespace medi {
 
 
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(buf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Irecv_b<DATATYPE>;
         h->count = count;
@@ -680,6 +676,10 @@ namespace medi {
         h->source = source;
         h->tag = tag;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(buf, 0, count);
       }
 
       rStatus = MPI_Irecv(bufMod, count, datatype->getModifiedMpiType(), source, tag, comm, &request->request);
@@ -869,7 +869,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Irsend_b<DATATYPE>;
         h->count = count;
@@ -878,6 +877,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Irsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
 
@@ -1062,7 +1062,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Isend_b<DATATYPE>;
         h->count = count;
@@ -1071,6 +1070,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Isend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
 
@@ -1255,7 +1255,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Issend_b<DATATYPE>;
         h->count = count;
@@ -1264,6 +1263,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Issend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
 
@@ -1434,16 +1434,16 @@ namespace medi {
 
 
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(buf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Mrecv_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
         h->status = status;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(buf, 0, count);
       }
 
       rStatus = MPI_Mrecv(bufMod, count, datatype->getModifiedMpiType(), &message->message, status);
@@ -1570,10 +1570,6 @@ namespace medi {
 
 
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(buf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Recv_b<DATATYPE>;
         h->count = count;
@@ -1581,6 +1577,10 @@ namespace medi {
         h->source = source;
         h->tag = tag;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(buf, 0, count);
       }
 
       rStatus = MPI_Recv(bufMod, count, datatype->getModifiedMpiType(), source, tag, comm, status);
@@ -1695,7 +1695,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Rsend_b<DATATYPE>;
         h->count = count;
@@ -1704,6 +1703,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Rsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
       datatype->getADTool().addToolAction(h);
@@ -1813,7 +1813,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Send_b<DATATYPE>;
         h->count = count;
@@ -1822,6 +1821,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Send(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
       datatype->getADTool().addToolAction(h);
@@ -1987,10 +1987,6 @@ namespace medi {
 
         sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount);
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          recvtype->clearIndices(recvbuf, 0, recvcount);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Sendrecv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2002,6 +1998,10 @@ namespace medi {
         h->source = source;
         h->recvtag = recvtag;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        recvtype->clearIndices(recvbuf, 0, recvcount);
       }
 
       rStatus = MPI_Sendrecv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), dest, sendtag, recvbufMod, recvcount,
@@ -2120,7 +2120,6 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
-
         // pack all the variables in the handle
         h->func = AMPI_Ssend_b<DATATYPE>;
         h->count = count;
@@ -2129,6 +2128,7 @@ namespace medi {
         h->tag = tag;
         h->comm = comm;
       }
+
 
       rStatus = MPI_Ssend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
       datatype->getADTool().addToolAction(h);
@@ -2305,10 +2305,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Allgather_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2316,6 +2312,10 @@ namespace medi {
         h->recvcount = recvcount;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
       }
 
       rStatus = MPI_Allgather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -2527,12 +2527,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          for(int i = 0; i < getCommSize(comm); ++i) {
-            recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Allgatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2541,6 +2535,12 @@ namespace medi {
         h->displs = displs;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
+        }
       }
 
       rStatus = MPI_Allgatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
@@ -2745,16 +2745,16 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(recvbuf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Allreduce_global_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(recvbuf, 0, count);
       }
 
       rStatus = MPI_Allreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
@@ -2943,10 +2943,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, 0, h->sendbufIndices, 0, recvcount * getCommSize(comm));
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Alltoall_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2954,6 +2950,10 @@ namespace medi {
         h->recvcount = recvcount;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
       }
 
       rStatus = MPI_Alltoall(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -3185,12 +3185,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          for(int i = 0; i < getCommSize(comm); ++i) {
-            recvtype->clearIndices(recvbuf, rdispls[i], recvcounts[i]);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Alltoallv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -3200,6 +3194,12 @@ namespace medi {
         h->rdispls = rdispls;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->clearIndices(recvbuf, rdispls[i], recvcounts[i]);
+        }
       }
 
       rStatus = MPI_Alltoallv(sendbufMod, sendcounts, sdisplsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcounts,
@@ -3404,16 +3404,16 @@ namespace medi {
           }
         }
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(bufferRecv, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Bcast_wrap_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(bufferRecv, 0, count);
       }
 
       rStatus = MPI_Bcast_wrap(bufferSendMod, bufferRecvMod, count, datatype->getModifiedMpiType(), root, comm);
@@ -3614,12 +3614,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
 
-        if(root == getCommRank(comm)) {
-          if(!recvtype->isModifiedBufferRequired()) {
-            recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Gather_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -3628,6 +3622,12 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!recvtype->isModifiedBufferRequired()) {
+          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
+        }
       }
 
       rStatus = MPI_Gather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -3860,14 +3860,6 @@ namespace medi {
           }
         }
 
-        if(root == getCommRank(comm)) {
-          if(!recvtype->isModifiedBufferRequired()) {
-            for(int i = 0; i < getCommSize(comm); ++i) {
-              recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
-            }
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Gatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -3877,6 +3869,14 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!recvtype->isModifiedBufferRequired()) {
+          for(int i = 0; i < getCommSize(comm); ++i) {
+            recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
+          }
+        }
       }
 
       rStatus = MPI_Gatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
@@ -4102,10 +4102,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Iallgather_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -4113,6 +4109,10 @@ namespace medi {
         h->recvcount = recvcount;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
       }
 
       rStatus = MPI_Iallgather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -4412,12 +4412,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          for(int i = 0; i < getCommSize(comm); ++i) {
-            recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Iallgatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -4426,6 +4420,12 @@ namespace medi {
         h->displs = displs;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
+        }
       }
 
       rStatus = MPI_Iallgatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
@@ -4722,16 +4722,16 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(recvbuf, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Iallreduce_global_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(recvbuf, 0, count);
       }
 
       rStatus = MPI_Iallreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
@@ -5003,10 +5003,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, 0, h->sendbufIndices, 0, recvcount * getCommSize(comm));
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Ialltoall_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -5014,6 +5010,10 @@ namespace medi {
         h->recvcount = recvcount;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
       }
 
       rStatus = MPI_Ialltoall(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -5334,12 +5334,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          for(int i = 0; i < getCommSize(comm); ++i) {
-            recvtype->clearIndices(recvbuf, rdispls[i], recvcounts[i]);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Ialltoallv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -5349,6 +5343,12 @@ namespace medi {
         h->rdispls = rdispls;
         h->recvtype = recvtype;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->clearIndices(recvbuf, rdispls[i], recvcounts[i]);
+        }
       }
 
       rStatus = MPI_Ialltoallv(sendbufMod, sendcounts, sdisplsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcounts,
@@ -5647,16 +5647,16 @@ namespace medi {
           }
         }
 
-        if(!datatype->isModifiedBufferRequired()) {
-          datatype->clearIndices(bufferRecv, 0, count);
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Ibcast_wrap_b<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!datatype->isModifiedBufferRequired()) {
+        datatype->clearIndices(bufferRecv, 0, count);
       }
 
       rStatus = MPI_Ibcast_wrap(bufferSendMod, bufferRecvMod, count, datatype->getModifiedMpiType(), root, comm,
@@ -5940,12 +5940,6 @@ namespace medi {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
 
-        if(root == getCommRank(comm)) {
-          if(!recvtype->isModifiedBufferRequired()) {
-            recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Igather_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -5954,6 +5948,12 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!recvtype->isModifiedBufferRequired()) {
+          recvtype->clearIndices(recvbuf, 0, recvcount * getCommSize(comm));
+        }
       }
 
       rStatus = MPI_Igather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -6277,14 +6277,6 @@ namespace medi {
           }
         }
 
-        if(root == getCommRank(comm)) {
-          if(!recvtype->isModifiedBufferRequired()) {
-            for(int i = 0; i < getCommSize(comm); ++i) {
-              recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
-            }
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Igatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -6294,6 +6286,14 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!recvtype->isModifiedBufferRequired()) {
+          for(int i = 0; i < getCommSize(comm); ++i) {
+            recvtype->clearIndices(recvbuf, displs[i], recvcounts[i]);
+          }
+        }
       }
 
       rStatus = MPI_Igatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
@@ -6612,12 +6612,6 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
-        if(root == getCommRank(comm)) {
-          if(!datatype->isModifiedBufferRequired()) {
-            datatype->clearIndices(recvbuf, 0, count);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Ireduce_global_b<DATATYPE>;
         h->count = count;
@@ -6625,6 +6619,12 @@ namespace medi {
         h->op = op;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!datatype->isModifiedBufferRequired()) {
+          datatype->clearIndices(recvbuf, 0, count);
+        }
       }
 
       rStatus = MPI_Ireduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
@@ -6919,14 +6919,6 @@ namespace medi {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount * getCommSize(comm));
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          if(AMPI_IN_PLACE != recvbuf) {
-            recvtype->clearIndices(recvbuf, 0, recvcount);
-          } else {
-            sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Iscatter_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -6935,6 +6927,14 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->clearIndices(recvbuf, 0, recvcount);
+        } else {
+          sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
+        }
       }
 
       rStatus = MPI_Iscatter(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -7254,17 +7254,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          if(AMPI_IN_PLACE != recvbuf) {
-            recvtype->clearIndices(recvbuf, 0, recvcount);
-          } else {
-            {
-              const int rank = getCommRank(comm);
-              sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
-            }
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Iscatterv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -7274,6 +7263,17 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->clearIndices(recvbuf, 0, recvcount);
+        } else {
+          {
+            const int rank = getCommRank(comm);
+            sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
+          }
+        }
       }
 
       rStatus = MPI_Iscatterv(sendbufMod, sendcounts, displsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -7571,12 +7571,6 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
-        if(root == getCommRank(comm)) {
-          if(!datatype->isModifiedBufferRequired()) {
-            datatype->clearIndices(recvbuf, 0, count);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Reduce_global_b<DATATYPE>;
         h->count = count;
@@ -7584,6 +7578,12 @@ namespace medi {
         h->op = op;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(root == getCommRank(comm)) {
+        if(!datatype->isModifiedBufferRequired()) {
+          datatype->clearIndices(recvbuf, 0, count);
+        }
       }
 
       rStatus = MPI_Reduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction, root,
@@ -7792,14 +7792,6 @@ namespace medi {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount * getCommSize(comm));
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          if(AMPI_IN_PLACE != recvbuf) {
-            recvtype->clearIndices(recvbuf, 0, recvcount);
-          } else {
-            sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Scatter_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -7808,6 +7800,14 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->clearIndices(recvbuf, 0, recvcount);
+        } else {
+          sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
+        }
       }
 
       rStatus = MPI_Scatter(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
@@ -8037,17 +8037,6 @@ namespace medi {
           }
         }
 
-        if(!recvtype->isModifiedBufferRequired()) {
-          if(AMPI_IN_PLACE != recvbuf) {
-            recvtype->clearIndices(recvbuf, 0, recvcount);
-          } else {
-            {
-              const int rank = getCommRank(comm);
-              sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
-            }
-          }
-        }
-
         // pack all the variables in the handle
         h->func = AMPI_Scatterv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -8057,6 +8046,17 @@ namespace medi {
         h->recvtype = recvtype;
         h->root = root;
         h->comm = comm;
+      }
+
+      if(!recvtype->isModifiedBufferRequired()) {
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->clearIndices(recvbuf, 0, recvcount);
+        } else {
+          {
+            const int rank = getCommRank(comm);
+            sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
+          }
+        }
       }
 
       rStatus = MPI_Scatterv(sendbufMod, sendcounts, displsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
