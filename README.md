@@ -3,9 +3,7 @@
 [MeDiPack](http://www.scicomp.uni-kl.de/software/medi/) (Message Differentiation Package) is a tool that handles the MPI communication of Algorithmic Differentiation (AD) tools like
 [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/).
 
-This is currently only a preview release of MeDiPack in order to make it available to partners and testers.
-We hope that we can release the version 1.0 of MeDiPack during this summer.
-Some of the features that we have in the 1.0 version of MeDiPack:
+The features of the initial release are:
   - Full forward of the MPI 3.1 specification
   - AD handling for nearly all MPI functions
     - This includes:
@@ -15,8 +13,6 @@ Some of the features that we have in the 1.0 version of MeDiPack:
     - This excludes (will be handled later):
       - One-Sided communication
       - IO functions
-
-In the full release there will be a detailed specification of all functions, that are completely handled and which ones are just forwarded.
 
 The [Scientific Computing Group](http://www.scicomp.uni-kl.de) at the TU Kaiserslautern develops MeDiPack and
 will enhance and extend MeDiPack in the future. There is a newsletter available at [codi-info@uni-kl.de](https://lists.uni-kl.de/uni-kl/subscribe/codi-info)
@@ -67,3 +63,70 @@ The missing functions by MPI version:
    - Reduce_scatter_block
  - MPI 3.0
    - Ialltoallw, Ireduce_scatter, Ireduce_scatter_block, Ineighbor_allgather, Ineighbor_allgatherv, Ineighbor_alltoall, Ineighbor_alltoallv, Ineighbor_alltoallw, Neighbor_allgather, Neighbor_allgatherv, Neighbor_alltoall, Neighbor_alltoallv, Neighbor_alltoallw, Compare_and_swap, Fetch_and_op, Get_accumulate, Raccumulate, Rget, Rget_accumulate, Rput, Win_allocate, Win_allocate_shared, Win_attach, Win_create_dynamic, Win_detach, Win_flush, Win_flush_all, Win_flush_local, Win_flush_local_all, Win_get_info, Win_lock_all, Win_set_info, Win_shared_query, Win_sync, Win_unlock_all, Message_c2f, Message_f2c, T_cvar_get_info, T_pvar_get_info
+
+## Usage
+
+In order to use MeDiPack in your application the following steps have to be taken:
+ - Include <medi/medi.hpp> in a global header
+ - Use the MeDiPack namespace (using namespace medi;)
+ - Rename all uses of MPI_ to AMPI_
+ - Include <medi/medi.cpp> file in a translation unit of you program
+ - Initialize the specific implementation of your AD tool
+
+## Hello World Example
+
+The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an AD tool.
+
+~~~
+#include <codi.hpp>
+#include <medi/medi.hpp>
+#include <medi/codiMediPackTypes.hpp>
+
+#include <iostream>
+
+using namespace medi;
+
+#define TOOL CoDiPackTool<codi::RealReverse>
+
+int main(int nargs, char** args) {
+  AMPI_Init(&nargs, &args);
+
+  TOOL::init();
+
+  int rank;
+
+  AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
+
+  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  tape.setActive();
+
+  codi::RealReverse a = 3.0;
+  if( 0 == rank ) {
+    tape.registerInput(a);
+
+    AMPI_Send(&a, 1, TOOL::MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+  } else {
+    AMPI_Recv(&a, 1, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+
+    tape.registerOutput(a);
+
+    a.setGradient(100.0);
+  }
+
+  tape.setPassive();
+
+  tape.evaluate();
+
+  if(0 == rank) {
+    std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
+  }
+
+  TOOL::finalize();
+
+  AMPI_Finalize();
+}
+
+#include <medi/medi.cpp>
+~~~
+
+Please visit the [tutorial page](http://www.scicomp.uni-kl.de/medi/db/d3c/tutorialPage.html) for further information.
