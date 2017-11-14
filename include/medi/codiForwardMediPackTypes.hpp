@@ -68,7 +68,6 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 
   static void init() {
     initTypes();
-    initOperators();
 
     MPI_TYPE = new MediType();
 
@@ -112,16 +111,16 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     return false;
   }
 
-  inline void startAssembly(medi::HandleBase* h) {
+  inline void startAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
 
   }
 
-  inline void addToolAction(medi::HandleBase* h) {
+  inline void addToolAction(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
   }
 
-  inline void stopAssembly(medi::HandleBase* h) {
+  inline void stopAssembly(medi::HandleBase* h) const {
     MEDI_UNUSED(h);
   }
 
@@ -235,5 +234,5 @@ template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::MpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::ModifiedMpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::AdjointMpiType;
 template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_TYPE;
-template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_INT_TYPE;
-template<typename CoDiType> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackForwardTool<CoDiType> > CoDiPackForwardTool<CoDiType>::operatorHelper;
+template<typename CoDiType> medi::AMPI_Datatype CoDiPackForwardTool<CoDiType>::MPI_INT_TYPE;
+template<typename CoDiType> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackForwardTool<CoDiType> > > CoDiPackForwardTool<CoDiType>::operatorHelper;

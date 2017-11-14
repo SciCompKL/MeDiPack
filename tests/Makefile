@@ -77,7 +77,8 @@ all:
 .SECONDARY:
 
 # define general sets for tests
-BASIC_TESTS = $(TESTS)
+BASIC_TESTS = $(wildcard $(TEST_DIR)/misc/Test**.cpp) $(wildcard $(TEST_DIR)/datatypes/Test**.cpp) $(wildcard $(TEST_DIR)/collective/Test**.cpp) $(wildcard $(TEST_DIR)/collective/inplace/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/Test**.cpp) $(wildcard $(TEST_DIR)/wait_test/Test**.cpp)
+FORWARD_TESTS = $(wildcard $(TEST_DIR)/forward/Test**.cpp)
 
 # The build rules for all drivers.
 define DRIVER_RULE
@@ -140,6 +141,12 @@ $(eval $(value DRIVER_INST))
 DRIVER_NAME  := CoDiUntyped
 DRIVER_TESTS := $(BASIC_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codiUntyped/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiUntyped
+$(eval $(value DRIVER_INST))
+
+# Driver for RealReverse with untyped interface
+DRIVER_NAME  := CoDiForward
+DRIVER_TESTS := $(FORWARD_TESTS)
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codiForward/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiForward -DCODI_TYPE=codi::RealForward
 $(eval $(value DRIVER_INST))
 
 # Driver for ADOL-c
