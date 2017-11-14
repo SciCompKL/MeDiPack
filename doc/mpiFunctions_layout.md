@@ -26,7 +26,7 @@ element: arg
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
 
 element: send/recv
   -> The send and recv elements define send and recieve buffers of the functions.
@@ -45,7 +45,7 @@ element: send/recv
                                          The value defines the name of the communicator.
                       [optional] root -> Indicates that the buffer only existas at the root process. The values defines the name
                                          argument that gives the root number.
-                     [optional] const -> If defined indicates that the argument is constant.
+                     [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
                    [optional] inplace -> Indicates that the buffer can be MPI_IN_PLACE. The value of the field indicates
                                          name of the buffer that contains the data.
 
@@ -54,21 +54,21 @@ element: displs
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
 
 element: operator
   -> Special handling for operator arguments. The primal values may need to be stored for the reverse operation.
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
 
 element: request
   -> Special handling for request arguments. A special request for the reverse call needs to be created.
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
               [optional] noptr -> Indicates that the request is no pointer type.
 
 element: type
@@ -76,14 +76,14 @@ element: type
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
 
 element: message
   -> Special handling for message arguments. They are directly stored in the buffers.
   child of: function
   attributes:             name -> The name of the argument.
                           type -> The type of the argument.
-              [optional] const -> If defined indicates that the argument is constant.
+              [optional] const -> If defined indicates that the argument is constant. If set to opt the constant modifier is generated as optional.
 
 element: status
   -> Special handling such that it is not stored and created for the reverse calls.

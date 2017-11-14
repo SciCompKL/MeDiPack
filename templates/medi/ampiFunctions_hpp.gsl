@@ -95,7 +95,7 @@ for functions.function as curFunction
 #build the argument lists and the list for the handles
  curFunction.argRev = ""
  for curFunction. as item where defined(item.arg)
-   constMod = defined(item.const) ?? "const " ? ""
+   constMod = generateConst(item)
    if(name(item) =  "recv" | name(item) =  "send")
      if(defined(item.displs))
        curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count, h->$(item.name)Displs"    # append adjoint and primal buffer and the byte size
@@ -122,10 +122,7 @@ for functions.function as curFunction
    define handle.noarg = 1
  endnew
  for curFunction. as item where defined(item.arg)
-   constMod = defined(item.const) ?? "const " ? ""
-   if(name(item) =  "send")
-     constMod = defined(item.const) ?? "MEDI_CONST_SEND " ? ""
-   endif
+   constMod = generateConst(item)
    if(name(item) =  "recv" | name(item) =  "send")
 
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) typename $(item.typeName)::Type*")
@@ -167,10 +164,7 @@ for functions.function as curFunction
 #build the argument lists and the list for the handles
  curFunction.argDef = ""
  for curFunction. as item where defined(item.arg)
-   constMod = defined(item.const) ?? "const " ? ""
-   if(name(item) =  "send")
-     constMod = defined(item.const) ?? "MEDI_CONST_SEND " ? ""
-   endif
+   constMod = generateConst(item)
 
    curFunction.argDef +=   constMod # prepend the const modifier
    if(name(item) =  "recv" | name(item) =  "send")

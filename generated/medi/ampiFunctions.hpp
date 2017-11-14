@@ -80,7 +80,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Bsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Bsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
 
@@ -185,7 +185,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Ibsend_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -222,7 +222,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Ibsend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Ibsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Ibsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -306,7 +306,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Ibsend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ibsend_AsyncHandle<DATATYPE>*>(handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -787,7 +787,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Irsend_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -824,7 +824,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Irsend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Irsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Irsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -908,7 +908,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Irsend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Irsend_AsyncHandle<DATATYPE>*>(handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -980,7 +980,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Isend_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -1017,7 +1017,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Isend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Isend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Isend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -1101,7 +1101,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Isend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Isend_AsyncHandle<DATATYPE>*>(handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -1173,7 +1173,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Issend_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
@@ -1210,7 +1210,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Issend_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Issend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Issend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -1294,7 +1294,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Issend_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Issend_AsyncHandle<DATATYPE>*>(handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* buf = asyncHandle->buf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
     typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
     int count = asyncHandle->count;
     DATATYPE* datatype = asyncHandle->datatype;
@@ -1650,7 +1650,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Rsend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Rsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
 
@@ -1768,7 +1768,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Send(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Send(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                 AMPI_Comm comm) {
     int rStatus;
 
@@ -1920,7 +1920,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Sendrecv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, int dest,
+  int AMPI_Sendrecv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, int dest,
                     int sendtag, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag,
                     AMPI_Comm comm, AMPI_Status* status) {
     int rStatus;
@@ -2075,7 +2075,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Ssend(MEDI_CONST_SEND typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+  int AMPI_Ssend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
 
@@ -2223,7 +2223,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Allgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
@@ -2429,7 +2429,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Allgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
@@ -2654,8 +2654,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Allreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
-                            DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+  int AMPI_Allreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
+                            int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
@@ -2862,7 +2862,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Alltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Alltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
@@ -3076,7 +3076,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Alltoallv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
+  int AMPI_Alltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
                      SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                      AMPI_Comm comm) {
     int rStatus;
@@ -3523,7 +3523,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Gather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
 
@@ -3753,7 +3753,7 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Gatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                    AMPI_Comm comm) {
     int rStatus;
@@ -3968,7 +3968,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgather_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -4019,7 +4019,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Iallgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -4148,7 +4148,7 @@ namespace medi {
 
     AMPI_Iallgather_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iallgather_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -4259,7 +4259,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iallgatherv_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -4313,7 +4313,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Iallgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                        typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm,
                        AMPI_Request* request) {
     int rStatus;
@@ -4463,7 +4463,7 @@ namespace medi {
 
     AMPI_Iallgatherv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iallgatherv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -4574,7 +4574,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Iallreduce_global_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod;
@@ -4630,7 +4630,7 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Iallreduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Iallreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
+  int AMPI_Iallreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                              int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
@@ -4766,7 +4766,7 @@ namespace medi {
 
     AMPI_Iallreduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Iallreduce_global_AsyncHandle<DATATYPE>*>
         (handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod = asyncHandle->recvbufMod;
@@ -4871,7 +4871,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoall_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -4921,7 +4921,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoall_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Ialltoall(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Ialltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -5049,7 +5049,7 @@ namespace medi {
 
     AMPI_Ialltoall_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Ialltoall_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -5170,7 +5170,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Ialltoallv_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     const int* sdisplsMod;
     const  int* sendcounts;
@@ -5225,7 +5225,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoallv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Ialltoallv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
+  int AMPI_Ialltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
                       SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
@@ -5388,7 +5388,7 @@ namespace medi {
 
     AMPI_Ialltoallv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Ialltoallv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     const int* sdisplsMod = asyncHandle->sdisplsMod;
     const  int* sendcounts = asyncHandle->sendcounts;
@@ -5792,7 +5792,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igather_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -5849,7 +5849,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Igather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -5990,7 +5990,7 @@ namespace medi {
 
     AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle = static_cast<AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>*>
         (handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -6110,7 +6110,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Igatherv_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -6170,7 +6170,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igatherv(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+  int AMPI_Igatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                     AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
@@ -6332,7 +6332,7 @@ namespace medi {
 
     AMPI_Igatherv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Igatherv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    MEDI_CONST_SEND  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -6452,7 +6452,7 @@ namespace medi {
 
   template<typename DATATYPE>
   struct AMPI_Ireduce_global_AsyncHandle : public HandleBase {
-    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod;
@@ -6512,8 +6512,8 @@ namespace medi {
   template<typename DATATYPE>
   int AMPI_Ireduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
-  int AMPI_Ireduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
-                          DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
+  int AMPI_Ireduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
+                          int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
@@ -6660,7 +6660,7 @@ namespace medi {
 
     AMPI_Ireduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ireduce_global_AsyncHandle<DATATYPE>*>
         (handle);
-    MEDI_CONST_SEND  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
     typename DATATYPE::ModifiedType* recvbufMod = asyncHandle->recvbufMod;
@@ -7472,8 +7472,8 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  int AMPI_Reduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count,
-                         DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
+  int AMPI_Reduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
+                         int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
@@ -8128,7 +8128,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  inline int AMPI_Get_count(const AMPI_Status* status, DATATYPE* datatype, int* count) {
+  inline int AMPI_Get_count(MEDI_OPTIONAL_CONST AMPI_Status* status, DATATYPE* datatype, int* count) {
     return MPI_Get_count(status, datatype->getModifiedMpiType(), count);
   }
 
@@ -8152,7 +8152,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Test_cancelled(const AMPI_Status* status, int* flag) {
+  inline int AMPI_Test_cancelled(MEDI_OPTIONAL_CONST AMPI_Status* status, int* flag) {
     return MPI_Test_cancelled(status, flag);
   }
 
@@ -8170,7 +8170,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Get_address(const void* location, AMPI_Aint* address) {
+  inline int AMPI_Get_address(MEDI_OPTIONAL_CONST void* location, AMPI_Aint* address) {
     return MPI_Get_address(location, address);
   }
 
@@ -8402,7 +8402,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Comm_set_name(AMPI_Comm comm, const char* comm_name) {
+  inline int AMPI_Comm_set_name(AMPI_Comm comm, MEDI_OPTIONAL_CONST char* comm_name) {
     return MPI_Comm_set_name(comm, comm_name);
   }
 
@@ -8444,7 +8444,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Group_excl(AMPI_Group group, int n, const int* ranks, AMPI_Group* newgroup) {
+  inline int AMPI_Group_excl(AMPI_Group group, int n, MEDI_OPTIONAL_CONST int* ranks, AMPI_Group* newgroup) {
     return MPI_Group_excl(group, n, ranks, newgroup);
   }
 
@@ -8456,7 +8456,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Group_incl(AMPI_Group group, int n, const int* ranks, AMPI_Group* newgroup) {
+  inline int AMPI_Group_incl(AMPI_Group group, int n, MEDI_OPTIONAL_CONST int* ranks, AMPI_Group* newgroup) {
     return MPI_Group_incl(group, n, ranks, newgroup);
   }
 
@@ -8492,7 +8492,8 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Group_translate_ranks(AMPI_Group group1, int n, const int* ranks1, AMPI_Group group2, int* ranks2) {
+  inline int AMPI_Group_translate_ranks(AMPI_Group group1, int n, MEDI_OPTIONAL_CONST int* ranks1, AMPI_Group group2,
+                                        int* ranks2) {
     return MPI_Group_translate_ranks(group1, n, ranks1, group2, ranks2);
   }
 
@@ -8602,7 +8603,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Win_set_name(AMPI_Win win, const char* win_name) {
+  inline int AMPI_Win_set_name(AMPI_Win win, MEDI_OPTIONAL_CONST char* win_name) {
     return MPI_Win_set_name(win, win_name);
   }
 
@@ -8614,8 +8615,8 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Cart_create(AMPI_Comm comm_old, int ndims, const int* dims, const int* periods, int reorder,
-                              AMPI_Comm* comm_cart) {
+  inline int AMPI_Cart_create(AMPI_Comm comm_old, int ndims, MEDI_OPTIONAL_CONST int* dims,
+                              MEDI_OPTIONAL_CONST int* periods, int reorder, AMPI_Comm* comm_cart) {
     return MPI_Cart_create(comm_old, ndims, dims, periods, reorder, comm_cart);
   }
 
@@ -8627,13 +8628,14 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Cart_map(AMPI_Comm comm, int ndims, const int* dims, const int* periods, int* newrank) {
+  inline int AMPI_Cart_map(AMPI_Comm comm, int ndims, MEDI_OPTIONAL_CONST int* dims, MEDI_OPTIONAL_CONST int* periods,
+                           int* newrank) {
     return MPI_Cart_map(comm, ndims, dims, periods, newrank);
   }
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Cart_rank(AMPI_Comm comm, const int* coords, int* rank) {
+  inline int AMPI_Cart_rank(AMPI_Comm comm, MEDI_OPTIONAL_CONST int* coords, int* rank) {
     return MPI_Cart_rank(comm, coords, rank);
   }
 
@@ -8645,7 +8647,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Cart_sub(AMPI_Comm comm, const int* remain_dims, AMPI_Comm* newcomm) {
+  inline int AMPI_Cart_sub(AMPI_Comm comm, MEDI_OPTIONAL_CONST int* remain_dims, AMPI_Comm* newcomm) {
     return MPI_Cart_sub(comm, remain_dims, newcomm);
   }
 
@@ -8692,8 +8694,8 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Graph_create(AMPI_Comm comm_old, int nnodes, const int* index, const int* edges, int reorder,
-                               AMPI_Comm* comm_graph) {
+  inline int AMPI_Graph_create(AMPI_Comm comm_old, int nnodes, MEDI_OPTIONAL_CONST int* index,
+                               MEDI_OPTIONAL_CONST int* edges, int reorder, AMPI_Comm* comm_graph) {
     return MPI_Graph_create(comm_old, nnodes, index, edges, reorder, comm_graph);
   }
 
@@ -8705,7 +8707,8 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Graph_map(AMPI_Comm comm, int nnodes, const int* index, const int* edges, int* newrank) {
+  inline int AMPI_Graph_map(AMPI_Comm comm, int nnodes, MEDI_OPTIONAL_CONST int* index, MEDI_OPTIONAL_CONST int* edges,
+                            int* newrank) {
     return MPI_Graph_map(comm, nnodes, index, edges, newrank);
   }
 
@@ -8765,7 +8768,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Add_error_string(int errorcode, const char* string) {
+  inline int AMPI_Add_error_string(int errorcode, MEDI_OPTIONAL_CONST char* string) {
     return MPI_Add_error_string(errorcode, string);
   }
 
@@ -8915,7 +8918,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Info_delete(AMPI_Info info, const char* key) {
+  inline int AMPI_Info_delete(AMPI_Info info, MEDI_OPTIONAL_CONST char* key) {
     return MPI_Info_delete(info, key);
   }
 
@@ -8933,7 +8936,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Info_get(AMPI_Info info, const char* key, int valuelen, char* value, int* flag) {
+  inline int AMPI_Info_get(AMPI_Info info, MEDI_OPTIONAL_CONST char* key, int valuelen, char* value, int* flag) {
     return MPI_Info_get(info, key, valuelen, value, flag);
   }
 
@@ -8951,31 +8954,33 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Info_get_valuelen(AMPI_Info info, const char* key, int* valuelen, int* flag) {
+  inline int AMPI_Info_get_valuelen(AMPI_Info info, MEDI_OPTIONAL_CONST char* key, int* valuelen, int* flag) {
     return MPI_Info_get_valuelen(info, key, valuelen, flag);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Info_set(AMPI_Info info, const char* key, const char* value) {
+  inline int AMPI_Info_set(AMPI_Info info, MEDI_OPTIONAL_CONST char* key, MEDI_OPTIONAL_CONST char* value) {
     return MPI_Info_set(info, key, value);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Close_port(const char* port_name) {
+  inline int AMPI_Close_port(MEDI_OPTIONAL_CONST char* port_name) {
     return MPI_Close_port(port_name);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Comm_accept(const char* port_name, AMPI_Info info, int root, AMPI_Comm comm, AMPI_Comm* newcomm) {
+  inline int AMPI_Comm_accept(MEDI_OPTIONAL_CONST char* port_name, AMPI_Info info, int root, AMPI_Comm comm,
+                              AMPI_Comm* newcomm) {
     return MPI_Comm_accept(port_name, info, root, comm, newcomm);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Comm_connect(const char* port_name, AMPI_Info info, int root, AMPI_Comm comm, AMPI_Comm* newcomm) {
+  inline int AMPI_Comm_connect(MEDI_OPTIONAL_CONST char* port_name, AMPI_Info info, int root, AMPI_Comm comm,
+                               AMPI_Comm* newcomm) {
     return MPI_Comm_connect(port_name, info, root, comm, newcomm);
   }
 
@@ -8999,23 +9004,23 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Comm_spawn(const char* command, char** argv, int maxprocs, AMPI_Info info, int root, AMPI_Comm comm,
-                             AMPI_Comm* intercomm, int* array_of_errcodes) {
+  inline int AMPI_Comm_spawn(MEDI_OPTIONAL_CONST char* command, char** argv, int maxprocs, AMPI_Info info, int root,
+                             AMPI_Comm comm, AMPI_Comm* intercomm, int* array_of_errcodes) {
     return MPI_Comm_spawn(command, argv, maxprocs, info, root, comm, intercomm, array_of_errcodes);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_spawn_multiple(int count, char** array_of_commands, char*** array_of_argv,
-                                      const int* array_of_maxprocs, const AMPI_Info* array_of_info, int root, AMPI_Comm comm, AMPI_Comm* intercomm,
-                                      int* array_of_errcodes) {
+                                      MEDI_OPTIONAL_CONST int* array_of_maxprocs, MEDI_OPTIONAL_CONST AMPI_Info* array_of_info, int root, AMPI_Comm comm,
+                                      AMPI_Comm* intercomm, int* array_of_errcodes) {
     return MPI_Comm_spawn_multiple(count, array_of_commands, array_of_argv, array_of_maxprocs, array_of_info, root, comm,
                                    intercomm, array_of_errcodes);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Lookup_name(const char* service_name, AMPI_Info info, char* port_name) {
+  inline int AMPI_Lookup_name(MEDI_OPTIONAL_CONST char* service_name, AMPI_Info info, char* port_name) {
     return MPI_Lookup_name(service_name, info, port_name);
   }
 
@@ -9027,13 +9032,15 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Publish_name(const char* service_name, AMPI_Info info, const char* port_name) {
+  inline int AMPI_Publish_name(MEDI_OPTIONAL_CONST char* service_name, AMPI_Info info,
+                               MEDI_OPTIONAL_CONST char* port_name) {
     return MPI_Publish_name(service_name, info, port_name);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Unpublish_name(const char* service_name, AMPI_Info info, const char* port_name) {
+  inline int AMPI_Unpublish_name(MEDI_OPTIONAL_CONST char* service_name, AMPI_Info info,
+                                 MEDI_OPTIONAL_CONST char* port_name) {
     return MPI_Unpublish_name(service_name, info, port_name);
   }
 
@@ -9090,7 +9097,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_File_delete(const char* filename, AMPI_Info info) {
+  inline int AMPI_File_delete(MEDI_OPTIONAL_CONST char* filename, AMPI_Info info) {
     return MPI_File_delete(filename, info);
   }
 
@@ -9233,7 +9240,8 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_File_open(AMPI_Comm comm, const char* filename, int amode, AMPI_Info info, AMPI_File* fh) {
+  inline int AMPI_File_open(AMPI_Comm comm, MEDI_OPTIONAL_CONST char* filename, int amode, AMPI_Info info,
+                            AMPI_File* fh) {
     return MPI_File_open(comm, filename, amode, info, fh);
   }
 
@@ -9393,7 +9401,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_File_write_all_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+  inline int AMPI_File_write_all_end(AMPI_File fh, MEDI_OPTIONAL_CONST void* buf, AMPI_Status* status) {
     return MPI_File_write_all_end(fh, buf, status);
   }
 
@@ -9423,7 +9431,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_File_write_at_all_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+  inline int AMPI_File_write_at_all_end(AMPI_File fh, MEDI_OPTIONAL_CONST void* buf, AMPI_Status* status) {
     return MPI_File_write_at_all_end(fh, buf, status);
   }
 
@@ -9443,7 +9451,7 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_File_write_ordered_end(AMPI_File fh, const void* buf, AMPI_Status* status) {
+  inline int AMPI_File_write_ordered_end(AMPI_File fh, MEDI_OPTIONAL_CONST void* buf, AMPI_Status* status) {
     return MPI_File_write_ordered_end(fh, buf, status);
   }
 
@@ -9456,9 +9464,9 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Register_datarep(const char* datarep, AMPI_Datarep_conversion_function* read_conversion_fn,
-                                   AMPI_Datarep_conversion_function* write_conversion_fn, AMPI_Datarep_extent_function* dtype_file_extent_fn,
-                                   void* extra_state) {
+  inline int AMPI_Register_datarep(MEDI_OPTIONAL_CONST char* datarep,
+                                   AMPI_Datarep_conversion_function* read_conversion_fn, AMPI_Datarep_conversion_function* write_conversion_fn,
+                                   AMPI_Datarep_extent_function* dtype_file_extent_fn, void* extra_state) {
     return MPI_Register_datarep(datarep, read_conversion_fn, write_conversion_fn, dtype_file_extent_fn, extra_state);
   }
 
@@ -9524,13 +9532,13 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Status_c2f(const AMPI_Status* c_status, AMPI_Fint* f_status) {
+  inline int AMPI_Status_c2f(MEDI_OPTIONAL_CONST AMPI_Status* c_status, AMPI_Fint* f_status) {
     return MPI_Status_c2f(c_status, f_status);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Status_f2c(const AMPI_Fint* f_status, AMPI_Status* c_status) {
+  inline int AMPI_Status_f2c(MEDI_OPTIONAL_CONST AMPI_Fint* f_status, AMPI_Status* c_status) {
     return MPI_Status_f2c(f_status, c_status);
   }
 

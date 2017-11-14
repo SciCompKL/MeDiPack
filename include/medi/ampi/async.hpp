@@ -117,6 +117,7 @@ namespace medi {
     return converted;
   }
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Wait(AMPI_Request *request, AMPI_Status *status) {
     if(AMPI_REQUEST_NULL == *request) {
       return 0;
@@ -128,7 +129,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Test(AMPI_Request *request, int* flag, AMPI_Status *status) {
     if(AMPI_REQUEST_NULL == *request) {
       *flag = (int)true;
@@ -143,7 +146,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Request_free(AMPI_Request *request) {
     if(AMPI_REQUEST_NULL == *request) {
       return 0;
@@ -154,7 +159,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Waitany(int count, AMPI_Request* array_of_requests, int *index, AMPI_Status *status) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
@@ -168,7 +175,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Testany(int count, AMPI_Request* array_of_requests, int *index, int *flag, AMPI_Status *status) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
@@ -184,7 +193,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Waitall(int count, AMPI_Request* array_of_requests, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
@@ -200,7 +211,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Testall(int count, AMPI_Request* array_of_requests, int *flag, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, count);
 
@@ -218,7 +231,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Waitsome(int incount, AMPI_Request* array_of_requests, int *outcount, int* array_of_indices, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, incount);
 
@@ -235,7 +250,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Testsome(int incount, AMPI_Request* array_of_requests, int *outcount, int* array_of_indices, AMPI_Status* array_of_statuses) {
     MPI_Request* array = convertToMPI(array_of_requests, incount);
 
@@ -252,7 +269,9 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   inline int AMPI_Ibarrier(AMPI_Comm comm, AMPI_Request *request) {
 
     int rStatus = MPI_Ibarrier(comm, &request->request);
@@ -260,4 +279,5 @@ namespace medi {
 
     return rStatus;
   }
+#endif
 }

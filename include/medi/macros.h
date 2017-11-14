@@ -50,10 +50,10 @@
 # endif
 #endif
 
-#ifdef MEDI_NO_CONST_SEND
-# define MEDI_CONST_SEND /* const */
+#ifdef MEDI_NO_OPTIONAL_CONST
+# define MEDI_OPTIONAL_CONST /* const */
 #else
-# define MEDI_CONST_SEND const
+# define MEDI_OPTIONAL_CONST const
 #endif
 
 #ifndef MEDI_EnableAssert

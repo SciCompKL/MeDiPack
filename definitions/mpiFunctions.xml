@@ -33,7 +33,7 @@
     <!-- A.2.1 Point-to-Point Communication Bindings -->
 
       <function name="Bsend" version="1.0" mediHandle="transform">
-        <send name="buf" const="1" type="datatype" count="count" />
+        <send name="buf" const="opt" type="datatype" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -42,7 +42,7 @@
       </function>
 
       <function name="Bsend_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="1"/>
+        <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -66,13 +66,13 @@
       </function>
 
 	    <function name="Get_count" version="1.0">
-        <arg name="status" const="1" type="MPI_Status*"/>
+        <arg name="status" const="opt" type="MPI_Status*"/>
         <type name="datatype" type="MPI_Datatype"/>
         <arg name="count" type="int*"/>
 	    </function>
 
       <function name="Ibsend" version="1.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" const="1" type="datatype" count="count" />
+        <send name="buf" const="opt" type="datatype" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -118,7 +118,7 @@
       </function>
 
       <function name="Irsend" version="1.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" type="datatype" const="1" count="count" />
+        <send name="buf" type="datatype" const="opt" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -128,7 +128,7 @@
       </function>
 
       <function name="Isend" version="1.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" const="1" type="datatype" count="count"/>
+        <send name="buf" const="opt" type="datatype" count="count"/>
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
         <arg name="dest" type="int"/>
@@ -138,7 +138,7 @@
       </function>
 
       <function name="Issend" version="1.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" type="datatype" const="1" count="count" />
+        <send name="buf" type="datatype" const="opt" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -182,7 +182,7 @@
       </function>
 
       <function name="Recv_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="1"/>
+        <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="source" type="int" />
@@ -202,7 +202,7 @@
       </function>
 
       <function name="Rsend" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" type="datatype" const="1" count="count" />
+        <send name="buf" type="datatype" const="opt" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -211,7 +211,7 @@
       </function>
 
       <function name="Rsend_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="1"/>
+        <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -221,7 +221,7 @@
       </function>
 
       <function name="Send" version="1.0" mediHandle="transform">
-        <send name="buf" const="1" type="datatype" count="count"/>
+        <send name="buf" const="opt" type="datatype" count="count"/>
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
         <arg name="dest" type="int"/>
@@ -230,7 +230,7 @@
       </function>
 
       <function name="Send_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="1"/>
+        <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -240,7 +240,7 @@
       </function>
 
       <function name="Sendrecv" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" const="1" count="sendcount" />
+        <send name="sendbuf" type="sendtype" const="opt" count="sendcount" />
         <arg name="sendcount" type="int" />
         <type name="sendtype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -267,7 +267,7 @@
       </function>
 
       <function name="Ssend" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="buf" type="datatype" const="1" count="count" />
+        <send name="buf" type="datatype" const="opt" count="count" />
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -276,7 +276,7 @@
       </function>
 
       <function name="Ssend_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="1"/>
+        <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="dest" type="int" />
@@ -301,7 +301,7 @@
       </function>
 
       <function name="Test_cancelled" version="1.0">
-        <arg name="status" type="MPI_Status*" const="1"/>
+        <arg name="status" type="MPI_Status*" const="opt"/>
         <arg name="flag" type="int*" />
       </function>
 
@@ -367,7 +367,7 @@
       </function>
 
       <function name="Get_address" version="2.0" >
-        <arg name="location" type="void*" const="1"/>
+        <arg name="location" type="void*" const="opt"/>
         <arg name="address" type="MPI_Aint*" />
       </function>
       <function name="Get_elements" version="1.0" >
@@ -615,7 +615,7 @@
 
       <!-- currently not handled -->
       <function name="Unpack" version="1.0" mediHandle="disable">
-        <send name="inbuf" type="void*" const="1" type="type" count="insize" />
+        <send name="inbuf" type="void*" const="opt" type="type" count="insize" />
         <arg name="insize" type="int" />
         <arg name="position" type="int*" />
         <recv name="outbuf" type="void*" type="type" count="outcount" />
@@ -636,7 +636,7 @@
     <!-- A.2.3 Collective Communication C Bindings -->
 
       <function name="Allgather" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -646,7 +646,7 @@
       </function>
 
       <function name="Allgatherv" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
@@ -658,7 +658,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Allreduce_global" version="1.0" mpiName="MPI_Allreduce" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf" all="comm" />
         <recv name="recvbuf" type="datatype" count="count" />
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -667,7 +667,7 @@
       </function>
 
       <function name="Alltoall" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="opt" inplace="recvbuf"/>
         <arg name="sendcount" type="int" />
         <type name="sendtype" type="MPI_Datatype" />
         <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -677,7 +677,7 @@
       </function>
 
       <function name="Alltoallv" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
+        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="opt" inplace="recvbuf"/>
         <arg name="sendcounts" type="int*" const="1"/>
         <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
         <type name="sendtype" type="MPI_Datatype" />
@@ -716,7 +716,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Exscan" version="2.0" mediHandle="handled"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf" all="comm" />
         <recv name="recvbuf" type="datatype" count="count" />
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -725,7 +725,7 @@
       </function>
 
       <function name="Gather" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
@@ -736,7 +736,7 @@
       </function>
 
       <function name="Gatherv" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
@@ -748,7 +748,7 @@
       </function>
 
       <function name="Iallgather" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -759,7 +759,7 @@
       </function>
 
       <function name="Iallgatherv" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" all="comm" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
@@ -772,7 +772,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Iallreduce_global" version="3.0" async="request" mpiName="MPI_Iallreduce" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf" all="comm" />
         <recv name="recvbuf" type="datatype" count="count"/>
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -782,7 +782,7 @@
       </function>
 
       <function name="Ialltoall" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="1" inplace="recvbuf"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" ranks="comm" const="opt" inplace="recvbuf"/>
         <arg name="sendcount" type="int" />
         <type name="sendtype" type="MPI_Datatype" />
         <recv name="recvbuf" type="recvtype" count="recvcount" ranks="comm"/>
@@ -793,7 +793,7 @@
       </function>
 
       <function name="Ialltoallv" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
+        <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="opt" inplace="recvbuf"/>
         <arg name="sendcounts" type="int*" const="1"/>
         <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
         <type name="sendtype" type="MPI_Datatype" />
@@ -809,7 +809,7 @@
       <function name="Ialltoallw" version="3.0" async="request" mediHandle="disable">
         <arg name="comm" type="MPI_Comm" />
         <arg name="request" type="MPI_Request*" />
-        <send name="sendbuf" type="sendtypes" count="sendcounts" displs="sdispls" const="1" inplace="recvbuf"/>
+        <send name="sendbuf" type="sendtypes" count="sendcounts" displs="sdispls" const="opt" inplace="recvbuf"/>
         <arg name="sendcounts" type="int*" const="1"/>
         <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
         <type name="sendtypes" type="MPI_Datatype*" const="1" />
@@ -840,7 +840,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Iexscan" version="3.0" async="request" mediHandle="handled"> <!-- all defined -->
-        <send name="sendbuf" type="datatype" count="count" inplace="recvbuf" all="comm" const="1"/>
+        <send name="sendbuf" type="datatype" count="count" inplace="recvbuf" all="comm" const="opt"/>
         <recv name="recvbuf" type="datatype" count="count" />
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -850,7 +850,7 @@
       </function>
 
       <function name="Igather" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" root="root" ranks="comm"/>
@@ -862,7 +862,7 @@
       </function>
 
       <function name="Igatherv" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="1"/>
+        <send name="sendbuf" type="sendtype" count="sendcount" inplace="recvbuf" const="opt"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" root="root" displs="displs"/>
@@ -876,7 +876,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Ireduce_global" version="3.0" async="request" mpiName="MPI_Ireduce" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf"/>
         <recv name="recvbuf" type="datatype" count="count" root="root"/>
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -908,7 +908,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Iscan" version="3.0" async="request" mediHandle="handled"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf" all="comm" />
         <recv name="recvbuf" type="datatype" count="count" />
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -959,7 +959,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Reduce_global" version="1.0" mpiName="MPI_Reduce" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf"/>
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf"/>
         <recv name="recvbuf" type="datatype" count="count" root="root"/>
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -997,7 +997,7 @@
 
       <!-- Implemented in ampi/wrappers.hpp -->
       <function name="Scan" version="1.0" mediHandle="handled"> <!-- all defined -->
-        <send name="sendbuf" const="1" type="datatype" count="count" inplace="recvbuf" all="comm" />
+        <send name="sendbuf" const="opt" type="datatype" count="count" inplace="recvbuf" all="comm" />
         <recv name="recvbuf" type="datatype" count="count" />
         <arg name="count" type="int"/>
         <type name="datatype" type="MPI_Datatype"/>
@@ -1137,7 +1137,7 @@
 
       <function name="Comm_set_name" version="2.0">
         <arg name="comm" type="MPI_Comm" />
-        <arg name="comm_name" type="char*" const="1"/>
+        <arg name="comm_name" type="char*" const="opt"/>
       </function>
 
       <function name="Comm_size" version="1.0">
@@ -1180,7 +1180,7 @@
       <function name="Group_excl" version="1.0">
         <arg name="group" type="MPI_Group" />
         <arg name="n" type="int" />
-        <arg name="ranks" type="int*" const="1"/>
+        <arg name="ranks" type="int*" const="opt"/>
         <arg name="newgroup" type="MPI_Group*" />
       </function>
 
@@ -1191,7 +1191,7 @@
       <function name="Group_incl" version="1.0">
         <arg name="group" type="MPI_Group" />
         <arg name="n" type="int" />
-        <arg name="ranks" type="int*" const="1"/>
+        <arg name="ranks" type="int*" const="opt"/>
         <arg name="newgroup" type="MPI_Group*" />
       </function>
 
@@ -1228,7 +1228,7 @@
       <function name="Group_translate_ranks" version="1.0">
         <arg name="group1" type="MPI_Group" />
         <arg name="n" type="int" />
-        <arg name="ranks1" type="int*" const="1"/>
+        <arg name="ranks1" type="int*" const="opt"/>
         <arg name="group2" type="MPI_Group" />
         <arg name="ranks2" type="int*" />
       </function>
@@ -1331,7 +1331,7 @@
 
       <function name="Win_set_name" version="2.0">
         <arg name="win" type="MPI_Win" />
-        <arg name="win_name" type="char*" const="1"/>
+        <arg name="win_name" type="char*" const="opt"/>
       </function>
 
     <!-- A.2.5 Process Topologies C Bindings -->
@@ -1346,8 +1346,8 @@
       <function name="Cart_create" version="1.0">
         <arg name="comm_old" type="MPI_Comm" />
         <arg name="ndims" type="int" />
-        <arg name="dims" type="int*" const="1"/>
-        <arg name="periods" type="int*" const="1"/>
+        <arg name="dims" type="int*" const="opt"/>
+        <arg name="periods" type="int*" const="opt"/>
         <arg name="reorder" type="int" />
         <arg name="comm_cart" type="MPI_Comm*" />
       </function>
@@ -1363,14 +1363,14 @@
       <function name="Cart_map" version="1.0">
         <arg name="comm" type="MPI_Comm" />
         <arg name="ndims" type="int" />
-        <arg name="dims" type="int*" const="1"/>
-        <arg name="periods" type="int*" const="1"/>
+        <arg name="dims" type="int*" const="opt"/>
+        <arg name="periods" type="int*" const="opt"/>
         <arg name="newrank" type="int*" />
       </function>
 
       <function name="Cart_rank" version="1.0">
         <arg name="comm" type="MPI_Comm" />
-        <arg name="coords" type="int*" const="1"/>
+        <arg name="coords" type="int*" const="opt"/>
         <arg name="rank" type="int*" />
       </function>
 
@@ -1384,7 +1384,7 @@
 
       <function name="Cart_sub" version="1.0">
         <arg name="comm" type="MPI_Comm" />
-        <arg name="remain_dims" type="int*" const="1"/>
+        <arg name="remain_dims" type="int*" const="opt"/>
         <arg name="newcomm" type="MPI_Comm*" />
       </function>
 
@@ -1444,8 +1444,8 @@
       <function name="Graph_create" version="1.0">
         <arg name="comm_old" type="MPI_Comm" />
         <arg name="nnodes" type="int" />
-        <arg name="index" type="int*" const="1"/>
-        <arg name="edges" type="int*" const="1"/>
+        <arg name="index" type="int*" const="opt"/>
+        <arg name="edges" type="int*" const="opt"/>
         <arg name="reorder" type="int" />
         <arg name="comm_graph" type="MPI_Comm*" />
       </function>
@@ -1461,8 +1461,8 @@
       <function name="Graph_map" version="1.0">
         <arg name="comm" type="MPI_Comm" />
         <arg name="nnodes" type="int" />
-        <arg name="index" type="int*" const="1"/>
-        <arg name="edges" type="int*" const="1"/>
+        <arg name="index" type="int*" const="opt"/>
+        <arg name="edges" type="int*" const="opt"/>
         <arg name="newrank" type="int*" />
       </function>
 
@@ -1621,7 +1621,7 @@
 
       <function name="Add_error_string" version="2.0">
         <arg name="errorcode" type="int" />
-        <arg name="string" type="const char*" />
+        <arg name="string" type="char*" const="opt"/>
       </function>
 
       <function name="Alloc_mem" version="2.0">
@@ -1749,7 +1749,7 @@
 
       <function name="Info_delete" version="2.0">
         <arg name="info" type="MPI_Info" />
-        <arg name="key" type="char*" const="1" />
+        <arg name="key" type="char*" const="opt" />
       </function>
 
       <function name="Info_dup" version="2.0">
@@ -1763,7 +1763,7 @@
 
       <function name="Info_get" version="2.0">
         <arg name="info" type="MPI_Info" />
-        <arg name="key" type="char*" const="1"/>
+        <arg name="key" type="char*" const="opt"/>
         <arg name="valuelen" type="int" />
         <arg name="value" type="char*" />
         <arg name="flag" type="int*" />
@@ -1782,25 +1782,25 @@
 
       <function name="Info_get_valuelen" version="2.0">
         <arg name="info" type="MPI_Info" />
-        <arg name="key" type="char*" const="1"/>
+        <arg name="key" type="char*" const="opt"/>
         <arg name="valuelen" type="int*" />
         <arg name="flag" type="int*" />
       </function>
 
       <function name="Info_set" version="2.0">
         <arg name="info" type="MPI_Info" />
-        <arg name="key" type="const char*" />
-        <arg name="value" type="char*" const="1"/>
+        <arg name="key" type="char*" const="opt" />
+        <arg name="value" type="char*" const="opt"/>
       </function>
 
     <!-- A.2.8 Process Creation and Management C Bindings -->
 
       <function name="Close_port" version="2.0">
-        <arg name="port_name" type="char*" const="1"/>
+        <arg name="port_name" type="char*" const="opt"/>
       </function>
 
       <function name="Comm_accept" version="2.0">
-        <arg name="port_name" type="char*" const="1"/>
+        <arg name="port_name" type="char*" const="opt"/>
         <arg name="info" type="MPI_Info" />
         <arg name="root" type="int" />
         <arg name="comm" type="MPI_Comm" />
@@ -1808,7 +1808,7 @@
       </function>
 
       <function name="Comm_connect" version="2.0">
-        <arg name="port_name" type="char*" const="1"/>
+        <arg name="port_name" type="char*" const="opt"/>
         <arg name="info" type="MPI_Info" />
         <arg name="root" type="int" />
         <arg name="comm" type="MPI_Comm" />
@@ -1829,7 +1829,7 @@
       </function>
 
       <function name="Comm_spawn" version="2.0">
-        <arg name="command" type="char*" const="1"/>
+        <arg name="command" type="char*" const="opt"/>
         <arg name="argv" type="char**" />
         <arg name="maxprocs" type="int" />
         <arg name="info" type="MPI_Info" />
@@ -1843,8 +1843,8 @@
         <arg name="count" type="int" />
         <arg name="array_of_commands" type="char**" />
         <arg name="array_of_argv" type="char***" />
-        <arg name="array_of_maxprocs" type="int*" const="1"/>
-        <arg name="array_of_info" type="MPI_Info*" const="1"/>
+        <arg name="array_of_maxprocs" type="int*" const="opt"/>
+        <arg name="array_of_info" type="MPI_Info*" const="opt"/>
         <arg name="root" type="int" />
         <arg name="comm" type="MPI_Comm" />
         <arg name="intercomm" type="MPI_Comm*" />
@@ -1852,7 +1852,7 @@
       </function>
 
       <function name="Lookup_name" version="2.0">
-        <arg name="service_name" type="char*" const="1"/>
+        <arg name="service_name" type="char*" const="opt"/>
         <arg name="info" type="MPI_Info" />
         <arg name="port_name" type="char*" />
       </function>
@@ -1863,15 +1863,15 @@
       </function>
 
       <function name="Publish_name" version="2.0">
-        <arg name="service_name" type="char*" const="1"/>
+        <arg name="service_name" type="char*" const="opt"/>
         <arg name="info" type="MPI_Info" />
-        <arg name="port_name" type="char*" const="1"/>
+        <arg name="port_name" type="char*" const="opt"/>
       </function>
 
       <function name="Unpublish_name" version="2.0">
-        <arg name="service_name" type="char*" const="1"/>
+        <arg name="service_name" type="char*" const="opt"/>
         <arg name="info" type="MPI_Info" />
-        <arg name="port_name" type="char*" const="1"/>
+        <arg name="port_name" type="char*" const="opt"/>
       </function>
 
     <!-- A.2.9 One-Sided Communication C Bindings -->
@@ -2195,7 +2195,7 @@
     </function>
 
     <function name="File_delete" version="2.0">
-      <arg name="filename" type="char*" const="1"/>
+      <arg name="filename" type="char*" const="opt"/>
       <arg name="info" type="MPI_Info" />
     </function>
 
@@ -2340,7 +2340,7 @@
 
     <function name="File_open" version="2.0">
       <arg name="comm" type="MPI_Comm" />
-      <arg name="filename" type="char*" const="1"/>
+      <arg name="filename" type="char*" const="opt"/>
       <arg name="amode" type="int" />
       <arg name="info" type="MPI_Info" />
       <arg name="fh" type="MPI_File*" />
@@ -2506,7 +2506,7 @@
 
     <function name="File_write_all_end" version="2.0">
       <arg name="fh" type="MPI_File" />
-      <arg name="buf" type="void*" const="1"/>
+      <arg name="buf" type="void*" const="opt"/>
       <arg name="status" type="MPI_Status*" />
     </function>
 
@@ -2538,7 +2538,7 @@
 
     <function name="File_write_at_all_end" version="2.0">
       <arg name="fh" type="MPI_File" />
-      <arg name="buf" type="void*" const="1"/>
+      <arg name="buf" type="void*" const="opt"/>
       <arg name="status" type="MPI_Status*" />
     </function>
 
@@ -2559,7 +2559,7 @@
 
     <function name="File_write_ordered_end" version="2.0">
       <arg name="fh" type="MPI_File" />
-      <arg name="buf" type="void*" const="1"/>
+      <arg name="buf" type="void*" const="opt"/>
       <arg name="status" type="MPI_Status*" />
     </function>
 
@@ -2572,7 +2572,7 @@
     </function>
 
     <function name="Register_datarep" version="2.0">
-      <arg name="datarep" type="char*" const="1"/>
+      <arg name="datarep" type="char*" const="opt"/>
       <arg name="read_conversion_fn" type="MPI_Datarep_conversion_function*" />
       <arg name="write_conversion_fn" type="MPI_Datarep_conversion_function*" />
       <arg name="dtype_file_extent_fn" type="MPI_Datarep_extent_function*" />
@@ -2678,7 +2678,7 @@
       </function>
 
       <function name="Status_c2f" version="2.0">
-        <arg name="c_status" type="MPI_Status*" const="1"/>
+        <arg name="c_status" type="MPI_Status*" const="opt"/>
         <arg name="f_status" type="MPI_Fint*" />
       </function>
 
@@ -2693,7 +2693,7 @@
       </function>
 
       <function name="Status_f2c" version="2.0">
-        <arg name="f_status" type="MPI_Fint*" const="1"/>
+        <arg name="f_status" type="MPI_Fint*" const="opt"/>
         <arg name="c_status" type="MPI_Status*" />
       </function>
 

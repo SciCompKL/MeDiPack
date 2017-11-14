@@ -38,82 +38,108 @@
  */
 namespace medi {
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Send_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Isend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Bsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Ibsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Ssend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Issend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Rsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm) {
     MEDI_UNUSED(count);
     MPI_Recv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, MPI_STATUS_IGNORE);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Irsend_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int dest, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), dest, tag, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status) {
     MEDI_UNUSED(count);
     MEDI_UNUSED(status);
     MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Mrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status) {
     MEDI_UNUSED(count);
     MEDI_UNUSED(status);
     MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Imrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request) {
     MEDI_UNUSED(count);
     MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Sendrecv_adj(typename SENDTYPE::AdjointType* sendbuf, int sendbufSize, int sendcount, SENDTYPE* sendtype, int dest, int sendtag,
+#endif
                      typename RECVTYPE::AdjointType* recvbuf, int recvbufSize, int recvcount, RECVTYPE* recvtype, int source, int recvtag, AMPI_Comm comm, AMPI_Status*  status) {
 
     MEDI_UNUSED(sendcount);
@@ -121,20 +147,25 @@ namespace medi {
     MPI_Sendrecv(recvbuf, recvbufSize, recvtype->getADTool().getAdjointMpiType(), source, recvtag, sendbuf, sendbufSize, sendtype->getADTool().getAdjointMpiType(), dest, sendtag, comm, status);
   }
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Bcast_wrap_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(count);
 
     MPI_Gather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Ibcast_wrap_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
 
     MPI_Igather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -142,7 +173,9 @@ namespace medi {
 
     MPI_Gather(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatter_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -150,7 +183,9 @@ namespace medi {
 
     MPI_Igather(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -158,7 +193,9 @@ namespace medi {
 
     MPI_Gatherv(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufCounts, sendbufDispl, sendtype->getADTool().getAdjointMpiType(), root, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -166,7 +203,9 @@ namespace medi {
 
     MPI_Igatherv(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufCounts, sendbufDispl, sendtype->getADTool().getAdjointMpiType(), root, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -174,7 +213,9 @@ namespace medi {
 
     MPI_Scatter(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -182,7 +223,9 @@ namespace medi {
 
     MPI_Iscatter(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -191,7 +234,9 @@ namespace medi {
 
     MPI_Scatterv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -200,7 +245,9 @@ namespace medi {
 
     MPI_Iscatterv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), root, comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -208,7 +255,9 @@ namespace medi {
 
     MPI_Alltoall(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgather_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request ) {
     MEDI_UNUSED(sendcount);
@@ -216,7 +265,9 @@ namespace medi {
 
     MPI_Ialltoall(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -227,7 +278,9 @@ namespace medi {
 
     MPI_Alltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, linDis.counts, linDis.displs, sendtype->getADTool().getAdjointMpiType(), comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -239,7 +292,9 @@ namespace medi {
 
     MPI_Ialltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, linDis->counts, linDis->displs, sendtype->getADTool().getAdjointMpiType(), comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
@@ -247,7 +302,9 @@ namespace medi {
 
     MPI_Alltoall(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoall_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
@@ -255,7 +312,9 @@ namespace medi {
 
     MPI_Ialltoall(recvbufAdjoints, recvbufSize, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, sendtype->getADTool().getAdjointMpiType(), comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcounts);
@@ -265,7 +324,9 @@ namespace medi {
 
     MPI_Alltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufCounts, sendbufDispls, sendtype->getADTool().getAdjointMpiType(), comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcounts);
@@ -275,7 +336,9 @@ namespace medi {
 
     MPI_Ialltoallv(recvbufAdjoints, recvbufCounts, recvbufDispls, recvtype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufCounts, sendbufDispls, sendtype->getADTool().getAdjointMpiType(), comm, &request->request);
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Reduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     MEDI_UNUSED(count);
@@ -288,7 +351,9 @@ namespace medi {
       MPI_Bcast(sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm);
     }
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Ireduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(count);
@@ -301,7 +366,9 @@ namespace medi {
       MPI_Ibcast(sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm, &request->request);
     }
   }
+#endif
 
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Allreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     MEDI_UNUSED(op);
@@ -309,7 +376,9 @@ namespace medi {
 
     MPI_Allgather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), comm);
   }
+#endif
 
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   void AMPI_Iallreduce_global_adj(typename DATATYPE::AdjointType* &sendbufAdjoints, int sendbufSize, typename DATATYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(op);
@@ -317,4 +386,5 @@ namespace medi {
 
     MPI_Iallgather(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), comm, &request->request);
   }
+#endif
 }

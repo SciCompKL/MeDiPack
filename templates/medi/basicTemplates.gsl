@@ -29,6 +29,19 @@
 .ignorecase = 0
 .template 0
 
+function generateConst(item)
+   constMod = ""
+   if(defined(item.const))
+     if(item.const = "opt")
+       constMod = "MEDI_OPTIONAL_CONST "
+     else
+       constMod = "const "
+     endif
+   endif
+
+   return constMod
+endfunction
+
 function modifyTypeName(type)
   return string.replace(my.type, "MPI_|AMPI_")
 endfunction

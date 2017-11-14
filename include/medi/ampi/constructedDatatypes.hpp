@@ -146,7 +146,7 @@ namespace medi {
       }
 
 
-      MpiStructType(int count, const int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const * array_of_types) :
+      MpiStructType(int count, MEDI_OPTIONAL_CONST int* array_of_blocklengths, const MPI_Aint* array_of_displacements, MpiTypeInterface* const * array_of_types) :
         MpiTypeInterface(MPI_INT, MPI_INT) {
 
         MPI_Datatype* mpiTypes = new MPI_Datatype[count];

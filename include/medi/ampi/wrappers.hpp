@@ -84,21 +84,21 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  int AMPI_Reduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm);
+  int AMPI_Reduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Gather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm);
+  int AMPI_Gather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm);
   template<typename DATATYPE>
-  int AMPI_Allreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm);
+  int AMPI_Allreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Allgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm);
+  int AMPI_Allgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm);
   template<typename DATATYPE>
-  int AMPI_Ireduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request);
+  int AMPI_Ireduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Igather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request);
+  int AMPI_Igather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request);
   template<typename DATATYPE>
-  int AMPI_Iallreduce_global(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request);
+  int AMPI_Iallreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iallgather(MEDI_CONST_SEND typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request);
+  int AMPI_Iallgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request);
 
   template<typename DATATYPE>
   inline void performReduce(typename DATATYPE::Type* tempbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, int reduceSize) {
@@ -112,7 +112,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int GatherAndPerformOperationLocal(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, int reduceSize) {
+  inline int GatherAndPerformOperationLocal(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, int reduceSize) {
     int commSize = getCommSize(comm);
     int commRank = getCommRank(comm);
 
@@ -121,7 +121,7 @@ namespace medi {
       datatype->createTypeBuffer(tempbuf, count * commSize);
     }
 
-    MEDI_CONST_SEND typename DATATYPE::Type* sendbufGather = sendbuf;
+    MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbufGather = sendbuf;
     if(AMPI_IN_PLACE == sendbuf) {
       sendbufGather = recvbuf;
     }
@@ -153,7 +153,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int IgatherAndPerformOperationLocal(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request, int reduceSize) {
+  inline int IgatherAndPerformOperationLocal(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request, int reduceSize) {
     int commSize = getCommSize(comm);
     int commRank = getCommRank(comm);
 
@@ -162,7 +162,7 @@ namespace medi {
       datatype->createTypeBuffer(tempbuf, count * commSize);
     }
 
-    MEDI_CONST_SEND typename DATATYPE::Type* sendbufGather = sendbuf;
+    MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbufGather = sendbuf;
     if(AMPI_IN_PLACE == sendbuf) {
       sendbufGather = recvbuf;
     }
@@ -220,7 +220,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Reduce(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
+  inline int AMPI_Reduce(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
     if(!datatype->getADTool().isActiveType()) {
@@ -250,7 +250,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Ireduce(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
+  inline int AMPI_Ireduce(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
     if(!datatype->getADTool().isActiveType()) {
@@ -287,7 +287,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Allreduce(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
+  inline int AMPI_Allreduce(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
     if(convOp.hasAdjoint || !datatype->getADTool().isActiveType()) {
@@ -299,7 +299,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Iallreduce(MEDI_CONST_SEND typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
+  inline int AMPI_Iallreduce(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf, int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
     if(convOp.hasAdjoint || !datatype->getADTool().isActiveType()) {
@@ -381,7 +381,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  inline int AMPI_Reduce_local(MEDI_CONST_SEND typename DATATYPE::Type* inbuf, typename DATATYPE::Type* inoutbuf, int count, DATATYPE* datatype, AMPI_Comm comm, AMPI_Op op) {
+  inline int AMPI_Reduce_local(MEDI_OPTIONAL_CONST typename DATATYPE::Type* inbuf, typename DATATYPE::Type* inoutbuf, int count, DATATYPE* datatype, AMPI_Comm comm, AMPI_Op op) {
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
 
     return MPI_Reduce_local(inbuf, inoutbuf, count, datatype->getMpiType(), convOp.primalFunction);
