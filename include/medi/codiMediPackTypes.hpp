@@ -30,18 +30,98 @@
 
 #include "ampi/ampiMisc.h"
 
+#include "adjointInterface.hpp"
 #include "adToolInterface.h"
 #include "ampi/typeDefault.hpp"
 #include "adToolImplCommon.hpp"
 #include "ampi/op.hpp"
 #include "ampi/types/indexTypeHelper.hpp"
 
+#include <adjointInterface.hpp>
+
+template<typename CoDiType>
+struct CoDiMeDiAdjointInterfaceWrapper : public medi::AdjointInterface {
+
+    typedef typename CoDiType::Real Real;
+    typedef typename CoDiType::GradientData IndexType;
+
+    codi::AdjointInterface<Real>* codiInterface;
+
+    int vecSize;
+
+    CoDiMeDiAdjointInterfaceWrapper(codi::AdjointInterface<Real>* interface) :
+      codiInterface(interface),
+      vecSize((int)interface->getVectorSize()) {}
+
+    int computeElements(int elements) const {
+      return elements * vecSize;
+    }
+
+    int getVectorSize() const {
+      return vecSize;
+    }
+
+    inline void getAdjoints(const void* i, void* a, int elements) const {
+      Real* adjoints = (Real*)a;
+      IndexType* indices = (IndexType*)i;
+
+      for(int pos = 0; pos < elements; ++pos) {
+        codiInterface->getAdjointVec(indices[pos], &adjoints[pos * vecSize]);
+        codiInterface->resetAdjointVec(indices[pos]);
+      }
+    }
+
+    inline void updateAdjoints(const void* i, const void* a, int elements) const {
+      Real* adjoints = (Real*)a;
+      IndexType* indices = (IndexType*)i;
+
+      for(int pos = 0; pos < elements; ++pos) {
+
+        codiInterface->updateAdjointVec(indices[pos], &adjoints[pos * vecSize]);
+      }
+    }
+
+    inline void setReverseValues(const void* i, const void* p, int elements) const {
+      Real* primals = (Real*)p;
+      IndexType* indices = (IndexType*)i;
+
+      for(int pos = 0; pos < elements; ++pos) {
+        codiInterface->resetPrimal(indices[pos], primals[pos]);
+      }
+    }
+
+    inline void combineAdjoints(void* b, const int elements, const int ranks) const {
+      Real* buf = (Real*)b;
+
+      for(int curRank = 1; curRank < ranks; ++curRank) {
+        for(int curPos = 0; curPos < elements; ++curPos) {
+          for(int dim = 0; dim < vecSize; ++dim) {
+
+            buf[curPos * vecSize + dim] += buf[(elements * curRank + curPos) * vecSize + dim];
+          }
+        }
+      }
+    }
+
+    inline void createAdjointTypeBuffer(void* &buf, size_t size) const {
+      buf = (void*)(new Real[size * vecSize]);
+    }
+
+    inline void deleteAdjointTypeBuffer(void* &b) const {
+      if(NULL != b) {
+        Real* buf = (Real*)b;
+        delete [] buf;
+        b = NULL;
+      }
+    }
+};
+
 
 
 template<typename CoDiType, bool primalRestore, typename Impl>
 struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
-  typedef typename CoDiType::GradientValue AdjointType;
+  typedef void AdjointType;
   typedef CoDiType ModifiedType;
   typedef typename CoDiType::PassiveReal PassiveType;
   typedef typename CoDiType::GradientData IndexType;
@@ -76,8 +156,9 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, fal
 
     ModifiedMpiType = MpiType;
 
+    // Since we use the CoDiPack adjoint interface, everything is interpreted in terms of the primal computation type
     // TODO: add proper type creation
-    MPI_Type_contiguous(sizeof(AdjointType), MPI_BYTE, &AdjointMpiType);
+    MPI_Type_contiguous(sizeof(typename CoDiType::Real), MPI_BYTE, &AdjointMpiType);
     MPI_Type_commit(&AdjointMpiType);
   }
 
@@ -129,34 +210,11 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, fal
     MEDI_UNUSED(h);
   }
 
-  inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
-    for(int pos = 0; pos < elements; ++pos) {
-      IndexType index = indices[pos];
-      AdjointType& grad = adjointTape->gradient(index);
-      adjoints[pos] = grad;
-      grad = AdjointType();
-    }
-  }
-
-  inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
-    for(int pos = 0; pos < elements; ++pos) {
-      IndexType indexCopy = indices[pos];
-      adjointTape->gradient(indexCopy) += adjoints[pos];
-    }
-  }
-
-  inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
-    for(int curRank = 1; curRank < ranks; ++curRank) {
-      for(int curPos = 0; curPos < elements; ++curPos) {
-        buf[curPos] += buf[elements * curRank + curPos];
-      }
-    }
-  }
-
-  static void callFunc(void* tape, void* h) {
+  static void callFunc(void* tape, void* h, void* ah) {
     adjointTape = (Tape*)tape;
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-    handle->func(handle);
+    CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real>*)ah);
+    handle->func(handle, &ahWrapper);
   }
 
   static void deleteFunc(void* tape, void* h) {
@@ -217,22 +275,13 @@ struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, false, CoDiPackToo
 
     typedef CoDiType Type;
     typedef typename CoDiType::TapeType Tape;
-    typedef typename CoDiType::GradientValue AdjointType;
+    typedef void AdjointType;
     typedef CoDiType ModifiedType;
     typedef typename CoDiType::PassiveReal PassiveType;
     typedef typename CoDiType::GradientData IndexType;
 
     CoDiPackTool(MPI_Datatype adjointMpiType) :
       CoDiPackToolBase<CoDiType, false, CoDiPackTool< CoDiType>>(adjointMpiType) {}
-
-
-    inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-      MEDI_UNUSED(indices);
-      MEDI_UNUSED(primals);
-      MEDI_UNUSED(elements);
-
-      //Do nothing
-    }
 
     static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
       MEDI_UNUSED(oldPrimal);
@@ -254,23 +303,13 @@ struct CoDiPackToolPrimalRestore final : public CoDiPackToolBase<CoDiType, true,
 
     typedef CoDiType Type;
     typedef typename CoDiType::TapeType Tape;
-    typedef typename CoDiType::GradientValue AdjointType;
+    typedef void AdjointType;
     typedef CoDiType ModifiedType;
     typedef typename CoDiType::PassiveReal PassiveType;
     typedef typename CoDiType::GradientData IndexType;
 
     CoDiPackToolPrimalRestore(MPI_Datatype adjointMpiType) :
       CoDiPackToolBase<CoDiType, true, CoDiPackToolPrimalRestore< CoDiType>>(adjointMpiType) {}
-
-    inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-      MEDI_UNUSED(indices);
-      MEDI_UNUSED(primals);
-      MEDI_UNUSED(elements);
-
-      for(int pos = 0; pos < elements; ++pos) {
-        CoDiPackToolBase<CoDiType, true, CoDiPackToolPrimalRestore<CoDiType> >::adjointTape->setExternalValueChange(indices[pos], primals[pos]);
-      }
-    }
 
     static inline IndexType registerValue(Type& value, PassiveType& oldPrimal) {
       bool wasActive = 0 != value.getGradientData();

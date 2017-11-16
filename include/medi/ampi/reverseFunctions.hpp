@@ -344,9 +344,7 @@ namespace medi {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Bcast(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), root, comm);
-      datatype->getADTool().deleteAdjointTypeBuffer(sendbufAdjoints);
-      sendbufAdjoints = recvbufAdjoints;
-      recvbufAdjoints = NULL;
+      std::swap(sendbufAdjoints, recvbufAdjoints);
     } else {
       MPI_Bcast(sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm);
     }
@@ -359,9 +357,7 @@ namespace medi {
     MEDI_UNUSED(count);
     if(root == getCommRank(comm)) {
       MPI_Ibcast(recvbufAdjoints, recvbufSize, datatype->getADTool().getAdjointMpiType(), root, comm, &request->request);
-      datatype->getADTool().deleteAdjointTypeBuffer(sendbufAdjoints);
-      sendbufAdjoints = recvbufAdjoints;
-      recvbufAdjoints = NULL;
+      std::swap(sendbufAdjoints, recvbufAdjoints);
     } else {
       MPI_Ibcast(sendbufAdjoints, sendbufSize, datatype->getADTool().getAdjointMpiType(), root, comm, &request->request);
     }

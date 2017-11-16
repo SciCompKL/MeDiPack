@@ -98,9 +98,9 @@ for functions.function as curFunction
    constMod = generateConst(item)
    if(name(item) =  "recv" | name(item) =  "send")
      if(defined(item.displs))
-       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count, h->$(item.name)Displs"    # append adjoint and primal buffer and the byte size
+       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)CountVec, h->$(item.name)DisplsVec"    # append adjoint and primal buffer and the byte size
      else
-       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)Count"    # append adjoint and primal buffer and the byte size
+       curFunction.argRev += "h->$(item.name)Adjoints, h->$(item.name)CountVec"    # append adjoint and primal buffer and the byte size
      endif
    elsif(name(item) = "request")
      curFunction.argRev += "&h->$(item.name)Reverse"
@@ -133,13 +133,15 @@ for functions.function as curFunction
      if(name(item) =  "recv")
        addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
      endif
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ typename $(item.typeName)::AdjointType*")
+     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ void*")
      if(defined(item.displs))
        addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Count;", "$(item.name)Count", "int*")
-       addHandleData(curFunction->reverseHandle, 0, "delete [] $(item.name)Displs;", "$(item.name)Displs", "int*")
+       addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)CountVec", "/* required for async */ int*")
+       addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)DisplsVec", "/* required for async */ int*")
        addHandleData(curFunction->primalHandle, 1, "", "$(item.displs)Mod", "const int*")
      else
        addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Count", "int")
+       addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)CountVec", "int")
      endif
    elsif(name(item) = "request")
      addHandleData(curFunction->primalHandle, 0, "", "$(item.name)", "$(item.taType)")
@@ -367,17 +369,22 @@ endfunction
 function createBufferReverseSetup(buffer, curFunction, isRecv)
 > h->$(my.buffer.name)Adjoints = nullptr;
   startRootReverse(my.buffer)
+    if(defined(my.buffer.displs))
+>     createLinearDisplacementsAndCount(h->$(my.buffer.name)CountVec, h->$(my.buffer.name)DisplsVec, h->$(my.buffer.name)Count, getCommSize(h->comm), adjointInterface->getVectorSize());
+    else
+>     h->$(my.buffer.name)CountVec = adjointInterface->getVectorSize() * h->$(my.buffer.name)Count;
+    endif
     allMul = ""
     if(defined(my.buffer.all))
       allMul = "* getCommSize(h->$(my.buffer.all))"
     endif
->   h->$(my.curFunction.adType).createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
+>   adjointInterface->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
     if(1 = my.isRecv)
 >     // Adjoint buffers are always linear in space so we can accesses them in one sweep
->     h->$(my.curFunction.adType).getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+>     adjointInterface->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
 >
       if(defined(my.curFunction->operator))
->       convOp.preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count);
+>       convOp.preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count, adjointInterface->getVectorSize());
       endif
     endif
   endRootReverse(my.buffer)
@@ -387,24 +394,29 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
   startRootReverse(my.buffer)
     if(1 = my.isSend)
       if(defined(my.buffer.all))
->       h->$(my.curFunction.adType).combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
+>       adjointInterface->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
       endif
       if(defined(my.curFunction->operator))
 >       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
 >       // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
->       convOp.postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize);
+>       convOp.postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize, adjointInterface->getVectorSize());
       endif
 >     // Adjoint buffers are always linear in space so they can be accessed in one sweep
->     h->$(my.curFunction.adType).updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+>     adjointInterface->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
     endif
->   h->$(my.curFunction.adType).deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
+>   adjointInterface->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
+
+    if(defined(my.buffer.displs))
+>     delete [] h->$(my.buffer.name)CountVec;
+>     delete [] h->$(my.buffer.name)DisplsVec;
+    endif
   endRootReverse(my.buffer)
 endfunction
 
 # define function for primal restore
 function createPrimalRestore(buffer, curFunction, elementName)
   startRootReverse(my.buffer)
->   h->$(my.curFunction.adType).setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   adjointInterface->setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
   endRootReverse(my.buffer)
 endfunction
 
@@ -478,7 +490,7 @@ function addPrimalAsyncSplit(curFunction)
 >
 >      // create adjoint wait
 >      if(nullptr != h) {
->        WaitHandle* waitH = new WaitHandle((ContinueFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
+>        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
@@ -515,7 +527,7 @@ function addReverseAsyncSplit(curFunction)
 >  }
 >
 >  template<$(my.curFunction.tplDef)>
->  void AMPI_$(my.curFunction.name)_b_finish(HandleBase* handle) {
+>  void AMPI_$(my.curFunction.name)_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 >
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
 >    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
@@ -575,7 +587,7 @@ namespace medi {
 
 .- create the reverse function
   template<$(curFunction.tplDef)>
-  void AMPI_$(curFunction.name)_b(HandleBase* handle) {
+  void AMPI_$(curFunction.name)_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
 
 .   for curFunction.status
@@ -690,7 +702,7 @@ namespace medi {
                 if(AMPI_IN_PLACE != $(item.name)) {
 .             endif
 .             if(defined(item.displs))
-                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type));
+                createLinearIndexCounts(h->$(item.name)Count, $(item.count), getCommSize(comm), $(item.type));
 .             else
                 h->$(item.name)Count = $(item.type)->computeActiveElements($(item.count));
 .             endif
@@ -699,7 +711,7 @@ namespace medi {
                 } else {
 .                if(defined(inplaceBuffer.displs))
 .                  if(defined(item.displs))
-                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type));
+                     createLinearIndexCounts(h->$(item.name)Count, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type));
 .                  else
                      h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements($(inplaceBuffer.count)[getCommRank(comm)]);
 .                  endif

@@ -245,10 +245,12 @@ namespace medi {
 //        }
 //      }
 
-      static void postAdjMinMax(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count) {
+      static void postAdjMinMax(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count, int vecSize) {
         for(int i = 0; i < count; ++i) {
           if(rootPrimals[i] != primals[i]) {
-            adjoints[i] = AdjointType(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+            for(int dim = 0; dim < vecSize; ++dim) {
+              adjoints[i * vecSize + dim] = AdjointType(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+            }
           }
         }
       }

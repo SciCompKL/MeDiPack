@@ -38,8 +38,8 @@
  */
 namespace medi {
 
-  static void noPreAdjointOperation(void* adjoints, void* primals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); }
-  static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); }
+  static void noPreAdjointOperation(void* adjoints, void* primals, int count, int dim) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(count); MEDI_UNUSED(dim); }
+  static void noPostAdjointOperation(void* adjoints, void* primals, void* rootPrimals, int count, int dim) { MEDI_UNUSED(adjoints); MEDI_UNUSED(primals); MEDI_UNUSED(rootPrimals); MEDI_UNUSED(count); MEDI_UNUSED(dim); }
 
   /**
    * @brief Structure for the special handling of the MPI_Op structure.

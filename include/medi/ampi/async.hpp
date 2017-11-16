@@ -77,7 +77,7 @@ namespace medi {
 
   extern const AMPI_Request AMPI_REQUEST_NULL;
 
-  inline void AMPI_Wait_b(HandleBase* handle);
+  inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface);
   struct WaitHandle : HandleBase {
       ReverseFunction finishFunc;
       HandleBase* handle;
@@ -91,10 +91,10 @@ namespace medi {
       }
   };
 
-  inline void AMPI_Wait_b(HandleBase* handle) {
+  inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
-    h->finishFunc(h->handle);
+    h->finishFunc(h->handle, adjointInterface);
   }
 
   inline void performReverseAction(AMPI_Request *request) {

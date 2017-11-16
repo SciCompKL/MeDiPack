@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include "adjointInterface.hpp"
+
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package
  */
@@ -40,10 +42,10 @@ namespace medi {
   };
 
   struct HandleBase;
-  typedef void (*ReverseFunction)(HandleBase* h);
+  typedef void (*ReverseFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*ContinueFunction)(HandleBase* h);
-  typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count);
-  typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count);
+  typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count, int dim);
+  typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count, int dim);
 
   struct HandleBase {
     ReverseFunction func;

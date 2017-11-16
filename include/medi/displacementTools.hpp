@@ -131,7 +131,30 @@ namespace medi {
   }
 
   /**
-   * @brief Creates the displacements and counts for a message with a different size on each rank.
+   * @brief Creates the linearized displacements of a message with a different size on each rank.
+   *
+   * The counts are scaled by the given factor.
+   *
+   * @param[in] countsOut  The generated counts.
+   * @param[in] displsOUt  The generated displacements.
+   * @param[in]    counts  The size of each rank.
+   * @param[in]     ranks  The number of the ranks.
+   * @param[in]     scale  The scaling factor of the counts and displacements.
+   */
+  inline void createLinearDisplacementsAndCount(int* &countsOut, int* &displsOut, const int* counts, int ranks, int scale) {
+    displsOut = new int[ranks];
+    countsOut = new int[ranks];
+
+    countsOut[0] = counts[0] * scale;
+    displsOut[0] = 0;
+    for(int i = 1; i < ranks; ++i) {
+      countsOut[i] = counts[i] * scale;
+      displsOut[i] = countsOut[i - 1] +  displsOut[i - 1];
+    }
+  }
+
+  /**
+   * @brief Creates the counts for a message with a different size on each rank.
    *
    * The counts are computed by the type such that the result can hold all indices, passive values, etc.
    *
@@ -144,15 +167,12 @@ namespace medi {
    * @tparam Datatype  The type for the datatype.
    */
   template<typename Datatype>
-  inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, int ranks, Datatype* type) {
+  inline void createLinearIndexCounts(int* &linearCounts, const int* counts, int ranks, Datatype* type) {
     linearCounts = new int[ranks];
-    linearDispls = new int[ranks];
 
     linearCounts[0] = type->computeActiveElements(counts[0]);
-    linearDispls[0] = 0;
     for(int i = 1; i < ranks; ++i) {
       linearCounts[i] = type->computeActiveElements(counts[i]);
-      linearDispls[i] = linearCounts[i - 1] +  linearDispls[i - 1];
     }
   }
 }
