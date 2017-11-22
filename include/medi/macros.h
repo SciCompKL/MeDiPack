@@ -50,30 +50,29 @@
 # endif
 #endif
 
-#if defined (OPEN_MPI) && !defined (MEDI_NO_OPTIONAL_CONST)
-# define OMPI_VERSION (OMPI_MAJOR_VERSION * 100 + OMPI_MINOR_VERSION * 10)
-# if (OMPI_VERSION < 170)
-#   define MEDI_OPTIONAL_CONST /* const */
+#if !defined MEDI_NO_OPTIONAL_CONST
+# if defined (OPEN_MPI)
+#   define OMPI_VERSION (OMPI_MAJOR_VERSION * 100 + OMPI_MINOR_VERSION * 10)
+#   if (OMPI_VERSION < 170)
+#     define MEDI_OPTIONAL_CONST /* const */
+#   else
+#     define MEDI_OPTIONAL_CONST const
+#   endif
+# elif defined (MPICH2)
+#   if (MPICH2_NUMVERSION < 15000000)
+#     define MEDI_OPTIONAL_CONST /* const */
+#   elif (MPICH2_NUMVERSION < 30000000)
+#     define MEDI_OPTIONAL_CONST MPICH2_CONST
+#   else
+#     define MEDI_OPTIONAL_CONST const
+#   endif
 # else
 #   define MEDI_OPTIONAL_CONST const
 # endif
-#endif
-
-#if defined (MPICH2) && !defined (MEDI_NO_OPTIONAL_CONST)
-# if (MPICH2_NUMVERSION < 15000000)
-#   define MEDI_OPTIONAL_CONST /* const */
-# elif (MPICH2_NUMVERSION < 30000000)
-#   define MEDI_OPTIONAL_CONST MPICH2_CONST
-# else
-#   define MEDI_OPTIONAL_CONST const
-# endif
-#endif
-
-#if defined (MEDI_NO_OPTIONAL_CONST)
-# define MEDI_OPTIONAL_CONST /* const */
 #else
-# define MEDI_OPTIONAL_CONST const
+# define MEDI_OPTIONAL_CONST /* const */
 #endif
+
 
 #ifndef MEDI_EnableAssert
   #define MEDI_EnableAssert 1
