@@ -2364,8 +2364,8 @@ namespace medi {
     /* required for async */ typename RECVTYPE::AdjointType* recvbufAdjoints;
     int* recvbufCount;
     int* recvbufDispls;
-    const  int* recvcounts;
-    const  int* displs;
+    MEDI_OPTIONAL_CONST  int* recvcounts;
+    MEDI_OPTIONAL_CONST  int* displs;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
 
@@ -2430,7 +2430,8 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Allgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
-                      typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
+                      typename RECVTYPE::Type* recvbuf, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs,
+                      RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {

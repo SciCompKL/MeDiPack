@@ -650,8 +650,8 @@
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
-        <arg name="recvcounts" type="int*" const="1"/>
-        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <arg name="recvcounts" type="int*" const="opt"/>
+        <displs name="displs" type="int*" const="opt" ranks="comm" counts="recvcounts" />
         <type name="recvtype" type="MPI_Datatype" />
         <arg name="comm" type="MPI_Comm"/>
       </function>
