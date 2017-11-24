@@ -187,7 +187,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Scatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
+  void AMPI_Scatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, MEDI_OPTIONAL_CONST int* sendbufDispl, MEDI_OPTIONAL_CONST int* sendcount, MEDI_OPTIONAL_CONST int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -197,7 +197,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Iscatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispl, const int* sendcount, const int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Iscatterv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, MEDI_OPTIONAL_CONST int* sendbufDispl, MEDI_OPTIONAL_CONST int* sendcount, MEDI_OPTIONAL_CONST int* displs, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int recvbufSize, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcount);
 
@@ -227,7 +227,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
+  void AMPI_Gatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -238,7 +238,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Igatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -269,7 +269,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Allgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
+  void AMPI_Allgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -282,7 +282,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Iallgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Iallgatherv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int sendbufSize, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcount);
     MEDI_UNUSED(recvcounts);
     MEDI_UNUSED(displs);
@@ -316,7 +316,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
+  void AMPI_Alltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, MEDI_OPTIONAL_CONST int* sendbufDispls, MEDI_OPTIONAL_CONST int* sendcounts, MEDI_OPTIONAL_CONST int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
     MEDI_UNUSED(sendcounts);
     MEDI_UNUSED(sdispls);
     MEDI_UNUSED(recvcounts);
@@ -328,7 +328,7 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  void AMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, const int* sendbufDispls, const int* sendcounts, const int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, const int* recvbufDispls, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Ialltoallv_adj(typename SENDTYPE::AdjointType* &sendbufAdjoints, int* sendbufCounts, MEDI_OPTIONAL_CONST int* sendbufDispls, MEDI_OPTIONAL_CONST int* sendcounts, MEDI_OPTIONAL_CONST int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::AdjointType* &recvbufAdjoints, int* recvbufCounts, MEDI_OPTIONAL_CONST int* recvbufDispls, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     MEDI_UNUSED(sendcounts);
     MEDI_UNUSED(sdispls);
     MEDI_UNUSED(recvcounts);
