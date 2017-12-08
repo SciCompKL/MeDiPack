@@ -1402,10 +1402,10 @@
       <function name="Dist_graph_create" version="2.2">
         <arg name="comm_old" type="MPI_Comm" />
         <arg name="n" type="int" />
-        <arg name="sources" type="int*" const="1"/>
-        <arg name="degrees" type="int*" const="1"/>
-        <arg name="destinations" type="int*" const="1"/>
-        <arg name="weights" type="int*" const="1"/>
+        <arg name="sources" type="int*" const="opt"/>
+        <arg name="degrees" type="int*" const="opt"/>
+        <arg name="destinations" type="int*" const="opt"/>
+        <arg name="weights" type="int*" const="opt"/>
         <arg name="info" type="MPI_Info" />
         <arg name="reorder" type="int" />
         <arg name="comm_dist_graph" type="MPI_Comm*" />
@@ -1414,11 +1414,11 @@
       <function name="Dist_graph_create_adjacent" version="2.2">
         <arg name="comm_old" type="MPI_Comm" />
         <arg name="indegree" type="int" />
-        <arg name="sources" type="int*" const="1"/>
-        <arg name="sourceweights" type="int*" const="1"/>
+        <arg name="sources" type="int*" const="opt"/>
+        <arg name="sourceweights" type="int*" const="opt"/>
         <arg name="outdegree" type="int" />
-        <arg name="destinations" type="int*" const="1"/>
-        <arg name="destweights" type="int*" const="1"/>
+        <arg name="destinations" type="int*" const="opt"/>
+        <arg name="destweights" type="int*" const="opt"/>
         <arg name="info" type="MPI_Info" />
         <arg name="reorder" type="int" />
         <arg name="comm_dist_graph" type="MPI_Comm*" />

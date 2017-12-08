@@ -8666,16 +8666,17 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
-  inline int AMPI_Dist_graph_create(AMPI_Comm comm_old, int n, const int* sources, const int* degrees,
-                                    const int* destinations, const int* weights, AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
+  inline int AMPI_Dist_graph_create(AMPI_Comm comm_old, int n, MEDI_OPTIONAL_CONST int* sources,
+                                    MEDI_OPTIONAL_CONST int* degrees, MEDI_OPTIONAL_CONST int* destinations, MEDI_OPTIONAL_CONST int* weights,
+                                    AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
     return MPI_Dist_graph_create(comm_old, n, sources, degrees, destinations, weights, info, reorder, comm_dist_graph);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
-  inline int AMPI_Dist_graph_create_adjacent(AMPI_Comm comm_old, int indegree, const int* sources,
-      const int* sourceweights, int outdegree, const int* destinations, const int* destweights, AMPI_Info info, int reorder,
-      AMPI_Comm* comm_dist_graph) {
+  inline int AMPI_Dist_graph_create_adjacent(AMPI_Comm comm_old, int indegree, MEDI_OPTIONAL_CONST int* sources,
+      MEDI_OPTIONAL_CONST int* sourceweights, int outdegree, MEDI_OPTIONAL_CONST int* destinations,
+      MEDI_OPTIONAL_CONST int* destweights, AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
     return MPI_Dist_graph_create_adjacent(comm_old, indegree, sources, sourceweights, outdegree, destinations, destweights,
                                           info, reorder, comm_dist_graph);
   }
