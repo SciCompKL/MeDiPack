@@ -650,8 +650,8 @@
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcounts" displs="displs"/>
-        <arg name="recvcounts" type="int*" const="1"/>
-        <displs name="displs" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <arg name="recvcounts" type="int*" const="opt"/>
+        <displs name="displs" type="int*" const="opt" ranks="comm" counts="recvcounts" />
         <type name="recvtype" type="MPI_Datatype" />
         <arg name="comm" type="MPI_Comm"/>
       </function>
@@ -678,12 +678,12 @@
 
       <function name="Alltoallv" version="1.0" mediHandle="transform"> <!-- all defined -->
         <send name="sendbuf" type="sendtype" count="sendcounts" displs="sdispls" const="opt" inplace="recvbuf"/>
-        <arg name="sendcounts" type="int*" const="1"/>
-        <displs name="sdispls" type="int*" const="1" ranks="comm" counts="sendcounts" />
+        <arg name="sendcounts" type="int*" const="opt"/>
+        <displs name="sdispls" type="int*" const="opt" ranks="comm" counts="sendcounts" />
         <type name="sendtype" type="MPI_Datatype" />
         <recv name="recvbuf" type="recvtype" count="recvcounts" displs="rdispls" />
-        <arg name="recvcounts" type="int*" const="1"/>
-        <displs name="rdispls" type="int*" const="1" ranks="comm" counts="recvcounts" />
+        <arg name="recvcounts" type="int*" const="opt"/>
+        <displs name="rdispls" type="int*" const="opt" ranks="comm" counts="recvcounts" />
         <type name="recvtype" type="MPI_Datatype" />
         <arg name="comm" type="MPI_Comm" />
       </function>
