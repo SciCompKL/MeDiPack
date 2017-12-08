@@ -41,6 +41,8 @@ namespace medi {
    * This structures implements cast operators such that it can be used by any type.
    */
   struct AMPI_IN_PLACE_IMPL {
+    
+      AMPI_IN_PLACE_IMPL () {}
 
       template<typename T>
       operator const T*() const {
