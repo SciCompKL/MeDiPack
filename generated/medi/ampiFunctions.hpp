@@ -9575,7 +9575,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_category_get_index(const char* name, int* cat_index) {
     return MPI_T_category_get_index(name, cat_index);
   }
@@ -9600,7 +9600,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_cvar_get_index(const char* name, int* cvar_index) {
     return MPI_T_cvar_get_index(name, cvar_index);
   }
@@ -9660,7 +9660,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_pvar_get_index(const char* name, int var_class, int* pvar_index) {
     return MPI_T_pvar_get_index(name, var_class, pvar_index);
   }
