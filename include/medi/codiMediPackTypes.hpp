@@ -153,7 +153,9 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, fal
     }
   }
 
-  static void callFunc(void* tape, void* h) {
+  static void callFunc(void* tape, void* h, void* ra) {
+    MEDI_UNUSED(ra);
+    
     adjointTape = (Tape*)tape;
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     handle->func(handle);
