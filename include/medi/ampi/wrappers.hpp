@@ -39,8 +39,8 @@
  * @brief Global namespace for MeDiPack - Message Differentiation Package
  */
 namespace medi {
-
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+  
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   int AMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE* datatype, int root, AMPI_Comm comm);
 
@@ -53,6 +53,9 @@ namespace medi {
     MEDI_UNUSED(bufferSend);
     return MPI_Bcast(bufferRecv, count, type, root, comm);
   }
+#endif
+  
+#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
   int AMPI_Ibcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count, DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request);

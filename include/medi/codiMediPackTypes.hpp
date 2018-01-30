@@ -210,6 +210,30 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, fal
     MEDI_UNUSED(h);
   }
 
+  inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
+    for(int pos = 0; pos < elements; ++pos) {
+      IndexType index = indices[pos];
+      AdjointType& grad = adjointTape->gradient(index);
+      adjoints[pos] = grad;
+      grad = AdjointType();
+    }
+  }
+
+  inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
+    for(int pos = 0; pos < elements; ++pos) {
+      IndexType indexCopy = indices[pos];
+      adjointTape->gradient(indexCopy) += adjoints[pos];
+    }
+  }
+
+  inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
+    for(int curRank = 1; curRank < ranks; ++curRank) {
+      for(int curPos = 0; curPos < elements; ++curPos) {
+        buf[curPos] += buf[elements * curRank + curPos];
+      }
+    }
+  }
+
   static void callFunc(void* tape, void* h, void* ah) {
     adjointTape = (Tape*)tape;
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
