@@ -372,6 +372,18 @@ namespace medi {
         }
       }
 
+      void createIndices(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
+        int totalIndexOffset = computeActiveElements(bufModOffset);  // indices are lineralized and counted up in the loop
+
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->createIndices(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, indices, totalIndexOffset, blockLengths[curType]);
+          }
+        }
+      }
+
       void getValues(const void* buf, size_t bufOffset, void* primals, size_t bufModOffset, int elements) const {
         int totalPrimalsOffset = computeActiveElements(bufModOffset);  // indices are lineralized and counted up in the loop
         for(int i = 0; i < elements; ++i) {

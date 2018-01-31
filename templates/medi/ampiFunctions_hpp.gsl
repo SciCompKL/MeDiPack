@@ -752,6 +752,13 @@ namespace medi {
 .         endif
 .       endfor
 
+.       for curFunction. as item where defined(item.arg)
+.         if(name(item) =  "recv")
+.-          The index buffer is always the one from the buffer we are currently handling
+.           createBufferAccessLogic(item, 0, "$type$->createIndices($name$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
+.         endif
+.       endfor
+
         // pack all the variables in the handle
         h->func = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)

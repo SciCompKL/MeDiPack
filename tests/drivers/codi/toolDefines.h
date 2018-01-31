@@ -38,14 +38,14 @@ typedef CODI_TYPE NUMBER;
 # define PRIMAL_RESTORE 0
 #endif
 
+#ifndef LINEAR_INDEX_MANAGER
+# define LINEAR_INDEX_MANAGER 1
+#endif
+
 #ifndef VECTOR
 # define VECTOR 0
 #endif
 
-#if PRIMAL_RESTORE
-# define TOOL CoDiPackToolPrimalRestore<NUMBER>
-#else
-# define TOOL CoDiPackTool<NUMBER>
-#endif
+#define TOOL CoDiPackTool<NUMBER, PRIMAL_RESTORE, LINEAR_INDEX_MANAGER>
 
 #include "../globalDefines.h"

@@ -130,6 +130,14 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
+      inline void createIndices(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+        MEDI_UNUSED(buf);
+        MEDI_UNUSED(bufOffset);
+        MEDI_UNUSED(indices);
+        MEDI_UNUSED(bufModOffset);
+        MEDI_UNUSED(elements);
+      }
+
       inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);

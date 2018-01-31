@@ -127,6 +127,7 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
+
         // pack all the variables in the handle
         h->func = AMPI_Bsend_b<DATATYPE>;
         h->count = count;
@@ -270,6 +271,7 @@ namespace medi {
 
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
 
         // pack all the variables in the handle
         h->func = AMPI_Ibsend_b<DATATYPE>;
@@ -471,6 +473,8 @@ namespace medi {
         }
 
 
+
+        datatype->createIndices(buf, 0, h->bufIndices, 0, count);
 
         // pack all the variables in the handle
         h->func = AMPI_Imrecv_b<DATATYPE>;
@@ -677,6 +681,8 @@ namespace medi {
 
 
 
+        datatype->createIndices(buf, 0, h->bufIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Irecv_b<DATATYPE>;
         h->count = count;
@@ -879,6 +885,7 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
+
         // pack all the variables in the handle
         h->func = AMPI_Irsend_b<DATATYPE>;
         h->count = count;
@@ -1073,6 +1080,7 @@ namespace medi {
 
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
 
         // pack all the variables in the handle
         h->func = AMPI_Isend_b<DATATYPE>;
@@ -1269,6 +1277,7 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
+
         // pack all the variables in the handle
         h->func = AMPI_Issend_b<DATATYPE>;
         h->count = count;
@@ -1450,6 +1459,8 @@ namespace medi {
 
 
 
+        datatype->createIndices(buf, 0, h->bufIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Mrecv_b<DATATYPE>;
         h->count = count;
@@ -1588,6 +1599,8 @@ namespace medi {
 
 
 
+        datatype->createIndices(buf, 0, h->bufIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Recv_b<DATATYPE>;
         h->count = count;
@@ -1715,6 +1728,7 @@ namespace medi {
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
 
+
         // pack all the variables in the handle
         h->func = AMPI_Rsend_b<DATATYPE>;
         h->count = count;
@@ -1834,6 +1848,7 @@ namespace medi {
 
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
 
         // pack all the variables in the handle
         h->func = AMPI_Send_b<DATATYPE>;
@@ -2013,6 +2028,8 @@ namespace medi {
 
         sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount);
 
+        recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
+
         // pack all the variables in the handle
         h->func = AMPI_Sendrecv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2147,6 +2164,7 @@ namespace medi {
 
 
         datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
 
         // pack all the variables in the handle
         h->func = AMPI_Ssend_b<DATATYPE>;
@@ -2336,6 +2354,8 @@ namespace medi {
         } else {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
+
+        recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
         h->func = AMPI_Allgather_b<SENDTYPE, RECVTYPE>;
@@ -2562,6 +2582,10 @@ namespace medi {
           }
         }
 
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->createIndices(recvbuf, displs[i], h->recvbufIndices, displsMod[i], recvcounts[i]);
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Allgatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -2785,6 +2809,8 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
+        datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Allreduce_global_b<DATATYPE>;
         h->count = count;
@@ -2986,6 +3012,8 @@ namespace medi {
         } else {
           recvtype->getIndices(recvbuf, 0, h->sendbufIndices, 0, recvcount * getCommSize(comm));
         }
+
+        recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
         h->func = AMPI_Alltoall_b<SENDTYPE, RECVTYPE>;
@@ -3232,6 +3260,10 @@ namespace medi {
           }
         }
 
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->createIndices(recvbuf, rdispls[i], h->recvbufIndices, rdisplsMod[i], recvcounts[i]);
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Alltoallv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -3455,6 +3487,8 @@ namespace medi {
           }
         }
 
+        datatype->createIndices(bufferRecv, 0, h->bufferRecvIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Bcast_wrap_b<DATATYPE>;
         h->count = count;
@@ -3667,6 +3701,10 @@ namespace medi {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount);
         } else {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
+        }
+
+        if(root == getCommRank(comm)) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
         }
 
         // pack all the variables in the handle
@@ -3918,6 +3956,12 @@ namespace medi {
           }
         }
 
+        if(root == getCommRank(comm)) {
+          for(int i = 0; i < getCommSize(comm); ++i) {
+            recvtype->createIndices(recvbuf, displs[i], h->recvbufIndices, displsMod[i], recvcounts[i]);
+          }
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Gatherv_b<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
@@ -4163,6 +4207,8 @@ namespace medi {
         } else {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
         }
+
+        recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
         h->func = AMPI_Iallgather_b<SENDTYPE, RECVTYPE>;
@@ -4475,6 +4521,10 @@ namespace medi {
             const int rank = getCommRank(comm);
             recvtype->getIndices(recvbuf, displs[rank], h->sendbufIndices, 0, recvcounts[rank]);
           }
+        }
+
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->createIndices(recvbuf, displs[i], h->recvbufIndices, displsMod[i], recvcounts[i]);
         }
 
         // pack all the variables in the handle
@@ -4792,6 +4842,8 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
+        datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Iallreduce_global_b<DATATYPE>;
         h->count = count;
@@ -5076,6 +5128,8 @@ namespace medi {
         } else {
           recvtype->getIndices(recvbuf, 0, h->sendbufIndices, 0, recvcount * getCommSize(comm));
         }
+
+        recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
         h->func = AMPI_Ialltoall_b<SENDTYPE, RECVTYPE>;
@@ -5410,6 +5464,10 @@ namespace medi {
           }
         }
 
+        for(int i = 0; i < getCommSize(comm); ++i) {
+          recvtype->createIndices(recvbuf, rdispls[i], h->recvbufIndices, rdisplsMod[i], recvcounts[i]);
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Ialltoallv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -5727,6 +5785,8 @@ namespace medi {
           }
         }
 
+        datatype->createIndices(bufferRecv, 0, h->bufferRecvIndices, 0, count);
+
         // pack all the variables in the handle
         h->func = AMPI_Ibcast_wrap_b<DATATYPE>;
         h->count = count;
@@ -6022,6 +6082,10 @@ namespace medi {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount);
         } else {
           recvtype->getIndices(recvbuf, recvcount * getCommRank(comm), h->sendbufIndices, 0, recvcount);
+        }
+
+        if(root == getCommRank(comm)) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
         }
 
         // pack all the variables in the handle
@@ -6361,6 +6425,12 @@ namespace medi {
           {
             const int rank = getCommRank(comm);
             recvtype->getIndices(recvbuf, displs[rank], h->sendbufIndices, 0, recvcounts[rank]);
+          }
+        }
+
+        if(root == getCommRank(comm)) {
+          for(int i = 0; i < getCommSize(comm); ++i) {
+            recvtype->createIndices(recvbuf, displs[i], h->recvbufIndices, displsMod[i], recvcounts[i]);
           }
         }
 
@@ -6704,6 +6774,10 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
+        if(root == getCommRank(comm)) {
+          datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Ireduce_global_b<DATATYPE>;
         h->count = count;
@@ -7013,6 +7087,12 @@ namespace medi {
 
         if(root == getCommRank(comm)) {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount * getCommSize(comm));
+        }
+
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
+        } else {
+          sendtype->createIndices(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, 0, sendcount);
         }
 
         // pack all the variables in the handle
@@ -7354,6 +7434,15 @@ namespace medi {
           }
         }
 
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
+        } else {
+          {
+            const int rank = getCommRank(comm);
+            sendtype->createIndices(sendbuf, displs[rank], h->recvbufIndices, 0, sendcounts[rank]);
+          }
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Iscatterv_b<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
@@ -7676,6 +7765,10 @@ namespace medi {
           datatype->getIndices(recvbuf, 0, h->sendbufIndices, 0, count);
         }
 
+        if(root == getCommRank(comm)) {
+          datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
+        }
+
         // pack all the variables in the handle
         h->func = AMPI_Reduce_global_b<DATATYPE>;
         h->count = count;
@@ -7899,6 +7992,12 @@ namespace medi {
 
         if(root == getCommRank(comm)) {
           sendtype->getIndices(sendbuf, 0, h->sendbufIndices, 0, sendcount * getCommSize(comm));
+        }
+
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
+        } else {
+          sendtype->createIndices(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, 0, sendcount);
         }
 
         // pack all the variables in the handle
@@ -8146,6 +8245,15 @@ namespace medi {
         if(root == getCommRank(comm)) {
           for(int i = 0; i < getCommSize(comm); ++i) {
             sendtype->getIndices(sendbuf, displs[i], h->sendbufIndices, displsMod[i], sendcounts[i]);
+          }
+        }
+
+        if(AMPI_IN_PLACE != recvbuf) {
+          recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
+        } else {
+          {
+            const int rank = getCommRank(comm);
+            sendtype->createIndices(sendbuf, displs[rank], h->recvbufIndices, 0, sendcounts[rank]);
           }
         }
 

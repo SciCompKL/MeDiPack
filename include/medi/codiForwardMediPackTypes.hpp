@@ -159,6 +159,11 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     value.getGradientData() = 0;
   }
 
+  static inline void createIndex(Type& value, int& index) {
+    MEDI_UNUSED(value);
+    index = 0;
+  }
+
   static inline PassiveType getValue(const Type& value) {
     return value.getValue();
   }
@@ -173,10 +178,10 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MEDI_UNUSED(modValue);
   }
 
-  static inline int registerValue(Type& value, PassiveType& oldValue) {
+  static inline void registerValue(Type& value, PassiveType& oldValue, int& index) {
     MEDI_UNUSED(value);
     MEDI_UNUSED(oldValue);
-    return 0;
+    MEDI_UNUSED(index);
   }
 
   static PassiveType getPrimalFromMod(const ModifiedType& modValue) {

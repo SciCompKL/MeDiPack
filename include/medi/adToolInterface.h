@@ -242,15 +242,23 @@ namespace medi {
        *
        * @param[in,out]    value  The AD value in the user buffer on the receiving side.
        * @param[out]   oldPrimal  The old primal value that was overwritten by this value.
-       * @return THe identifier for the registered AD value.
+       * @param[in, out]   index  The identifier registered for the old value. This value may be set here or already
+       *                          be the value from createIndex.
        */
-      static IndexType registerValue(Type& value, PassiveType& oldPrimal);
+      static void registerValue(Type& value, PassiveType& oldPrimal);
 
       /**
        * @brief Delete the index in a buffer such that the buffer can be overwritten.
        * @param[in,out] value  The AD value in the buffer.
        */
       static void clearIndex(Type& value);
+
+      /**
+       * @brief Create an index for the given item in the buffer.
+       * @param[in,out]  value  The AD value in the buffer.
+       * @param[out]     index  The index for the value.
+       */
+      static void createIndex(Type& value, IndexType& index);
 
       /**
        * @brief Get the primal floating point value of the AD value.
