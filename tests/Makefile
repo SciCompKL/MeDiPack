@@ -134,7 +134,7 @@ $(eval $(value DRIVER_INST))
 # Driver for RealReversePrimalIndex
 DRIVER_NAME  := CoDiPrimalIndex
 DRIVER_TESTS := $(BASIC_TESTS)
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimalIndex -DPRIMAL_RESTORE
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimalIndex
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with untyped interface
