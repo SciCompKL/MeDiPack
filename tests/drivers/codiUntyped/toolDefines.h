@@ -34,7 +34,7 @@
 
 typedef codi::RealReverse NUMBER;
 
-#define TOOL CoDiPackTool<NUMBER, false, true>
+#define TOOL CoDiPackTool<NUMBER>
 
 #include "../globalDefines.h"
 

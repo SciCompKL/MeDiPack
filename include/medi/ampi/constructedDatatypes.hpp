@@ -380,6 +380,7 @@ namespace medi {
 
           for(int curType = 0; curType < nTypes; ++curType) {
             types[curType]->createIndices(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, indices, totalIndexOffset, blockLengths[curType]);
+            totalIndexOffset +=  types[curType]->computeActiveElements(blockLengths[curType]);
           }
         }
       }
