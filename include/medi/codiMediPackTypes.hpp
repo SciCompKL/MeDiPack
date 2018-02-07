@@ -310,6 +310,14 @@ struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, CoDiPackTool<CoDiT
           }
           index = value.getGradientData();
         }
+      } else {
+
+        if(CoDiType::TapeType::RequiresPrimalReset) {
+          oldPrimal = 0.0;
+        }
+        if(!CoDiType::TapeType::LinearIndexHandler) {
+          index = 0;
+        }
       }
     }
 };
