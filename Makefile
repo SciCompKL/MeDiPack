@@ -43,6 +43,13 @@ GENERATED_FILES= \
 
 ASTYLE_FILE=template.style
 
+ASTYLE:=$(shell command -v astyle 2> /dev/null)
+ifdef ASTYLE
+  ASTYLE_CMD=astyle --options=$(ASTYLE_FILE)
+else
+	ASTYLE_CMD=cat
+endif
+
 #list all source files in DOC_DIR
 DOC_FILES   = $(wildcard $(DOC_DIR)/*.cpp)
 #list all dependency files in BUILD_DIR
@@ -81,17 +88,17 @@ $(GEN_DIR)/medi: $(GEN_DIR)
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 $(GEN_DIR)/%.h:$(TEMPL_DIR)/%_h.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 $(GEN_DIR)/%.cpp:$(TEMPL_DIR)/%_cpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 #rules for the tutorial files

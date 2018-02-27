@@ -4,7 +4,7 @@ element: functions
 
 element: function
   child of: functions
-  contains elements: arg, send, recv, despls, operator, request, type, message, status
+  contains elements: arg, send, recv, displs, operator, request, type, message, status
   attributes:            name -> The name of the function. Used for naming handles, functions etc.
                       version -> The mpi version this function was added to the standard.
         [optional] deprecated -> The mpi version this definition was removed from the standard.
