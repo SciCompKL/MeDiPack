@@ -690,7 +690,7 @@ namespace medi {
                 if(AMPI_IN_PLACE != $(item.name)) {
 .             endif
 .             if(defined(item.displs))
-                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), getCommSize(comm), $(item.type));
+                createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(item.count), $(item.displs), getCommSize(comm), $(item.type));
 .             else
                 h->$(item.name)Count = $(item.type)->computeActiveElements($(item.count));
 .             endif
@@ -699,9 +699,9 @@ namespace medi {
                 } else {
 .                if(defined(inplaceBuffer.displs))
 .                  if(defined(item.displs))
-                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), getCommSize(comm), $(inplaceBuffer.type));
+                     createLinearIndexDisplacements(h->$(item.name)Count, h->$(item.name)Displs, $(inplaceBuffer.count), $(inplaceBuffer.displs), getCommSize(comm), $(inplaceBuffer.type));
 .                  else
-                     h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements($(inplaceBuffer.count)[getCommRank(comm)]);
+                     h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements(displs[getCommRank(comm)] + $(inplaceBuffer.count)[getCommRank(comm)]) - $(inplaceBuffer.type)->computeActiveElements(displs[getCommRank(comm)]);
 .                  endif
 .                else
                    h->$(item.name)Count = $(inplaceBuffer.type)->computeActiveElements($(inplaceBuffer.count));

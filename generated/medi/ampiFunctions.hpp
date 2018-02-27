@@ -2500,11 +2500,12 @@ namespace medi {
         if(AMPI_IN_PLACE != sendbuf) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
         } else {
-          h->sendbufCount = recvtype->computeActiveElements(recvcounts[getCommRank(comm)]);
+          h->sendbufCount = recvtype->computeActiveElements(displs[getCommRank(comm)] + recvcounts[getCommRank(
+                              comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
-        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, displs, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
@@ -3155,13 +3156,13 @@ namespace medi {
 
         // create the index buffers
         if(AMPI_IN_PLACE != sendbuf) {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, getCommSize(comm), sendtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, sdispls, getCommSize(comm), sendtype);
         } else {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, recvcounts, getCommSize(comm), recvtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, recvcounts, rdispls, getCommSize(comm), recvtype);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
-        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, rdispls, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
@@ -3827,12 +3828,13 @@ namespace medi {
         if(AMPI_IN_PLACE != sendbuf) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
         } else {
-          h->sendbufCount = recvtype->computeActiveElements(recvcounts[getCommRank(comm)]);
+          h->sendbufCount = recvtype->computeActiveElements(displs[getCommRank(comm)] + recvcounts[getCommRank(
+                              comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
-          createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+          createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, displs, getCommSize(comm), recvtype);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
           recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
         }
@@ -4385,11 +4387,12 @@ namespace medi {
         if(AMPI_IN_PLACE != sendbuf) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
         } else {
-          h->sendbufCount = recvtype->computeActiveElements(recvcounts[getCommRank(comm)]);
+          h->sendbufCount = recvtype->computeActiveElements(displs[getCommRank(comm)] + recvcounts[getCommRank(
+                              comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
-        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, displs, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
@@ -5304,13 +5307,13 @@ namespace medi {
 
         // create the index buffers
         if(AMPI_IN_PLACE != sendbuf) {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, getCommSize(comm), sendtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, sdispls, getCommSize(comm), sendtype);
         } else {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, recvcounts, getCommSize(comm), recvtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, recvcounts, rdispls, getCommSize(comm), recvtype);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
-        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+        createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, rdispls, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
 
@@ -6244,12 +6247,13 @@ namespace medi {
         if(AMPI_IN_PLACE != sendbuf) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
         } else {
-          h->sendbufCount = recvtype->computeActiveElements(recvcounts[getCommRank(comm)]);
+          h->sendbufCount = recvtype->computeActiveElements(displs[getCommRank(comm)] + recvcounts[getCommRank(
+                              comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
-          createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, getCommSize(comm), recvtype);
+          createLinearIndexDisplacements(h->recvbufCount, h->recvbufDispls, recvcounts, displs, getCommSize(comm), recvtype);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
           recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
         }
@@ -7221,14 +7225,15 @@ namespace medi {
 
         // create the index buffers
         if(root == getCommRank(comm)) {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, getCommSize(comm), sendtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, displs, getCommSize(comm), sendtype);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
           recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
         } else {
-          h->recvbufCount = sendtype->computeActiveElements(sendcounts[getCommRank(comm)]);
+          h->recvbufCount = sendtype->computeActiveElements(displs[getCommRank(comm)] + sendcounts[getCommRank(
+                              comm)]) - sendtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -8004,14 +8009,15 @@ namespace medi {
 
         // create the index buffers
         if(root == getCommRank(comm)) {
-          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, getCommSize(comm), sendtype);
+          createLinearIndexDisplacements(h->sendbufCount, h->sendbufDispls, sendcounts, displs, getCommSize(comm), sendtype);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
           recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
         } else {
-          h->recvbufCount = sendtype->computeActiveElements(sendcounts[getCommRank(comm)]);
+          h->recvbufCount = sendtype->computeActiveElements(displs[getCommRank(comm)] + sendcounts[getCommRank(
+                              comm)]) - sendtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);

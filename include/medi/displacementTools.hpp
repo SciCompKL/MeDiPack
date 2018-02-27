@@ -136,22 +136,22 @@ namespace medi {
    * The counts are computed by the type such that the result can hold all indices, passive values, etc.
    *
    * @param[out] linearCounts  The linearized counts.
-   * @param[out] linearDispls  The linearized displacements.
    * @param[in]        counts  The size of each rank.
+   * @param[in]        displs  The displacement of each rank.
    * @param[in]         ranks  The number of ranks.
    * @param[in]          type  The mpi data type.
    *
    * @tparam Datatype  The type for the datatype.
    */
   template<typename Datatype>
-  inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, int ranks, Datatype* type) {
+  inline void createLinearIndexDisplacements(int* &linearCounts, int* &linearDispls, const int* counts, const int* displs, int ranks, Datatype* type) {
     linearCounts = new int[ranks];
     linearDispls = new int[ranks];
 
-    linearCounts[0] = type->computeActiveElements(counts[0]);
+    linearCounts[0] = type->computeActiveElements(displs[0] + counts[0]);
     linearDispls[0] = 0;
     for(int i = 1; i < ranks; ++i) {
-      linearCounts[i] = type->computeActiveElements(counts[i]);
+      linearCounts[i] = type->computeActiveElements(displs[i] + counts[i]) - linearCounts[i - 1];
       linearDispls[i] = linearCounts[i - 1] +  linearDispls[i - 1];
     }
   }
