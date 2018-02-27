@@ -300,6 +300,9 @@ struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, CoDiPackTool<CoDiT
         if(CoDiType::TapeType::LinearIndexHandler) {
           // value has been registered in createIndices
           value.getGradientData() = index;
+
+          // in createIndices the value has been zero. So set now the correct value
+          Type::getGlobalTape().setPrimalValue(index, value.getValue());
           if(CoDiType::TapeType::RequiresPrimalReset) {
             oldPrimal = 0.0;
           }
