@@ -651,7 +651,7 @@ namespace medi {
 .
 .-    create the linear displacements
 .     for curFunction.displs as item
-        const int* $(item.name)Mod = $(item.name);
+        MEDI_OPTIONAL_CONST int* $(item.name)Mod = $(item.name);
         int $(item.name)TotalSize = 0;
         if(nullptr != $(item.name)) {
           $(item.name)TotalSize = computeDisplacementsTotalSize($(item.counts), getCommSize($(item.ranks)));

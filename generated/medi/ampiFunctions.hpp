@@ -2418,8 +2418,8 @@ namespace medi {
     int* recvbufCount;
     /* required for async */ int* recvbufCountVec;
     /* required for async */ int* recvbufDisplsVec;
-    const  int* recvcounts;
-    const  int* displs;
+    MEDI_OPTIONAL_CONST  int* recvcounts;
+    MEDI_OPTIONAL_CONST  int* displs;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
 
@@ -2485,7 +2485,8 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Allgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
-                      typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm) {
+                      typename RECVTYPE::Type* recvbuf, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs,
+                      RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {
@@ -2501,7 +2502,7 @@ namespace medi {
         h = new AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -3068,8 +3069,8 @@ namespace medi {
     int* sendbufCount;
     /* required for async */ int* sendbufCountVec;
     /* required for async */ int* sendbufDisplsVec;
-    const  int* sendcounts;
-    const  int* sdispls;
+    MEDI_OPTIONAL_CONST  int* sendcounts;
+    MEDI_OPTIONAL_CONST  int* sdispls;
     SENDTYPE* sendtype;
     int recvbufTotalSize;
     typename RECVTYPE::IndexType* recvbufIndices;
@@ -3079,8 +3080,8 @@ namespace medi {
     int* recvbufCount;
     /* required for async */ int* recvbufCountVec;
     /* required for async */ int* recvbufDisplsVec;
-    const  int* recvcounts;
-    const  int* rdispls;
+    MEDI_OPTIONAL_CONST  int* recvcounts;
+    MEDI_OPTIONAL_CONST  int* rdispls;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
 
@@ -3152,9 +3153,9 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Alltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
-                     SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
-                     AMPI_Comm comm) {
+  int AMPI_Alltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, MEDI_OPTIONAL_CONST int* sendcounts,
+                     MEDI_OPTIONAL_CONST int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
+                     MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {
@@ -3170,7 +3171,7 @@ namespace medi {
         h = new AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* sdisplsMod = sdispls;
+      MEDI_OPTIONAL_CONST int* sdisplsMod = sdispls;
       int sdisplsTotalSize = 0;
       if(nullptr != sdispls) {
         sdisplsTotalSize = computeDisplacementsTotalSize(sendcounts, getCommSize(comm));
@@ -3178,7 +3179,7 @@ namespace medi {
           sdisplsMod = createLinearDisplacements(sendcounts, getCommSize(comm));
         }
       }
-      const int* rdisplsMod = rdispls;
+      MEDI_OPTIONAL_CONST int* rdisplsMod = rdispls;
       int rdisplsTotalSize = 0;
       if(nullptr != rdispls) {
         rdisplsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -3868,7 +3869,7 @@ namespace medi {
         h = new AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -4444,7 +4445,7 @@ namespace medi {
         h = new AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -5376,7 +5377,7 @@ namespace medi {
         h = new AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* sdisplsMod = sdispls;
+      MEDI_OPTIONAL_CONST int* sdisplsMod = sdispls;
       int sdisplsTotalSize = 0;
       if(nullptr != sdispls) {
         sdisplsTotalSize = computeDisplacementsTotalSize(sendcounts, getCommSize(comm));
@@ -5384,7 +5385,7 @@ namespace medi {
           sdisplsMod = createLinearDisplacements(sendcounts, getCommSize(comm));
         }
       }
-      const int* rdisplsMod = rdispls;
+      MEDI_OPTIONAL_CONST int* rdisplsMod = rdispls;
       int rdisplsTotalSize = 0;
       if(nullptr != rdispls) {
         rdisplsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -6342,7 +6343,7 @@ namespace medi {
         h = new AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(recvcounts, getCommSize(comm));
@@ -7354,7 +7355,7 @@ namespace medi {
         h = new AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(sendcounts, getCommSize(comm));
@@ -8169,7 +8170,7 @@ namespace medi {
         h = new AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
       recvtype->getADTool().startAssembly(h);
-      const int* displsMod = displs;
+      MEDI_OPTIONAL_CONST int* displsMod = displs;
       int displsTotalSize = 0;
       if(nullptr != displs) {
         displsTotalSize = computeDisplacementsTotalSize(sendcounts, getCommSize(comm));
@@ -8891,16 +8892,17 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
-  inline int AMPI_Dist_graph_create(AMPI_Comm comm_old, int n, const int* sources, const int* degrees,
-                                    const int* destinations, const int* weights, AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
+  inline int AMPI_Dist_graph_create(AMPI_Comm comm_old, int n, MEDI_OPTIONAL_CONST int* sources,
+                                    MEDI_OPTIONAL_CONST int* degrees, MEDI_OPTIONAL_CONST int* destinations, MEDI_OPTIONAL_CONST int* weights,
+                                    AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
     return MPI_Dist_graph_create(comm_old, n, sources, degrees, destinations, weights, info, reorder, comm_dist_graph);
   }
 
 #endif
 #if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
-  inline int AMPI_Dist_graph_create_adjacent(AMPI_Comm comm_old, int indegree, const int* sources,
-      const int* sourceweights, int outdegree, const int* destinations, const int* destweights, AMPI_Info info, int reorder,
-      AMPI_Comm* comm_dist_graph) {
+  inline int AMPI_Dist_graph_create_adjacent(AMPI_Comm comm_old, int indegree, MEDI_OPTIONAL_CONST int* sources,
+      MEDI_OPTIONAL_CONST int* sourceweights, int outdegree, MEDI_OPTIONAL_CONST int* destinations,
+      MEDI_OPTIONAL_CONST int* destweights, AMPI_Info info, int reorder, AMPI_Comm* comm_dist_graph) {
     return MPI_Dist_graph_create_adjacent(comm_old, indegree, sources, sourceweights, outdegree, destinations, destweights,
                                           info, reorder, comm_dist_graph);
   }
@@ -9799,7 +9801,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_category_get_index(const char* name, int* cat_index) {
     return MPI_T_category_get_index(name, cat_index);
   }
@@ -9824,7 +9826,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_cvar_get_index(const char* name, int* cvar_index) {
     return MPI_T_cvar_get_index(name, cvar_index);
   }
@@ -9884,7 +9886,7 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_3_1 <= MEDI_MPI_TARGET
   inline int AMPI_T_pvar_get_index(const char* name, int var_class, int* pvar_index) {
     return MPI_T_pvar_get_index(name, var_class, pvar_index);
   }
