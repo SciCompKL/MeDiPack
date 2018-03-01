@@ -27,7 +27,7 @@ The same is true for the `MINLOC` and `MAXLOC` operators. An example is:
 
 The process gets more involved if custom operators are used in the application. The default handling of MeDiPack in such
 cases is to change the reduce operation into a gather operation and to perform the reduction on the local processors.
-This enables the AD tool to *see* the operations and perform the correct adjoint implementation. An example for such an
+This enables the AD tool to see the operations and perform the correct adjoint implementation. An example for such an
 operation is:
 ~~~
   struct Residuals {
@@ -339,16 +339,24 @@ void optimizedCustomOperator() {
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  TOOL::init();
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  int size;
 
-  customOperator();
+  AMPI_Comm_size(AMPI_COMM_WORLD, &size);
+  if(size != 2) {
+    std::cout << "Please start the tutorial with two processes." << std::endl;
+  } else {
 
-  tape.reset();
+    TOOL::init();
+    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
-  optimizedCustomOperator();
+    customOperator();
 
-  TOOL::finalize();
+    tape.reset();
+
+    optimizedCustomOperator();
+
+    TOOL::finalize();
+  }
 
   AMPI_Finalize();
 }

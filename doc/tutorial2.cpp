@@ -4,10 +4,7 @@
 
 #include <iostream>
 
-using /**
- * @brief Global namespace for MeDiPack - Message Differentiation Package
- */
-namespace medi ;
+using namespace medi;
 
 #define TOOL CoDiPackTool<codi::RealReverse>
 
@@ -135,16 +132,24 @@ void optimizedCustomOperator() {
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  TOOL::init();
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  int size;
 
-  customOperator();
+  AMPI_Comm_size(AMPI_COMM_WORLD, &size);
+  if(size != 2) {
+    std::cout << "Please start the tutorial with two processes." << std::endl;
+  } else {
 
-  tape.reset();
+    TOOL::init();
+    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
-  optimizedCustomOperator();
+    customOperator();
 
-  TOOL::finalize();
+    tape.reset();
+
+    optimizedCustomOperator();
+
+    TOOL::finalize();
+  }
 
   AMPI_Finalize();
 }

@@ -4,10 +4,7 @@
 
 #include <iostream>
 
-using /**
- * @brief Global namespace for MeDiPack - Message Differentiation Package
- */
-namespace medi ;
+using namespace medi;
 
 #define TOOL CoDiPackTool<codi::RealReverse>
 
@@ -17,31 +14,38 @@ int main(int nargs, char** args) {
   TOOL::init();
 
   int rank;
+  int size;
 
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
+  AMPI_Comm_size(AMPI_COMM_WORLD, &size);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
-  tape.setActive();
-
-  codi::RealReverse a = 3.0;
-  if( 0 == rank ) {
-    tape.registerInput(a);
-
-    AMPI_Send(&a, 1, TOOL::MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+  if(size != 2) {
+    std::cout << "Please start the tutorial with two processes." << std::endl;
   } else {
-    AMPI_Recv(&a, 1, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
-    tape.registerOutput(a);
+    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+    tape.setActive();
 
-    a.setGradient(100.0);
-  }
+    codi::RealReverse a = 3.0;
+    if( 0 == rank ) {
+      tape.registerInput(a);
 
-  tape.setPassive();
+      AMPI_Send(&a, 1, TOOL::MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+    } else {
+      AMPI_Recv(&a, 1, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
-  tape.evaluate();
+      tape.registerOutput(a);
 
-  if(0 == rank) {
-    std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
+      a.setGradient(100.0);
+    }
+
+    tape.setPassive();
+
+    tape.evaluate();
+
+    if(0 == rank) {
+      std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
+    }
   }
 
   TOOL::finalize();

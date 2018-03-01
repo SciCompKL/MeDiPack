@@ -245,7 +245,7 @@ namespace medi {
        * @param[in, out]   index  The identifier registered for the old value. This value may be set here or already
        *                          be the value from createIndex.
        */
-      static void registerValue(Type& value, PassiveType& oldPrimal);
+      static void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index);
 
       /**
        * @brief Delete the index in a buffer such that the buffer can be overwritten.

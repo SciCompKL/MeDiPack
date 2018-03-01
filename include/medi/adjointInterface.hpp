@@ -40,8 +40,17 @@ namespace medi {
   class AdjointInterface {
     public:
 
+      /**
+       * @brief Compute the number of active types in the buffer.
+       * @param[in] elements  The number of elements in the buffer.
+       * @return The number of active types in the buffer.
+       */
       virtual int computeElements(int elements) const = 0;
 
+      /**
+       * @brief The vector size for the current evaluation.
+       * @return The vector size for the current evaluation.
+       */
       virtual int getVectorSize() const = 0;
 
       /**
