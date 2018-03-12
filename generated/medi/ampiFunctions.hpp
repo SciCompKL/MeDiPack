@@ -31,6 +31,7 @@
 #include "../../include/medi/ampi/async.hpp"
 #include "../../include/medi/ampi/message.hpp"
 #include "../../include/medi/ampi/reverseFunctions.hpp"
+#include "../../include/medi/ampi/forwardFunctions.hpp"
 #include "../../include/medi/displacementTools.hpp"
 #include "../../include/medi/mpiTools.h"
 
@@ -65,6 +66,22 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Bsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Bsend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Bsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -129,7 +146,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Bsend_b<DATATYPE>;
+        h->funcReverse = AMPI_Bsend_b<DATATYPE>;
+        h->funcForward = AMPI_Bsend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -199,6 +217,31 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h;
   };
+
+  template<typename DATATYPE>
+  void AMPI_Ibsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Ibsend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm,
+                              &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ibsend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Ibsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -274,7 +317,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Ibsend_b<DATATYPE>;
+        h->funcReverse = AMPI_Ibsend_b<DATATYPE>;
+        h->funcForward = AMPI_Ibsend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -299,7 +343,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibsend_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibsend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Ibsend_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -398,6 +443,29 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Imrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+
+    AMPI_Imrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Imrecv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Imrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
 
@@ -477,7 +545,8 @@ namespace medi {
         datatype->createIndices(buf, 0, h->bufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Imrecv_b<DATATYPE>;
+        h->funcReverse = AMPI_Imrecv_b<DATATYPE>;
+        h->funcForward = AMPI_Imrecv_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
@@ -501,7 +570,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Imrecv_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Imrecv_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Imrecv_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -604,6 +674,30 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Irecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+
+    AMPI_Irecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm,
+                             &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Irecv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Irecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
 
@@ -684,7 +778,8 @@ namespace medi {
         datatype->createIndices(buf, 0, h->bufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Irecv_b<DATATYPE>;
+        h->funcReverse = AMPI_Irecv_b<DATATYPE>;
+        h->funcForward = AMPI_Irecv_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->source = source;
@@ -712,7 +807,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irecv_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irecv_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Irecv_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -814,6 +910,31 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Irsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Irsend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm,
+                              &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Irsend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Irsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
 
@@ -887,7 +1008,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Irsend_b<DATATYPE>;
+        h->funcReverse = AMPI_Irsend_b<DATATYPE>;
+        h->funcForward = AMPI_Irsend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -912,7 +1034,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irsend_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irsend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Irsend_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -1010,6 +1133,31 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Isend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Isend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm,
+                             &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Isend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Isend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
 
@@ -1083,7 +1231,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Isend_b<DATATYPE>;
+        h->funcReverse = AMPI_Isend_b<DATATYPE>;
+        h->funcForward = AMPI_Isend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1108,7 +1257,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Isend_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Isend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Isend_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -1206,6 +1356,31 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Issend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Issend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm,
+                              &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Issend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Issend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
 
@@ -1279,7 +1454,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Issend_b<DATATYPE>;
+        h->funcReverse = AMPI_Issend_b<DATATYPE>;
+        h->funcForward = AMPI_Issend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1304,7 +1480,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Issend_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Issend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Issend_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -1393,6 +1570,21 @@ namespace medi {
 
 
   template<typename DATATYPE>
+  void AMPI_Mrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+
+    AMPI_Mrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, h->status);
+
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Mrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
 
@@ -1462,7 +1654,8 @@ namespace medi {
         datatype->createIndices(buf, 0, h->bufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Mrecv_b<DATATYPE>;
+        h->funcReverse = AMPI_Mrecv_b<DATATYPE>;
+        h->funcForward = AMPI_Mrecv_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
@@ -1530,6 +1723,22 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Recv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+
+    MPI_Status status;
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+
+    AMPI_Recv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status);
+
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Recv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -1602,7 +1811,8 @@ namespace medi {
         datatype->createIndices(buf, 0, h->bufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Recv_b<DATATYPE>;
+        h->funcReverse = AMPI_Recv_b<DATATYPE>;
+        h->funcForward = AMPI_Recv_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->source = source;
@@ -1668,6 +1878,22 @@ namespace medi {
 
 
   template<typename DATATYPE>
+  void AMPI_Rsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Rsend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Rsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
 
@@ -1730,7 +1956,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Rsend_b<DATATYPE>;
+        h->funcReverse = AMPI_Rsend_b<DATATYPE>;
+        h->funcForward = AMPI_Rsend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1787,6 +2014,22 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Send_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Send_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Send_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -1851,7 +2094,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Send_b<DATATYPE>;
+        h->funcReverse = AMPI_Send_b<DATATYPE>;
+        h->funcForward = AMPI_Send_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1931,6 +2175,31 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Sendrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    MPI_Status status;
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Sendrecv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype, h->dest,
+                                          h->sendtag, h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->source, h->recvtag, h->comm, &status);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Sendrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -2031,7 +2300,8 @@ namespace medi {
         recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
 
         // pack all the variables in the handle
-        h->func = AMPI_Sendrecv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Sendrecv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Sendrecv_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->dest = dest;
@@ -2105,6 +2375,22 @@ namespace medi {
 
 
   template<typename DATATYPE>
+  void AMPI_Ssend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufAdjoints = nullptr;
+    h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
+
+
+    AMPI_Ssend_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->dest, h->tag, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Ssend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
 
@@ -2167,7 +2453,8 @@ namespace medi {
 
 
         // pack all the variables in the handle
-        h->func = AMPI_Ssend_b<DATATYPE>;
+        h->funcReverse = AMPI_Ssend_b<DATATYPE>;
+        h->funcForward = AMPI_Ssend_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -2243,6 +2530,30 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Allgather_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                           h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -2358,7 +2669,8 @@ namespace medi {
         recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
-        h->func = AMPI_Allgather_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Allgather_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Allgather_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -2451,6 +2763,33 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Allgatherv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                            h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    delete [] h->recvbufCountVec;
+    delete [] h->recvbufDisplsVec;
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -2589,7 +2928,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Allgatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Allgatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Allgatherv_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -2685,6 +3025,30 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Allreduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Allreduce_global_fwd<DATATYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->recvbufAdjoints, h->recvbufCountVec,
+                                        h->count, h->datatype, h->op, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Allreduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -2814,7 +3178,8 @@ namespace medi {
         datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Allreduce_global_b<DATATYPE>;
+        h->funcReverse = AMPI_Allreduce_global_b<DATATYPE>;
+        h->funcForward = AMPI_Allreduce_global_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -2905,6 +3270,30 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoall_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Alltoall_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                          h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoall_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -3018,7 +3407,8 @@ namespace medi {
         recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
-        h->func = AMPI_Alltoall_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Alltoall_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Alltoall_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -3117,6 +3507,37 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoallv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->sendbufCountVec, h->sendbufDisplsVec, h->sendbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Alltoallv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendbufDisplsVec, h->sendcounts,
+                                           h->sdispls, h->sendtype, h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->rdispls,
+                                           h->recvtype, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    delete [] h->sendbufCountVec;
+    delete [] h->sendbufDisplsVec;
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    delete [] h->recvbufCountVec;
+    delete [] h->recvbufDisplsVec;
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoallv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -3267,7 +3688,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Alltoallv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Alltoallv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Alltoallv_d<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->sdispls = sdispls;
         h->sendtype = sendtype;
@@ -3367,6 +3789,33 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Bcast_wrap_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufferRecvAdjoints = nullptr;
+    h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufferRecvAdjoints, h->bufferRecvTotalSize );
+    h->bufferSendAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->bufferSendCountVec = adjointInterface->getVectorSize() * h->bufferSendCount;
+      adjointInterface->createAdjointTypeBuffer(h->bufferSendAdjoints, h->bufferSendTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->bufferSendIndices, h->bufferSendAdjoints, h->bufferSendTotalSize);
+
+    }
+
+    AMPI_Bcast_wrap_fwd<DATATYPE>(h->bufferSendAdjoints, h->bufferSendCountVec, h->bufferRecvAdjoints,
+                                  h->bufferRecvCountVec, h->count, h->datatype, h->root, h->comm);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->bufferSendAdjoints);
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufferRecvIndices, h->bufferRecvAdjoints, h->bufferRecvTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufferRecvAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Bcast_wrap_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -3492,7 +3941,8 @@ namespace medi {
         datatype->createIndices(bufferRecv, 0, h->bufferRecvIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Bcast_wrap_b<DATATYPE>;
+        h->funcReverse = AMPI_Bcast_wrap_b<DATATYPE>;
+        h->funcForward = AMPI_Bcast_wrap_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
@@ -3580,6 +4030,33 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Gather_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                        h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    }
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -3710,7 +4187,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Gather_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Gather_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Gather_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -3813,6 +4291,37 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                        adjointInterface->getVectorSize());
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Gatherv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                         h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->root, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+      delete [] h->recvbufCountVec;
+      delete [] h->recvbufDisplsVec;
+    }
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -3966,7 +4475,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Gatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Gatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Gatherv_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -4087,6 +4597,39 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Iallgather_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                            h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgather_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -4214,7 +4757,8 @@ namespace medi {
         recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
-        h->func = AMPI_Iallgather_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Iallgather_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Iallgather_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -4245,7 +4789,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgather_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgather_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Iallgather_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -4382,6 +4927,43 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
+      static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+
+    h->recvbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Iallgatherv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+        h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->comm,
+        &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgatherv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
+      static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    delete [] h->recvbufCountVec;
+    delete [] h->recvbufDisplsVec;
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -4532,7 +5114,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Iallgatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Iallgatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Iallgatherv_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -4568,7 +5151,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgatherv_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgatherv_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Iallgatherv_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -4706,6 +5290,41 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h;
   };
+
+  template<typename DATATYPE>
+  void AMPI_Iallreduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
+        (handle);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Iallreduce_global_fwd<DATATYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->recvbufAdjoints, h->recvbufCountVec,
+                                         h->count, h->datatype, h->op, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Iallreduce_global_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename DATATYPE>
   void AMPI_Iallreduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -4849,7 +5468,8 @@ namespace medi {
         datatype->createIndices(recvbuf, 0, h->recvbufIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Iallreduce_global_b<DATATYPE>;
+        h->funcReverse = AMPI_Iallreduce_global_b<DATATYPE>;
+        h->funcForward = AMPI_Iallreduce_global_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -4878,7 +5498,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallreduce_global_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallreduce_global_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Iallreduce_global_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -5013,6 +5634,39 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoall_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Ialltoall_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                           h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoall_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoall_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (handle);
@@ -5136,7 +5790,8 @@ namespace medi {
         recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount * getCommSize(comm));
 
         // pack all the variables in the handle
-        h->func = AMPI_Ialltoall_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Ialltoall_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Ialltoall_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -5167,7 +5822,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoall_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoall_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Ialltoall_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -5312,6 +5968,46 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoallv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    createLinearDisplacementsAndCount(h->sendbufCountVec, h->sendbufDisplsVec, h->sendbufCount, getCommSize(h->comm),
+                                      adjointInterface->getVectorSize());
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Ialltoallv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendbufDisplsVec, h->sendcounts,
+                                            h->sdispls, h->sendtype, h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->rdispls,
+                                            h->recvtype, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoallv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    delete [] h->sendbufCountVec;
+    delete [] h->sendbufDisplsVec;
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    delete [] h->recvbufCountVec;
+    delete [] h->recvbufDisplsVec;
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoallv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -5473,7 +6169,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Ialltoallv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Ialltoallv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Ialltoallv_d<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->sdispls = sdispls;
         h->sendtype = sendtype;
@@ -5512,7 +6209,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoallv_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoallv_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Ialltoallv_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -5659,6 +6357,41 @@ namespace medi {
   };
 
   template<typename DATATYPE>
+  void AMPI_Ibcast_wrap_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+
+    h->bufferRecvAdjoints = nullptr;
+    h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
+    adjointInterface->createAdjointTypeBuffer(h->bufferRecvAdjoints, h->bufferRecvTotalSize );
+    h->bufferSendAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->bufferSendCountVec = adjointInterface->getVectorSize() * h->bufferSendCount;
+      adjointInterface->createAdjointTypeBuffer(h->bufferSendAdjoints, h->bufferSendTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->bufferSendIndices, h->bufferSendAdjoints, h->bufferSendTotalSize);
+
+    }
+
+    AMPI_Ibcast_wrap_fwd<DATATYPE>(h->bufferSendAdjoints, h->bufferSendCountVec, h->bufferRecvAdjoints,
+                                   h->bufferRecvCountVec, h->count, h->datatype, h->root, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ibcast_wrap_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->bufferSendAdjoints);
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->bufferRecvIndices, h->bufferRecvAdjoints, h->bufferRecvTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->bufferRecvAdjoints);
+  }
+
+  template<typename DATATYPE>
   void AMPI_Ibcast_wrap_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
 
@@ -5792,7 +6525,8 @@ namespace medi {
         datatype->createIndices(bufferRecv, 0, h->bufferRecvIndices, 0, count);
 
         // pack all the variables in the handle
-        h->func = AMPI_Ibcast_wrap_b<DATATYPE>;
+        h->funcReverse = AMPI_Ibcast_wrap_b<DATATYPE>;
+        h->funcForward = AMPI_Ibcast_wrap_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
@@ -5821,7 +6555,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibcast_wrap_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibcast_wrap_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Ibcast_wrap_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -5951,6 +6686,43 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Igather_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                         h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igather_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    }
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -6093,7 +6865,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Igather_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Igather_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Igather_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -6128,7 +6901,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igather_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igather_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Igather_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -6275,6 +7049,47 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
+                                        adjointInterface->getVectorSize());
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Igatherv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                          h->recvbufAdjoints, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->root, h->comm,
+                                          &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igatherv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+      delete [] h->recvbufCountVec;
+      delete [] h->recvbufDisplsVec;
+    }
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -6440,7 +7255,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Igatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Igatherv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Igatherv_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -6480,7 +7296,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igatherv_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igatherv_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Igatherv_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -6628,6 +7445,43 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h;
   };
+
+  template<typename DATATYPE>
+  void AMPI_Ireduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Ireduce_global_fwd<DATATYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->recvbufAdjoints, h->recvbufCountVec,
+                                      h->count, h->datatype, h->op, h->root, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ireduce_global_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    }
+  }
 
   template<typename DATATYPE>
   void AMPI_Ireduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -6784,7 +7638,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Ireduce_global_b<DATATYPE>;
+        h->funcReverse = AMPI_Ireduce_global_b<DATATYPE>;
+        h->funcForward = AMPI_Ireduce_global_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -6817,7 +7672,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ireduce_global_b_finish<DATATYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ireduce_global_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Ireduce_global_d_finish<DATATYPE>, h);
         datatype->getADTool().addToolAction(waitH);
       }
     }
@@ -6966,6 +7822,43 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatter_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+    }
+
+    AMPI_Iscatter_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                          h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm, &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatter_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatter_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (handle);
@@ -7101,7 +7994,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Iscatter_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Iscatter_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Iscatter_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -7138,7 +8032,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatter_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatter_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Iscatter_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -7290,6 +8185,47 @@ namespace medi {
     AMPI_Request* request;
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatterv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      createLinearDisplacementsAndCount(h->sendbufCountVec, h->sendbufDisplsVec, h->sendbufCount, getCommSize(h->comm),
+                                        adjointInterface->getVectorSize());
+      adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+    }
+
+    AMPI_Iscatterv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendbufDisplsVec, h->sendcounts,
+                                           h->displs, h->sendtype, h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm,
+                                           &h->requestReverse);
+
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatterv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+
+    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+    MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+      delete [] h->sendbufCountVec;
+      delete [] h->sendbufDisplsVec;
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatterv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -7450,7 +8386,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Iscatterv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Iscatterv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Iscatterv_d<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->displs = displs;
         h->sendtype = sendtype;
@@ -7493,7 +8430,8 @@ namespace medi {
 
       // create adjoint wait
       if(nullptr != h) {
-        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatterv_b_finish<SENDTYPE, RECVTYPE>, h);
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatterv_b_finish<SENDTYPE, RECVTYPE>,
+                                           (ForwardFunction)AMPI_Iscatterv_d_finish<SENDTYPE, RECVTYPE>, h);
         recvtype->getADTool().addToolAction(waitH);
       }
     }
@@ -7632,6 +8570,34 @@ namespace medi {
     }
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Reduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+
+    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    h->recvbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    }
+    h->sendbufAdjoints = nullptr;
+    h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+    // Adjoint buffers are always linear in space so we can accesses them in one sweep
+    adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+
+    AMPI_Reduce_global_fwd<DATATYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->recvbufAdjoints, h->recvbufCountVec,
+                                     h->count, h->datatype, h->op, h->root, h->comm);
+
+    adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    if(h->root == getCommRank(h->comm)) {
+      // Adjoint buffers are always linear in space so they can be accessed in one sweep
+      adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+      adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+    }
+  }
 
   template<typename DATATYPE>
   void AMPI_Reduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -7776,7 +8742,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Reduce_global_b<DATATYPE>;
+        h->funcReverse = AMPI_Reduce_global_b<DATATYPE>;
+        h->funcForward = AMPI_Reduce_global_d<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -7881,6 +8848,34 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatter_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      h->sendbufCountVec = adjointInterface->getVectorSize() * h->sendbufCount;
+      adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+    }
+
+    AMPI_Scatter_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendcount, h->sendtype,
+                                         h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -8007,7 +9002,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Scatter_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Scatter_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Scatter_d<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -8117,6 +9113,37 @@ namespace medi {
     }
   };
 
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatterv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (handle);
+
+    h->recvbufAdjoints = nullptr;
+    h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
+    adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
+    h->sendbufAdjoints = nullptr;
+    if(h->root == getCommRank(h->comm)) {
+      createLinearDisplacementsAndCount(h->sendbufCountVec, h->sendbufDisplsVec, h->sendbufCount, getCommSize(h->comm),
+                                        adjointInterface->getVectorSize());
+      adjointInterface->createAdjointTypeBuffer(h->sendbufAdjoints, h->sendbufTotalSize );
+      // Adjoint buffers are always linear in space so we can accesses them in one sweep
+      adjointInterface->getAdjoints(h->sendbufIndices, h->sendbufAdjoints, h->sendbufTotalSize);
+
+    }
+
+    AMPI_Scatterv_fwd<SENDTYPE, RECVTYPE>(h->sendbufAdjoints, h->sendbufCountVec, h->sendbufDisplsVec, h->sendcounts,
+                                          h->displs, h->sendtype, h->recvbufAdjoints, h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm);
+
+    if(h->root == getCommRank(h->comm)) {
+      adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
+      delete [] h->sendbufCountVec;
+      delete [] h->sendbufDisplsVec;
+    }
+    // Adjoint buffers are always linear in space so they can be accessed in one sweep
+    adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
+    adjointInterface->deleteAdjointTypeBuffer(h->recvbufAdjoints);
+  }
 
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatterv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -8265,7 +9292,8 @@ namespace medi {
         }
 
         // pack all the variables in the handle
-        h->func = AMPI_Scatterv_b<SENDTYPE, RECVTYPE>;
+        h->funcReverse = AMPI_Scatterv_b<SENDTYPE, RECVTYPE>;
+        h->funcForward = AMPI_Scatterv_d<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->displs = displs;
         h->sendtype = sendtype;

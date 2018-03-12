@@ -366,7 +366,7 @@ function createBufferElementsComputation(buffer)
   endif
 endfunction
 
-function createBufferReverseSetup(buffer, curFunction, isRecv)
+function createBufferSetup(buffer, curFunction, getAdjoints, reverse)
 > h->$(my.buffer.name)Adjoints = nullptr;
   startRootReverse(my.buffer)
     if(defined(my.buffer.displs))
@@ -375,28 +375,28 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
 >     h->$(my.buffer.name)CountVec = adjointInterface->getVectorSize() * h->$(my.buffer.name)Count;
     endif
     allMul = ""
-    if(defined(my.buffer.all))
+    if(1 = my.reverse & defined(my.buffer.all))
       allMul = "* getCommSize(h->$(my.buffer.all))"
     endif
 >   adjointInterface->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
-    if(1 = my.isRecv)
+    if(1 = my.getAdjoints)
 >     // Adjoint buffers are always linear in space so we can accesses them in one sweep
 >     adjointInterface->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
 >
-      if(defined(my.curFunction->operator))
+      if(1 = my.reverse & defined(my.curFunction->operator)) #TODO: Add operator support for forward eval
 >       convOp.preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count, adjointInterface->getVectorSize());
       endif
     endif
   endRootReverse(my.buffer)
 endfunction
 
-function createBufferReverseCleanup(buffer, curFunction, isSend)
+function createBufferCleanup(buffer, curFunction, setAdjoints, reverse)
   startRootReverse(my.buffer)
-    if(1 = my.isSend)
-      if(defined(my.buffer.all))
+    if(1 = my.setAdjoints)
+      if(1 = my.reverse & defined(my.buffer.all))
 >       adjointInterface->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
       endif
-      if(defined(my.curFunction->operator))
+      if(1 = my.reverse & defined(my.curFunction->operator))
 >       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
 >       // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
 >       convOp.postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize, adjointInterface->getVectorSize());
@@ -490,7 +490,7 @@ function addPrimalAsyncSplit(curFunction)
 >
 >      // create adjoint wait
 >      if(nullptr != h) {
->        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
+>        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, (ForwardFunction)AMPI_$(my.curFunction.name)_d_finish<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
@@ -522,6 +522,22 @@ function addPrimalAsyncSplit(curFunction)
   endif
 endfunction
 
+function addForwardAsyncSplit(curFunction)
+  if(defined(my.curFunction.async))
+>  }
+>
+>  template<$(my.curFunction.tplDef)>
+>  void AMPI_$(my.curFunction.name)_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+>
+>    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
+>    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
+>
+     for my.curFunction.operator
+>      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+     endfor
+  endif
+endfunction
+
 function addReverseAsyncSplit(curFunction)
   if(defined(my.curFunction.async))
 >  }
@@ -547,6 +563,7 @@ endfunction
 #include "../../include/medi/ampi/async.hpp"
 #include "../../include/medi/ampi/message.hpp"
 #include "../../include/medi/ampi/reverseFunctions.hpp"
+#include "../../include/medi/ampi/forwardFunctions.hpp"
 #include "../../include/medi/displacementTools.hpp"
 #include "../../include/medi/mpiTools.h"
 
@@ -585,6 +602,38 @@ namespace medi {
     };
 . endif
 
+.- create the forward function
+  template<$(curFunction.tplDef)>
+  void AMPI_$(curFunction.name)_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+
+.   for curFunction.status
+      $(status.type) $(status.name);
+.   endfor
+.
+.   if(defined(curFunction->operator))
+      AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+.   endif
+.   for curFunction.recv
+.     createBufferSetup(recv, curFunction, 0, 0)
+.   endfor
+.
+.   for curFunction.send
+.     createBufferSetup(send, curFunction, 1, 0)
+.   endfor
+
+    AMPI_$(curFunction.name)_fwd<$(curFunction.tplArg)>($(curFunction.argRev));
+
+.   addForwardAsyncSplit(curFunction)
+.   for curFunction.send
+.     createBufferCleanup(send, curFunction, 0, 0)
+.   endfor
+.
+.   for curFunction.recv
+.     createBufferCleanup(recv, curFunction, 1, 0)
+.   endfor
+  }
+
 .- create the reverse function
   template<$(curFunction.tplDef)>
   void AMPI_$(curFunction.name)_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -598,25 +647,25 @@ namespace medi {
       AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
 .   endif
 .   for curFunction.recv
-.     createBufferReverseSetup(recv, curFunction, 1)
+.     createBufferSetup(recv, curFunction, 1, 1)
       if(h->$(curFunction.adType).isOldPrimalsRequired()) {
 .       createPrimalRestore(recv, curFunction, "OldPrimals")
       }
 .   endfor
 .
 .   for curFunction.send
-.     createBufferReverseSetup(send, curFunction, 0)
+.     createBufferSetup(send, curFunction, 0, 1)
 .   endfor
 
     AMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
 .   addReverseAsyncSplit(curFunction)
 .   for curFunction.send
-.     createBufferReverseCleanup(send, curFunction, 1)
+.     createBufferCleanup(send, curFunction, 1, 1)
 .   endfor
 .
 .   for curFunction.recv
-.     createBufferReverseCleanup(recv, curFunction, 0)
+.     createBufferCleanup(recv, curFunction, 0, 1)
 .   endfor
   }
 
@@ -760,7 +809,8 @@ namespace medi {
 .       endfor
 
         // pack all the variables in the handle
-        h->func = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
+        h->funcReverse = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
+        h->funcForward = AMPI_$(curFunction.name)_d<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
       }

@@ -78,14 +78,18 @@ namespace medi {
   extern const AMPI_Request AMPI_REQUEST_NULL;
 
   inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface);
+  inline void AMPI_Wait_d(HandleBase* handle, AdjointInterface* adjointInterface);
   struct WaitHandle : HandleBase {
-      ReverseFunction finishFunc;
+      ReverseFunction finishFuncReverse;
+      ForwardFunction finishFuncForward;
       HandleBase* handle;
 
-      WaitHandle(ReverseFunction finishFunc, HandleBase* handle) :
-        finishFunc(finishFunc),
+      WaitHandle(ReverseFunction finishFuncReverse, ForwardFunction finishFuncForward, HandleBase* handle) :
+        finishFuncReverse(finishFuncReverse),
+        finishFuncForward(finishFuncForward),
         handle(handle) {
-         this->func = (ReverseFunction)AMPI_Wait_b;
+         this->funcReverse = (ReverseFunction)AMPI_Wait_b;
+        this->funcForward = (ForwardFunction)AMPI_Wait_d;
         this->deleteType = ManualDeleteType::Wait;
         this->handle->deleteType = ManualDeleteType::Async;
       }
@@ -94,7 +98,13 @@ namespace medi {
   inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
-    h->finishFunc(h->handle, adjointInterface);
+    h->finishFuncReverse(h->handle, adjointInterface);
+  }
+
+  inline void AMPI_Wait_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    WaitHandle* h = static_cast<WaitHandle*>(handle);
+
+    h->finishFuncForward(h->handle, adjointInterface);
   }
 
   inline void performReverseAction(AMPI_Request *request) {

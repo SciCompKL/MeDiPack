@@ -198,7 +198,7 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType
 
   inline void addToolAction(medi::HandleBase* h) const {
     if(NULL != h) {
-      Type::getGlobalTape().pushExternalFunctionHandle(callFunc, h, deleteFunc);
+      Type::getGlobalTape().pushExternalFunctionHandle(callFuncReverse, h, deleteFunc, callFuncForward);
     }
   }
 
@@ -210,12 +210,20 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType
     MEDI_UNUSED(h);
   }
 
-  static void callFunc(void* tape, void* h, void* ah) {
+  static void callFuncReverse(void* tape, void* h, void* ah) {
     adjointTape = (Tape*)tape;
     medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
     CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real>*)ah);
-    handle->func(handle, &ahWrapper);
+    handle->funcReverse(handle, &ahWrapper);
   }
+
+  static void callFuncForward(void* tape, void* h, void* ah) {
+    adjointTape = (Tape*)tape;
+    medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
+    CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real>*)ah);
+    handle->funcForward(handle, &ahWrapper);
+  }
+
 
   static void deleteFunc(void* tape, void* h) {
     MEDI_UNUSED(tape);
