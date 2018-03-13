@@ -136,7 +136,7 @@ namespace medi {
    * The counts are scaled by the given factor.
    *
    * @param[in] countsOut  The generated counts.
-   * @param[in] displsOUt  The generated displacements.
+   * @param[in] displsOut  The generated displacements.
    * @param[in]    counts  The size of each rank.
    * @param[in]     ranks  The number of the ranks.
    * @param[in]     scale  The scaling factor of the counts and displacements.

@@ -101,7 +101,7 @@ namespace medi {
        * @brief Restore the old primal values from the floating point values in the buffer.
        *
        * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
-       * @param[out] adjoints  The vector with the old primal variables.
+       * @param[out]  primals  The vector with the old primal variables.
        * @param[in]  elements  The number of elements in the vectors.
        */
       virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;
