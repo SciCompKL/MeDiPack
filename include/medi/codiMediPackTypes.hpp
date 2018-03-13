@@ -118,8 +118,8 @@ struct CoDiMeDiAdjointInterfaceWrapper : public medi::AdjointInterface {
 
 
 
-template<typename CoDiType, typename Impl>
-struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
+template<typename CoDiType>
+struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
   typedef CoDiType Type;
   typedef void AdjointType;
   typedef CoDiType ModifiedType;
@@ -132,20 +132,20 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType
   static MPI_Datatype ModifiedMpiType;
   static MPI_Datatype AdjointMpiType;
 
-  typedef medi::MpiTypeDefault<Impl> MediType;
+  typedef medi::MpiTypeDefault<CoDiPackTool<CoDiType>> MediType;
   static MediType* MPI_TYPE;
   static medi::AMPI_Datatype MPI_INT_TYPE;
 
   static medi::OperatorHelper<
             medi::FunctionHelper<
-                CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl
+                CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackTool<CoDiType>
             >
           > operatorHelper;
 
   static Tape* adjointTape;
 
-  CoDiPackToolBase(MPI_Datatype adjointMpiType) :
-    medi::ADToolImplCommon<Impl, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
+  CoDiPackTool(MPI_Datatype adjointMpiType) :
+    medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -228,6 +228,40 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType
     return value.getGradientData();
   }
 
+  static inline void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index) {
+
+    bool wasActive = 0 != value.getGradientData();
+    value.getGradientData() = IndexType();
+
+    // make the value active again if it has been active before on the other processor
+    if(wasActive) {
+      if(CoDiType::TapeType::LinearIndexHandler) {
+        // value has been registered in createIndices
+        value.getGradientData() = index;
+
+        // in createIndices the value has been zero. So set now the correct value
+        Type::getGlobalTape().setPrimalValue(index, value.getValue());
+        if(CoDiType::TapeType::RequiresPrimalReset) {
+          oldPrimal = 0.0;
+        }
+      } else {
+        double primal = Type::getGlobalTape().registerExtFunctionOutput(value);
+        if(CoDiType::TapeType::RequiresPrimalReset) {
+          oldPrimal = primal;
+        }
+        index = value.getGradientData();
+      }
+    } else {
+
+      if(CoDiType::TapeType::RequiresPrimalReset) {
+        oldPrimal = 0.0;
+      }
+      if(!CoDiType::TapeType::LinearIndexHandler) {
+        index = 0;
+      }
+    }
+  }
+
   static inline void clearIndex(Type& value) {
     IndexType oldIndex = value.getGradientData();
     value.~Type();
@@ -277,58 +311,10 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, CoDiType::TapeType
   }
 };
 
-template<typename CoDiType>
-struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, CoDiPackTool<CoDiType> >  {
-
-    typedef CoDiType Type;
-    typedef typename CoDiType::TapeType Tape;
-    typedef void AdjointType;
-    typedef CoDiType ModifiedType;
-    typedef typename CoDiType::PassiveReal PassiveType;
-    typedef typename CoDiType::GradientData IndexType;
-
-    CoDiPackTool(MPI_Datatype adjointMpiType) :
-      CoDiPackToolBase<CoDiType, CoDiPackTool< CoDiType>>(adjointMpiType) {}
-
-    static inline void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index) {
-
-      bool wasActive = 0 != value.getGradientData();
-      value.getGradientData() = IndexType();
-
-      // make the value active again if it has been active before on the other processor
-      if(wasActive) {
-        if(CoDiType::TapeType::LinearIndexHandler) {
-          // value has been registered in createIndices
-          value.getGradientData() = index;
-
-          // in createIndices the value has been zero. So set now the correct value
-          Type::getGlobalTape().setPrimalValue(index, value.getValue());
-          if(CoDiType::TapeType::RequiresPrimalReset) {
-            oldPrimal = 0.0;
-          }
-        } else {
-          double primal = Type::getGlobalTape().registerExtFunctionOutput(value);
-          if(CoDiType::TapeType::RequiresPrimalReset) {
-            oldPrimal = primal;
-          }
-          index = value.getGradientData();
-        }
-      } else {
-
-        if(CoDiType::TapeType::RequiresPrimalReset) {
-          oldPrimal = 0.0;
-        }
-        if(!CoDiType::TapeType::LinearIndexHandler) {
-          index = 0;
-        }
-      }
-    }
-};
-
-template<typename CoDiType, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, Impl>::MpiType;
-template<typename CoDiType, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, Impl>::ModifiedMpiType;
-template<typename CoDiType, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, Impl>::AdjointMpiType;
-template<typename CoDiType, typename Impl> typename CoDiPackToolBase<CoDiType, Impl>::MediType* CoDiPackToolBase<CoDiType, Impl>::MPI_TYPE;
-template<typename CoDiType, typename Impl> medi::AMPI_Datatype CoDiPackToolBase<CoDiType, Impl>::MPI_INT_TYPE;
-template<typename CoDiType, typename Impl> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > CoDiPackToolBase<CoDiType, Impl>::operatorHelper;
-template<typename CoDiType, typename Impl> typename CoDiType::TapeType* CoDiPackToolBase<CoDiType, Impl>::adjointTape;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::ModifiedMpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::AdjointMpiType;
+template<typename CoDiType> typename CoDiPackTool<CoDiType>::MediType* CoDiPackTool<CoDiType>::MPI_TYPE;
+template<typename CoDiType> medi::AMPI_Datatype CoDiPackTool<CoDiType>::MPI_INT_TYPE;
+template<typename CoDiType> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackTool<CoDiType> > > CoDiPackTool<CoDiType>::operatorHelper;
+template<typename CoDiType> typename CoDiType::TapeType* CoDiPackTool<CoDiType>::adjointTape;
