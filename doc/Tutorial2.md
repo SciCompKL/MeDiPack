@@ -71,7 +71,7 @@ The mathematical model for a reduce operation is
 \f[
    y = h(x_0, \ldots, x_{n-1})
 \f]
-where \f$x_i\f$ represents the value one MPI rank, \f$n\f$ the number of ranks and \f$y\f$ the final result. \f$h\f$ is
+where \f$x_i\f$ represents the value of one MPI rank, \f$n\f$ the number of ranks and \f$y\f$ the final result. \f$h\f$ is
 the mathematical representation of the the reduce operation. The reverse AD formulation for this operation is
 \f[
    \bar x_i \aeq \frac{\d h}{\d x_i}(x_0, \ldots, x_{n-1}) \bar y, \quad \forall i = 0, \ldots, n-1 \eqdot
