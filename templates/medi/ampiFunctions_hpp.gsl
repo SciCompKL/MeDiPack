@@ -490,7 +490,7 @@ function addPrimalAsyncSplit(curFunction)
 >
 >      // create adjoint wait
 >      if(nullptr != h) {
->        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, (ForwardFunction)AMPI_$(my.curFunction.name)_d_finish<$(my.curFunction.tplArg)>, h);
+>        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, (ForwardFunction)AMPI_$(my.curFunction.name)_d<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
@@ -810,7 +810,11 @@ namespace medi {
 
         // pack all the variables in the handle
         h->funcReverse = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
-        h->funcForward = AMPI_$(curFunction.name)_d<$(curFunction.tplArg)>;
+.       if(defined(curFunction.async))
+          h->funcForward = AMPI_$(curFunction.name)_d_finish<$(curFunction.tplArg)>;
+.       else
+          h->funcForward = AMPI_$(curFunction.name)_d<$(curFunction.tplArg)>;
+.       endif
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
       }
