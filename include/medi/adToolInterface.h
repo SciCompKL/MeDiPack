@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -245,7 +245,7 @@ namespace medi {
        * @param[in, out]   index  The identifier registered for the old value. This value may be set here or already
        *                          be the value from createIndex.
        */
-      static void registerValue(Type& value, PassiveType& oldPrimal);
+      static void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index);
 
       /**
        * @brief Delete the index in a buffer such that the buffer can be overwritten.

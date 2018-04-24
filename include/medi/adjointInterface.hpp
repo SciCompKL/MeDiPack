@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -40,8 +40,17 @@ namespace medi {
   class AdjointInterface {
     public:
 
+      /**
+       * @brief Compute the number of active types in the buffer.
+       * @param[in] elements  The number of elements in the buffer.
+       * @return The number of active types in the buffer.
+       */
       virtual int computeElements(int elements) const = 0;
 
+      /**
+       * @brief The vector size for the current evaluation.
+       * @return The vector size for the current evaluation.
+       */
       virtual int getVectorSize() const = 0;
 
       /**
@@ -92,7 +101,7 @@ namespace medi {
        * @brief Restore the old primal values from the floating point values in the buffer.
        *
        * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
-       * @param[out] adjoints  The vector with the old primal variables.
+       * @param[out]  primals  The vector with the old primal variables.
        * @param[in]  elements  The number of elements in the vectors.
        */
       virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;

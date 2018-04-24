@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -136,7 +136,7 @@ namespace medi {
    * The counts are scaled by the given factor.
    *
    * @param[in] countsOut  The generated counts.
-   * @param[in] displsOUt  The generated displacements.
+   * @param[in] displsOut  The generated displacements.
    * @param[in]    counts  The size of each rank.
    * @param[in]     ranks  The number of the ranks.
    * @param[in]     scale  The scaling factor of the counts and displacements.

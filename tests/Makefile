@@ -1,7 +1,7 @@
 #
 # MeDiPack, a Message Differentiation Package
 #
-# Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+# Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
 # Homepage: http://www.scicomp.uni-kl.de
 # Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 #
@@ -23,7 +23,7 @@
 # General Public License along with MeDiPack.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-# Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+# Authors: Max Sagebaum, Tim Albring, (SciComp, TU Kaiserslautern)
 #
 
 # names of the basic deriectories
@@ -94,7 +94,7 @@ $(BUILD_DIR)/%_$(DRIVER_NAME).o : $(TEST_DIR)/%.cpp
 
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : $(BUILD_DIR)/%_$(DRIVER_NAME).o $(BUILD_DIR)/$(DRIVER_NAME).o
 	@mkdir -p $(@D)
-	$(MPICXX) $(CXX_FLAGS) $^ -o $@
+	$(MPICXX) $(CXX_FLAGS) $(DRIVER_LIB) $^ -o $@
 
 DRIVER_TEST_FILES := $(patsubst $(TEST_DIR)/%.cpp,$(RESULT_DIR)/%.test,$(DRIVER_TESTS))
 $(DRIVER_TEST_FILES): $(RESULT_DIR)/%.test: $(RESULT_DIR)/%_$(DRIVER_NAME).out
@@ -171,6 +171,7 @@ DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/adolc/adolcDriver.cpp
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolc
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
 $(eval $(value DRIVER_INST))
 
 # rules for generating the test files
