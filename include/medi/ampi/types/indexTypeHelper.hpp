@@ -276,37 +276,12 @@ namespace medi {
       AMPI_Datatype MPI_INT_TYPE;
 
       void createOperators() {
-        AMPI_Op_create(false, false,
-                       (MPI_User_function*)FuncHelp::unmodifiedAdd, 1,
-                       (MPI_User_function*)FuncHelp::modifiedAdd, 1,
-                       medi::noPreAdjointOperation,
-                       medi::noPostAdjointOperation,
-                       &OP_SUM);
+        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedAdd, 1, &OP_SUM);
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMul, 1, &OP_PROD);
-        AMPI_Op_create(true, true,
-                       (MPI_User_function*)FuncHelp::unmodifiedMin, 1,
-                       (MPI_User_function*)FuncHelp::modifiedMin, 1,
-                       medi::noPreAdjointOperation,
-                       (medi::PostAdjointOperation)FuncHelp::postAdjMinMax,
-                       &OP_MIN);
-        AMPI_Op_create(true, true,
-                       (MPI_User_function*)FuncHelp::unmodifiedMax, 1,
-                       (MPI_User_function*)FuncHelp::modifiedMax, 1,
-                       medi::noPreAdjointOperation,
-                       (medi::PostAdjointOperation)FuncHelp::postAdjMinMax,
-                       &OP_MAX);
-        AMPI_Op_create(true, true,
-                       (MPI_User_function*)FuncHelp::unmodifiedMinLoc, 1,
-                       (MPI_User_function*)FuncHelp::modifiedMinLoc, 1,
-                       noPreAdjointOperation,
-                       (PostAdjointOperation)FuncHelp::postAdjMinMax,
-                       &OP_MINLOC);
-        AMPI_Op_create(true, true,
-                       (MPI_User_function*)FuncHelp::unmodifiedMaxLoc, 1,
-                       (MPI_User_function*)FuncHelp::modifiedMaxLoc, 1,
-                       noPreAdjointOperation,
-                       (PostAdjointOperation)FuncHelp::postAdjMinMax,
-                       &OP_MAXLOC);
+        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMin, 1, &OP_MIN);
+        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMax, 1, &OP_MAX);
+        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMinLoc, 1, &OP_MINLOC);
+        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMaxLoc, 1, &OP_MAXLOC);
       }
 
       AMPI_Op convertOperator(AMPI_Op op) const {
