@@ -134,13 +134,11 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
     static MediType* MPI_TYPE;
     static medi::AMPI_Datatype MPI_INT_TYPE;
 
-  private:
-    // Private structures for the implemenation
-  public:
     static MPI_Datatype MpiType;
     static MPI_Datatype ModifiedMpiType;
     static MPI_Datatype AdjointMpiType;
   private:
+    // Private structures for the implemenation
     static medi::OperatorHelper<
               medi::FunctionHelper<
                   CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackTool<CoDiType>
