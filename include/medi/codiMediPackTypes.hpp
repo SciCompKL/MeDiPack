@@ -45,11 +45,11 @@ struct CoDiMeDiAdjointInterfaceWrapper : public medi::AdjointInterface {
     typedef typename CoDiType::Real Real;
     typedef typename CoDiType::GradientData IndexType;
 
-    codi::AdjointInterface<Real>* codiInterface;
+    codi::AdjointInterface<Real, IndexType>* codiInterface;
 
     int vecSize;
 
-    CoDiMeDiAdjointInterfaceWrapper(codi::AdjointInterface<Real>* interface) :
+    CoDiMeDiAdjointInterfaceWrapper(codi::AdjointInterface<Real, IndexType>* interface) :
       codiInterface(interface),
       vecSize((int)interface->getVectorSize()) {}
 
@@ -134,13 +134,11 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
     static MediType* MPI_TYPE;
     static medi::AMPI_Datatype MPI_INT_TYPE;
 
-  private:
-    // Private structures for the implemenation
-  public:
     static MPI_Datatype MpiType;
     static MPI_Datatype ModifiedMpiType;
     static MPI_Datatype AdjointMpiType;
   private:
+    // Private structures for the implemenation
     static medi::OperatorHelper<
               medi::FunctionHelper<
                   CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, CoDiPackTool<CoDiType>
@@ -237,7 +235,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
           oldPrimal = 0.0;
         }
         if(!CoDiType::TapeType::LinearIndexHandler) {
-          index = 0;
+          index = Type::getGlobalTape().getPassiveIndex();
         }
       }
     }
@@ -285,9 +283,9 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
 
       bool active = (0 != inoutval.getGradientData()) || (0 != inval.getGradientData());
       if(active) {
-        inoutval.getGradientData() = -1; // TODO: Define invalid index in CoDiPack
+        inoutval.getGradientData() = Type::getGlobalTape().getInvalidIndex();
       } else {
-        inoutval.getGradientData() = 0; // TODO: Define passive index in CoDiPack
+        inoutval.getGradientData() = Type::getGlobalTape().getPassiveIndex();
       }
     }
 
@@ -315,14 +313,14 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
     static void callHandleReverse(void* tape, void* h, void* ah) {
       adjointTape = (Tape*)tape;
       medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-      CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real>*)ah);
+      CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real, typename CoDiType::GradientData>*)ah);
       handle->funcReverse(handle, &ahWrapper);
     }
 
     static void callHandleForward(void* tape, void* h, void* ah) {
       adjointTape = (Tape*)tape;
       medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
-      CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real>*)ah);
+      CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real, typename CoDiType::GradientData>*)ah);
       handle->funcForward(handle, &ahWrapper);
     }
 
