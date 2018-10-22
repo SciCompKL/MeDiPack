@@ -56,7 +56,7 @@ namespace medi {
 
       typedef typename ADTool::Type Type;
       typedef typename ADTool::ModifiedType ModifiedType;
-      typedef typename ADTool::PassiveType PassiveType;
+      typedef typename ADTool::PrimalType PrimalType;
       typedef typename ADTool::AdjointType AdjointType;
       typedef typename ADTool::IndexType IndexType;
 
@@ -69,13 +69,13 @@ namespace medi {
       MpiTypeDefault() :
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
         isClone(false),
-        adTool(Tool::AdjointMpiType) {}
+        adTool(Tool::PrimalMpiType, Tool::AdjointMpiType) {}
 
     private:
       MpiTypeDefault(MPI_Datatype type, MPI_Datatype modType) :
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
         isClone(true),
-        adTool(Tool::AdjointMpiType) {}
+        adTool(Tool::PrimalMpiType, Tool::AdjointMpiType) {}
 
     public:
 
@@ -127,7 +127,7 @@ namespace medi {
         }
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PassiveType* oldPrimals, size_t bufModOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PrimalType* oldPrimals, size_t bufModOffset, int elements) const {
         int indexOffset = computeActiveElements((int)bufModOffset);
 
         for(int i = 0; i < elements; ++i) {
@@ -149,7 +149,7 @@ namespace medi {
         }
       }
 
-      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
+      inline void getValues(const Type* buf, size_t bufOffset, PrimalType* primals, size_t bufModOffset, int elements) const {
         int primalOffset = computeActiveElements((int)bufModOffset);
 
         for(int pos = 0; pos < elements; ++pos) {

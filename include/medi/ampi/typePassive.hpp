@@ -53,7 +53,7 @@ namespace medi {
 
       typedef T Type;
       typedef T ModifiedType;
-      typedef void PassiveType;
+      typedef void PrimalType;
       typedef void IndexType;
 
       typedef ADToolPassive Tool;
@@ -65,13 +65,13 @@ namespace medi {
       MpiTypePassive(MPI_Datatype type) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
         isClone(false),
-        adTool(type) {}
+        adTool(type, type) {}
 
     private:
       MpiTypePassive(MPI_Datatype type, bool clone) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
         isClone(clone),
-        adTool(type) {}
+        adTool(type, type) {}
 
     public:
       ~MpiTypePassive() {
@@ -115,7 +115,7 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PassiveType* oldPrimals, size_t bufModOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PrimalType* oldPrimals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(indices);
@@ -138,7 +138,7 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
+      inline void getValues(const Type* buf, size_t bufOffset, PrimalType* primals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(primals);

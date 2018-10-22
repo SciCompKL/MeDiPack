@@ -37,13 +37,14 @@
 template<typename CoDiType>
 struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int> {
   typedef CoDiType Type;
+  typedef void PrimalType;
   typedef void AdjointType;
   typedef CoDiType ModifiedType;
-  typedef typename CoDiType::PassiveReal PassiveType;
   typedef int IndexType;
 
   static MPI_Datatype MpiType;
   static MPI_Datatype ModifiedMpiType;
+  static MPI_Datatype PrimalMpiType;
   static MPI_Datatype AdjointMpiType;
 
   typedef medi::MpiTypeDefault<CoDiPackForwardTool> MediType;
@@ -63,7 +64,8 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MPI_Type_commit(&MpiType);
 
     ModifiedMpiType = MpiType;
-    AdjointMpiType = MPI_DOUBLE;
+    PrimalMpiType = MPI_DOUBLE; // Not required
+    AdjointMpiType = MPI_DOUBLE; // Not required
   }
 
   static void init() {
@@ -91,8 +93,8 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     finalizeTypes();
   }
 
-  CoDiPackForwardTool(MPI_Datatype adjointMpiType) :
-    medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int>(adjointMpiType) {}
+  CoDiPackForwardTool(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
+    medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int>(primalMpiType, adjointMpiType) {}
 
 
   inline bool isActiveType() const {
@@ -128,15 +130,15 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     return operatorHelper.convertOperator(op);
   }
 
-  inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
-    buf = new PassiveType[size];
+  inline void createPrimalTypeBuffer(PrimalType* &buf, size_t size) const {
+    buf = new PrimalType[size];
   }
 
   inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
     buf = new IndexType[size];
   }
 
-  inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
+  inline void deletePrimalTypeBuffer(PrimalType* &buf) const {
     if(NULL != buf) {
       delete [] buf;
       buf = NULL;
@@ -164,7 +166,7 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     index = 0;
   }
 
-  static inline PassiveType getValue(const Type& value) {
+  static inline PrimalType getValue(const Type& value) {
     return value.getValue();
   }
 
@@ -178,17 +180,17 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MEDI_UNUSED(modValue);
   }
 
-  static inline void registerValue(Type& value, PassiveType& oldValue, int& index) {
+  static inline void registerValue(Type& value, PrimalType& oldValue, int& index) {
     MEDI_UNUSED(value);
     MEDI_UNUSED(oldValue);
     MEDI_UNUSED(index);
   }
 
-  static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
+  static PrimalType getPrimalFromMod(const ModifiedType& modValue) {
     return modValue.value();
   }
 
-  static void setPrimalToMod(ModifiedType& modValue, const PassiveType& value) {
+  static void setPrimalToMod(ModifiedType& modValue, const PrimalType& value) {
     modValue.value() = value;
   }
 
@@ -200,6 +202,7 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
 
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::MpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::ModifiedMpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::PrimalMpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackForwardTool<CoDiType>::AdjointMpiType;
 template<typename CoDiType> typename CoDiPackForwardTool<CoDiType>::MediType* CoDiPackForwardTool<CoDiType>::MPI_TYPE;
 template<typename CoDiType> medi::AMPI_Datatype CoDiPackForwardTool<CoDiType>::MPI_INT_TYPE;

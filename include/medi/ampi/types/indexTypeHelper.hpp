@@ -40,10 +40,10 @@
  */
 namespace medi {
 
-  template <typename Type, typename ModifiedType, typename PassiveType, typename IndexType>
+  template <typename Type, typename ModifiedType, typename PrimalType, typename IndexType>
   struct ToolInterface {
-      static PassiveType getPrimalFromMod(const ModifiedType& mod);
-      static void setPrimalToMod(ModifiedType& mod, const PassiveType& value);
+      static PrimalType getPrimalFromMod(const ModifiedType& mod);
+      static void setPrimalToMod(ModifiedType& mod, const PrimalType& value);
 
       static void modifyDependency(const ModifiedType& in, ModifiedType& inout);
   };
@@ -53,13 +53,13 @@ namespace medi {
    *
    * @tparam          Type  The floating point type of the AD tool
    * @tparam  ModifiedType  The type that is send over the network.
-   * @tparam   PassiveType  The primal floating point type which is replaced by the AD type.
+   * @tparam    PrimalType  The primal floating point type which is replaced by the AD type.
    * @tparam     IndexType  The identifier used by the AD tool for the AD types.
    * @tparam          Tool  The interface to the AD tool required by this class. The type needs to implement the ToolInterface class.
    */
-  template <typename Type, typename ModifiedType, typename PassiveType, typename IndexType, typename AdjointType, INTERFACE_ARG(Tool)>
+  template <typename Type, typename ModifiedType, typename PrimalType, typename IndexType, typename AdjointType, INTERFACE_ARG(Tool)>
   struct FunctionHelper {
-      INTERFACE_DEF(ToolInterface, Tool, Type, ModifiedType, PassiveType, IndexType)
+      INTERFACE_DEF(ToolInterface, Tool, Type, ModifiedType, PrimalType, IndexType)
 
       struct TypeInt {
           Type value;
@@ -187,8 +187,8 @@ namespace medi {
         using std::max;
         for(int i = 0; i < *len; ++i) {
 
-          PassiveType inPrimal = Tool::getPrimalFromMod(invec[i].value);
-          PassiveType inoutPrimal = Tool::getPrimalFromMod(inoutvec[i].value);
+          PrimalType inPrimal = Tool::getPrimalFromMod(invec[i].value);
+          PrimalType inoutPrimal = Tool::getPrimalFromMod(inoutvec[i].value);
 
           // first determine the index
           if(inPrimal > inoutPrimal) {
@@ -209,8 +209,8 @@ namespace medi {
 
         using std::min;
         for(int i = 0; i < *len; ++i) {
-          PassiveType inPrimal = Tool::getPrimalFromMod(invec[i].value);
-          PassiveType inoutPrimal = Tool::getPrimalFromMod(inoutvec[i].value);
+          PrimalType inPrimal = Tool::getPrimalFromMod(invec[i].value);
+          PrimalType inoutPrimal = Tool::getPrimalFromMod(inoutvec[i].value);
 
           // first determine the index
           if(inPrimal < inoutPrimal) {
@@ -229,13 +229,13 @@ namespace medi {
 //      TODO: These are currently not used since we can not handle zero terms. Need to implement
 //            a tracking of how many zeros the multiplication contained.
 //
-//      void preAdjMul(AdjointType* adjoints, PassiveType* primals, int count) {
+//      void preAdjMul(AdjointType* adjoints, PrimalType* primals, int count) {
 //        for(int i = 0; i < count; ++i) {
 //          adjoints[i] *= primals[i];
 //        }
 //      }
 //
-//      void postAdjMul(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count) {
+//      void postAdjMul(AdjointType* adjoints, PrimalType* primals, PrimalType* rootPrimals, int count) {
 //        CODI_UNUSED(rootPrimals);
 //
 //        for(int i = 0; i < count; ++i) {
@@ -245,7 +245,7 @@ namespace medi {
 //        }
 //      }
 
-      static void postAdjMinMax(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count, int vecSize) {
+      static void postAdjMinMax(AdjointType* adjoints, PrimalType* primals, PrimalType* rootPrimals, int count, int vecSize) {
         for(int i = 0; i < count; ++i) {
           if(rootPrimals[i] != primals[i]) {
             for(int dim = 0; dim < vecSize; ++dim) {

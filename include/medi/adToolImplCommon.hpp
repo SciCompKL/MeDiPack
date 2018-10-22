@@ -36,12 +36,12 @@
  */
 namespace medi {
 
-  template <typename Impl, bool restorePrimal, bool modifiedBuffer, typename Type, typename AdjointType, typename PassiveType, typename IndexType>
-  class ADToolImplCommon : public ADToolBase<Impl, AdjointType, PassiveType, IndexType> {
+  template <typename Impl, bool restorePrimal, bool modifiedBuffer, typename Type, typename AdjointType, typename PrimalType, typename IndexType>
+  class ADToolImplCommon : public ADToolBase<Impl, AdjointType, PrimalType, IndexType> {
     public:
 
-      ADToolImplCommon(MPI_Datatype adjointMpiType) :
-        ADToolBase<Impl, AdjointType, PassiveType, IndexType>(adjointMpiType) {}
+      ADToolImplCommon(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
+        ADToolBase<Impl, AdjointType, PrimalType, IndexType>(primalMpiType, adjointMpiType) {}
 
       inline bool isActiveType() const {
         return true;
@@ -55,20 +55,20 @@ namespace medi {
         return restorePrimal;
       }
 
-      inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
-        buf = new PassiveType[size];
+      inline void createPrimalTypeBuffer(PrimalType* &buf, size_t size) const {
+        buf = new PrimalType[size];
       }
 
       inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
         buf = new IndexType[size];
       }
 
-      inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
+        inline void deletePrimalTypeBuffer(PrimalType* &buf) const {
+          if(NULL != buf) {
+            delete [] buf;
+            buf = NULL;
+          }
         }
-      }
 
       inline void deleteIndexTypeBuffer(IndexType* &buf) const {
         if(NULL != buf) {

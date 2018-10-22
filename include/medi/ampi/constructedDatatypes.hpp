@@ -66,7 +66,7 @@ namespace medi {
       typedef void Type;
       typedef void ModifiedType;
       typedef void AdjointType;
-      typedef void PassiveType;
+      typedef void PrimalType;
       typedef void IndexType;
 
     private:

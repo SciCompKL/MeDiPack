@@ -44,6 +44,7 @@ namespace medi {
   struct HandleBase;
   typedef void (*ReverseFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*ForwardFunction)(HandleBase* h, AdjointInterface* a);
+  typedef void (*PrimalFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*ContinueFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count, int dim);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count, int dim);
@@ -51,11 +52,13 @@ namespace medi {
   struct HandleBase {
     ReverseFunction funcReverse;
     ForwardFunction funcForward;
+    PrimalFunction funcPrimal;
     ManualDeleteType deleteType;
 
     HandleBase() :
       funcReverse(NULL),
       funcForward(NULL),
+      funcPrimal(NULL),
       deleteType(ManualDeleteType::Normal) {}
 
 

@@ -114,7 +114,7 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Mrecv_fwd(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status) {
     MEDI_UNUSED(count);
-    MPI_Mrecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm, status);
+    MPI_Mrecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), &message->message, status);
   }
 #endif
 
@@ -130,7 +130,7 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Imrecv_fwd(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request) {
     MEDI_UNUSED(count);
-    MPI_Imrecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm, &request->request);
+    MPI_Imrecv(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), &message->message, &request->request);
   }
 #endif
 

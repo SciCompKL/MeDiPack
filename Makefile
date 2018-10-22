@@ -80,10 +80,10 @@ $(GEN_DIR)/medi/ampiDefinitions.h:   $(TEMPL_DIR)/medi/ampiDefinitions_h.gsl   $
 
 # directory generation rules
 $(GEN_DIR):
-	mkdir $(GEN_DIR)
+	mkdir -p $(GEN_DIR)
 
 $(GEN_DIR)/medi: $(GEN_DIR)
-	mkdir $(GEN_DIR)/medi
+	mkdir -p $(GEN_DIR)/medi
 
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl

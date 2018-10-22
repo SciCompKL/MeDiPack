@@ -81,12 +81,21 @@ struct CoDiMeDiAdjointInterfaceWrapper : public medi::AdjointInterface {
       }
     }
 
-    inline void setReverseValues(const void* i, const void* p, int elements) const {
+    inline void getPrimals(const void* i, const void* p, int elements) const {
       Real* primals = (Real*)p;
       IndexType* indices = (IndexType*)i;
 
       for(int pos = 0; pos < elements; ++pos) {
-        codiInterface->resetPrimal(indices[pos], primals[pos]);
+        primals[pos] = codiInterface->getPrimal(indices[pos]);
+      }
+    }
+
+    inline void setPrimals(const void* i, const void* p, int elements) const {
+      Real* primals = (Real*)p;
+      IndexType* indices = (IndexType*)i;
+
+      for(int pos = 0; pos < elements; ++pos) {
+        codiInterface->setPrimal(indices[pos], primals[pos]);
       }
     }
 
@@ -100,6 +109,18 @@ struct CoDiMeDiAdjointInterfaceWrapper : public medi::AdjointInterface {
             buf[curPos * vecSize + dim] += buf[(elements * curRank + curPos) * vecSize + dim];
           }
         }
+      }
+    }
+
+    inline void createPrimalTypeBuffer(void* &buf, size_t size) const {
+      buf = (void*)(new Real[size * vecSize]);
+    }
+
+    inline void deletePrimalTypeBuffer(void* &b) const {
+      if(NULL != b) {
+        Real* buf = (Real*)b;
+        delete [] buf;
+        b = NULL;
       }
     }
 
@@ -121,9 +142,9 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
   public:
     // All type definitions for the interface
     typedef CoDiType Type;
+    typedef typename CoDiType::Real PrimalType;
     typedef void AdjointType;
     typedef CoDiType ModifiedType;
-    typedef typename CoDiType::PassiveReal PassiveType;
     typedef typename CoDiType::GradientData IndexType;
 
     // Helper definition for CoDiPack
@@ -136,6 +157,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
 
     static MPI_Datatype MpiType;
     static MPI_Datatype ModifiedMpiType;
+    static MPI_Datatype PrimalMpiType;
     static MPI_Datatype AdjointMpiType;
   private:
     // Private structures for the implemenation
@@ -148,8 +170,8 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
     static Tape* adjointTape;
 
   public:
-    CoDiPackTool(MPI_Datatype adjointMpiType) :
-      medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
+    CoDiPackTool(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
+      medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDiType::TapeType::RequiresPrimalReset, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(primalMpiType, adjointMpiType) {}
 
     // Implementation of the interface
 
@@ -188,7 +210,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
 
     inline void addToolAction(medi::HandleBase* h) const {
       if(NULL != h) {
-        Type::getGlobalTape().pushExternalFunctionHandle(callHandleReverse, h, deleteHandle, callHandleForward);
+        Type::getGlobalTape().pushExternalFunctionHandle(callHandleReverse, h, deleteHandle, callHandleForward, callHandlePrimal);
       }
     }
 
@@ -206,7 +228,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
       return value.getGradientData();
     }
 
-    static inline void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index) {
+    static inline void registerValue(Type& value, PrimalType& oldPrimal, IndexType& index) {
 
       bool wasActive = 0 != value.getGradientData();
       value.getGradientData() = IndexType();
@@ -253,7 +275,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
       }
     }
 
-    static inline PassiveType getValue(const Type& value) {
+    static inline PrimalType getValue(const Type& value) {
       return value.getValue();
     }
 
@@ -271,11 +293,11 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
       // CoDiPack values are send in place. No modified buffer is crated.
     }
 
-    static PassiveType getPrimalFromMod(const ModifiedType& modValue) {
+    static PrimalType getPrimalFromMod(const ModifiedType& modValue) {
       return modValue.value();
     }
 
-    static void setPrimalToMod(ModifiedType& modValue, const PassiveType& value) {
+    static void setPrimalToMod(ModifiedType& modValue, const PrimalType& value) {
       modValue.value() = value;
     }
 
@@ -304,10 +326,12 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
 
       ModifiedMpiType = MpiType;
 
+      MPI_Type_contiguous(sizeof(typename CoDiType::Real), MPI_BYTE, &PrimalMpiType);
+      MPI_Type_commit(&PrimalMpiType);
+
       // Since we use the CoDiPack adjoint interface, everything is interpreted in terms of the primal computation type
       // TODO: add proper type creation
-      MPI_Type_contiguous(sizeof(typename CoDiType::Real), MPI_BYTE, &AdjointMpiType);
-      MPI_Type_commit(&AdjointMpiType);
+      AdjointMpiType = PrimalMpiType;
     }
 
     static void callHandleReverse(void* tape, void* h, void* ah) {
@@ -324,6 +348,13 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
       handle->funcForward(handle, &ahWrapper);
     }
 
+    static void callHandlePrimal(void* tape, void* h, void* ah) {
+      adjointTape = (Tape*)tape;
+      medi::HandleBase* handle = static_cast<medi::HandleBase*>(h);
+      CoDiMeDiAdjointInterfaceWrapper<CoDiType> ahWrapper((codi::AdjointInterface<typename CoDiType::Real, typename CoDiType::GradientData>*)ah);
+      handle->funcPrimal(handle, &ahWrapper);
+    }
+
     static void deleteHandle(void* tape, void* h) {
       MEDI_UNUSED(tape);
 
@@ -336,6 +367,7 @@ struct CoDiPackTool : public medi::ADToolImplCommon<CoDiPackTool<CoDiType>, CoDi
 
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::MpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::ModifiedMpiType;
+template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::PrimalMpiType;
 template<typename CoDiType> MPI_Datatype CoDiPackTool<CoDiType>::AdjointMpiType;
 template<typename CoDiType> typename CoDiPackTool<CoDiType>::MediType* CoDiPackTool<CoDiType>::MPI_TYPE;
 template<typename CoDiType> medi::AMPI_Datatype CoDiPackTool<CoDiType>::MPI_INT_TYPE;

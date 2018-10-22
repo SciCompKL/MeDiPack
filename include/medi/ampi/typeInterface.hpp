@@ -82,7 +82,7 @@ namespace medi {
       /**
        * @brief The type of the floating point values which are handled by the AD tool
        */
-      typedef void PassiveType;
+      typedef void PrimalType;
 
       /**
        * @brief The type of the identifiers for the AD tool.
@@ -305,7 +305,7 @@ namespace medi {
   class MpiTypeBase : public MpiTypeInterface {
     public:
 
-      typedef typename ADToolB::PassiveType PassiveTypeB;
+      typedef typename ADToolB::PrimalType PrimalTypeB;
       typedef typename ADToolB::IndexType IndexTypeB;
 
       MpiTypeBase(MPI_Datatype mpiType, MPI_Datatype modifiedMpiType) :
@@ -328,7 +328,7 @@ namespace medi {
       }
 
       void registerValue(void* buf, size_t bufOffset, void* indices, void* oldPrimals, size_t bufModOffset, int elements) const {
-        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), castBuffer<PassiveTypeB>(oldPrimals), bufModOffset, elements);
+        cast().registerValue(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), castBuffer<PrimalTypeB>(oldPrimals), bufModOffset, elements);
       }
 
       void clearIndices(void* buf, size_t bufOffset, int elements) const {
@@ -340,7 +340,7 @@ namespace medi {
       }
 
       void getValues(const void* buf, size_t bufOffset, void* primals, size_t bufModOffset, int elements) const {
-        cast().getValues(castBuffer<TypeB>(buf), bufOffset, castBuffer<PassiveTypeB>(primals), bufModOffset, elements);
+        cast().getValues(castBuffer<TypeB>(buf), bufOffset, castBuffer<PrimalTypeB>(primals), bufModOffset, elements);
       }
 
       void performReduce(void* buf, void* target, int count, AMPI_Op op, int ranks) const {
