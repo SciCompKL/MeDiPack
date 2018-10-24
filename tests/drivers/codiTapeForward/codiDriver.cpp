@@ -40,7 +40,6 @@ int main(int nargs, char** args) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-
   TOOL::init();
 
   int evalPoints = getEvalPointsCount();

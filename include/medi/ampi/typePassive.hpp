@@ -160,6 +160,18 @@ namespace medi {
         }
       }
 
+      void initializeType(Type* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          new(&buf[bufOffset + i]) Type;
+        }
+      }
+
+      void freeType(Type* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          buf[bufOffset + elements].~Type();
+        }
+      }
+
       inline void createTypeBuffer(Type* &buf, size_t size) const {
         buf = new Type[size];
       }
@@ -168,7 +180,7 @@ namespace medi {
         buf = new ModifiedType[size];
       }
 
-      inline void deleteTypeBuffer(Type* &buf) const {
+      inline void deleteTypeBuffer(Type* &buf, size_t size) const {
         if(NULL != buf) {
           delete [] buf;
           buf = NULL;

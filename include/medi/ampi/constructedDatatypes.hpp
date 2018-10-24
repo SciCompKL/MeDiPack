@@ -420,10 +420,32 @@ namespace medi {
         }
       }
 
+      void initializeType(void* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->initializeType(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, blockLengths[curType]);
+          }
+        }
+      }
+
+      void freeType(void* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->freeType(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, blockLengths[curType]);
+          }
+        }
+      }
+
       void createTypeBuffer(void* &buf, size_t size) const {
         char* b = (char*)calloc(size, typeExtend);
         b -= typeOffset;
         buf = (void*)b;
+
+        initializeType(buf, 0, size);
       }
 
       void createModifiedTypeBuffer(void* &buf, size_t size) const {
@@ -431,7 +453,9 @@ namespace medi {
       }
 
 
-      void deleteTypeBuffer(void* &buf) const {
+      void deleteTypeBuffer(void* &buf, size_t size) const {
+        freeType(buf, 0, size);
+
         char* b = (char*)buf;
         b += typeOffset;
         free(b);

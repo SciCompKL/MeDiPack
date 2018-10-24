@@ -259,6 +259,24 @@ namespace medi {
       virtual void copy(void* from, size_t fromOffset, void* to, size_t toOffset, int count) const  = 0;
 
       /**
+       * @brief Initialize the types in the buffer.
+       *
+       * @param[in,out]   buf  The buffer in which the types are created.
+       * @param[in] bufOffset  The offset into the orignal buffer, as provided by the user.
+       * @param[in]  elements  THe number of elements the shoudl be initialized.
+       */
+      virtual void initializeType(Type* buf, size_t bufOffset, int elements) const = 0;
+
+      /**
+       * @brief Destroy the types in the buffer.
+       *
+       * @param[in,out]   buf  The buffer in which the types are destroyed.
+       * @param[in] bufOffset  The offset into the orignal buffer, as provided by the user.
+       * @param[in]  elements  THe number of elements the shoudl be initialized.
+       */
+      virtual void freeType(Type* buf, size_t bufOffset, int elements) const = 0;
+
+      /**
        * @brief Create a temporary buffer of the type that this interface represents.
        *
        * @param[in,out] buf  The location for the new buffer
@@ -278,8 +296,9 @@ namespace medi {
        * @brief Delete the temporary buffer.
        *
        * @param[in,out] buf  The location for the buffer
+       * @param[in]    size  The size of the temporary buffer
        */
-      virtual void deleteTypeBuffer(void* &buf) const = 0;
+      virtual void deleteTypeBuffer(void* &buf, size_t size) const = 0;
 
       /**
        * @brief Delete the temporary buffer for the modified types.
@@ -351,6 +370,14 @@ namespace medi {
         cast().copy(castBuffer<TypeB>(from), fromOffset, castBuffer<TypeB>(to), toOffset, count);
       }
 
+      void initializeType(void* buf, size_t bufOffset, int elements) const {
+        cast().initializeType(castBuffer<TypeB>(buf), bufOffset, elements);
+      }
+
+      void freeType(void* buf, size_t bufOffset, int elements) const {
+        cast().freeType(castBuffer<TypeB>(buf), bufOffset, elements);
+      }
+
       void createTypeBuffer(void* &buf, size_t size) const {
         cast().createTypeBuffer(castBuffer<TypeB>(buf), size);
       }
@@ -359,8 +386,8 @@ namespace medi {
         cast().createModifiedTypeBuffer(castBuffer<ModifiedTypeB>(buf), size);
       }
 
-      void deleteTypeBuffer(void* &buf) const {
-        cast().deleteTypeBuffer(castBuffer<TypeB>(buf));
+      void deleteTypeBuffer(void* &buf, size_t size) const {
+        cast().deleteTypeBuffer(castBuffer<TypeB>(buf), size);
       }
 
       void deleteModifiedTypeBuffer(void* &buf) const {

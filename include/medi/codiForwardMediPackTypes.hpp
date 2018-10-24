@@ -37,7 +37,7 @@
 template<typename CoDiType>
 struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int> {
   typedef CoDiType Type;
-  typedef void PrimalType;
+  typedef double PrimalType;
   typedef void AdjointType;
   typedef CoDiType ModifiedType;
   typedef int IndexType;
