@@ -189,6 +189,22 @@ $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOL
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
 $(eval $(value DRIVER_INST))
 
+# Driver for ADOL-c forward mode
+DRIVER_NAME  := ADOL-cForward
+DRIVER_TESTS := $(FORWARD_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/adolcForward/adolcDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolcForward
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
+$(eval $(value DRIVER_INST))
+
+# Driver for ADOL-c primal mode
+DRIVER_NAME  := ADOL-cPrimal
+DRIVER_TESTS := $(PRIMAL_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/adolcPrimal/adolcDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolcPrimal
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
+$(eval $(value DRIVER_INST))
+
 # rules for generating the test files
 $(RESULT_DIR)/%.out : $(BUILD_DIR)/%_bin
 	@mkdir -p $(@D)
