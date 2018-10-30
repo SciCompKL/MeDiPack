@@ -25,9 +25,10 @@
  *
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
-#include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+
+#include <codi.hpp>
+#include <externals/codiMediPackTypes.hpp>
 
 #include <iostream>
 
