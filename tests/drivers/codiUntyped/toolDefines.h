@@ -30,7 +30,7 @@
 
 #include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+#include <externals/codiMediPackTypes.hpp>
 
 typedef codi::RealReverse NUMBER;
 

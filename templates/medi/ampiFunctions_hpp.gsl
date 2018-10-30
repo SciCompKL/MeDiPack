@@ -582,6 +582,7 @@ function addPrimalAsyncSplit(curFunction)
 >
        for my.curFunction.operator
 >        AMPI_Op convOp = $(my.curFunction.adType).convertOperator($(operator.name));
+>        (void)convOp;
        endfor
 
   endif
@@ -599,6 +600,7 @@ function addForwardAsyncSplit(curFunction, suffix)
 >
      for my.curFunction.operator
 >      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      (void)convOp;
      endfor
   endif
 endfunction
@@ -615,6 +617,7 @@ function addReverseAsyncSplit(curFunction)
 >
      for my.curFunction.operator
 >      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      (void)convOp;
      endfor
   endif
 endfunction
@@ -679,6 +682,7 @@ namespace medi {
 .
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
 .   endif
 .   for curFunction.recv
 .     createBufferSetup(recv, curFunction, 0, PRIMAL_BUFFER)
@@ -714,6 +718,7 @@ namespace medi {
 .
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
 .   endif
 .   for curFunction.recv
 .     createBufferSetup(recv, curFunction, 0, FORWARD_BUFFER)
@@ -746,6 +751,7 @@ namespace medi {
 .
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
 .   endif
 .   for curFunction.recv
 .     createBufferSetup(recv, curFunction, 1, REVERSE_BUFFER)
@@ -784,6 +790,7 @@ namespace medi {
     int rStatus;
 .     if(defined(curFunction->operator))
         AMPI_Op convOp = $(curFunction.adType).convertOperator($(curFunction->operator.name));
+        (void)convOp;
 .     endif
 
     if(!$(curFunction.adType).isActiveType()) {
@@ -1003,6 +1010,7 @@ namespace medi {
   inline $(curFunction.type) AMPI_$(curFunction.name)($(curFunction.argDef)) {
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = op;
+      (void)convOp;
 .   endif
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }

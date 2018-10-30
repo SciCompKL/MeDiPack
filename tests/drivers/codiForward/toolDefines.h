@@ -30,7 +30,7 @@
 
 #include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiForwardMediPackTypes.hpp>
+#include <externals/codiForwardMediPackTypes.hpp>
 
 typedef CODI_TYPE NUMBER;
 

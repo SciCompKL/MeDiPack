@@ -3386,6 +3386,7 @@ namespace medi {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createPrimalTypeBuffer((void*&)h->recvbufPrimals, h->recvbufTotalSize );
@@ -3413,6 +3414,7 @@ namespace medi {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
@@ -3437,6 +3439,7 @@ namespace medi {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
@@ -3470,6 +3473,7 @@ namespace medi {
                             int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    (void)convOp;
 
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -5922,6 +5926,7 @@ namespace medi {
         (handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createPrimalTypeBuffer((void*&)h->recvbufPrimals, h->recvbufTotalSize );
@@ -5945,6 +5950,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
@@ -5960,6 +5966,7 @@ namespace medi {
         (handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
@@ -5983,6 +5990,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->updateAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
@@ -5995,6 +6003,7 @@ namespace medi {
         (handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
     adjointInterface->createAdjointTypeBuffer(h->recvbufAdjoints, h->recvbufTotalSize );
@@ -6022,6 +6031,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     adjointInterface->combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
@@ -6040,6 +6050,7 @@ namespace medi {
                              int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    (void)convOp;
 
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -6203,6 +6214,7 @@ namespace medi {
     if(datatype->getADTool().isActiveType()) {
 
       AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+      (void)convOp;
       datatype->getADTool().addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
@@ -8325,6 +8337,7 @@ namespace medi {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -8349,6 +8362,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
@@ -8367,6 +8381,7 @@ namespace medi {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -8391,6 +8406,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
     if(h->root == getCommRank(h->comm)) {
       // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -8404,6 +8420,7 @@ namespace medi {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -8434,6 +8451,7 @@ namespace medi {
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
     convOp.postAdjointOperation(h->sendbufAdjoints, h->sendbufPrimals, h->recvbufPrimals, h->sendbufTotalSize,
@@ -8453,6 +8471,7 @@ namespace medi {
                           int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    (void)convOp;
 
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -8632,6 +8651,7 @@ namespace medi {
     if(datatype->getADTool().isActiveType()) {
 
       AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+      (void)convOp;
       datatype->getADTool().addToolAction(h);
 
       if(root == getCommRank(comm)) {
@@ -9579,6 +9599,7 @@ namespace medi {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9612,6 +9633,7 @@ namespace medi {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9640,6 +9662,7 @@ namespace medi {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
 
     AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
       h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9678,6 +9701,7 @@ namespace medi {
                          int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
     AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    (void)convOp;
 
     if(!datatype->getADTool().isActiveType()) {
       // call the regular function if the type is not active
@@ -10641,6 +10665,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   inline int AMPI_Op_commutative(AMPI_Op op, int* commute) {
     AMPI_Op convOp = op;
+    (void)convOp;
     return MPI_Op_commutative(convOp.modifiedPrimalFunction, commute);
   }
 
