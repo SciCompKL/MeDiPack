@@ -181,6 +181,13 @@ DRIVER_SRC = $(DRIVER_DIR)/codiTapePrimal/codiDriver.cpp
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiTapePrimal -DCODI_TYPE=codi::RealReversePrimal
 $(eval $(value DRIVER_INST))
 
+# Driver for 2nd order
+DRIVER_NAME  := CoDi2nd
+DRIVER_TESTS := $(BASIC_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseGen<codi::RealForward>"
+$(eval $(value DRIVER_INST))
+
 # Driver for ADOL-c
 DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)

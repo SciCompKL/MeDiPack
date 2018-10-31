@@ -99,7 +99,7 @@ int main(int nargs, char** args) {
     tape.evaluate();
 
     for(int curIn = 0; curIn < inputs; ++curIn) {
-      double grad;
+      NUMBER::Real grad;
 #if VECTOR
       grad = x[curIn].gradient()[0];
 #else
