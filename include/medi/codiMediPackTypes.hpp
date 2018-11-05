@@ -39,11 +39,11 @@
 
 
 template<typename CoDiType, bool primalRestore, typename Impl>
-struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData> {
+struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::Real, typename CoDiType::GradientData> {
   typedef CoDiType Type;
   typedef typename CoDiType::GradientValue AdjointType;
   typedef CoDiType ModifiedType;
-  typedef typename CoDiType::PassiveReal PassiveType;
+  typedef typename CoDiType::Real PassiveType;
   typedef typename CoDiType::GradientData IndexType;
 
   typedef typename CoDiType::TapeType Tape;
@@ -58,14 +58,14 @@ struct CoDiPackToolBase : public medi::ADToolImplCommon<Impl, primalRestore, fal
 
   static medi::OperatorHelper<
             medi::FunctionHelper<
-                CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl
+                CoDiType, CoDiType, typename CoDiType::Real, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl
             >
           > operatorHelper;
 
   static Tape* adjointTape;
 
   CoDiPackToolBase(MPI_Datatype adjointMpiType) :
-    medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, typename CoDiType::GradientData>(adjointMpiType) {}
+    medi::ADToolImplCommon<Impl, primalRestore, false, CoDiType, typename CoDiType::GradientValue, typename CoDiType::Real, typename CoDiType::GradientData>(adjointMpiType) {}
 
   static void initTypes() {
     // create the mpi type for CoDiPack
@@ -219,7 +219,7 @@ struct CoDiPackTool final : public CoDiPackToolBase<CoDiType, false, CoDiPackToo
     typedef typename CoDiType::TapeType Tape;
     typedef typename CoDiType::GradientValue AdjointType;
     typedef CoDiType ModifiedType;
-    typedef typename CoDiType::PassiveReal PassiveType;
+    typedef typename CoDiType::Real PassiveType;
     typedef typename CoDiType::GradientData IndexType;
 
     CoDiPackTool(MPI_Datatype adjointMpiType) :
@@ -256,7 +256,7 @@ struct CoDiPackToolPrimalRestore final : public CoDiPackToolBase<CoDiType, true,
     typedef typename CoDiType::TapeType Tape;
     typedef typename CoDiType::GradientValue AdjointType;
     typedef CoDiType ModifiedType;
-    typedef typename CoDiType::PassiveReal PassiveType;
+    typedef typename CoDiType::Real PassiveType;
     typedef typename CoDiType::GradientData IndexType;
 
     CoDiPackToolPrimalRestore(MPI_Datatype adjointMpiType) :
@@ -291,5 +291,5 @@ template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDi
 template<typename CoDiType, bool primalRestore, typename Impl> MPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::AdjointMpiType;
 template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiPackToolBase<CoDiType, primalRestore, Impl>::MediType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_TYPE;
 template<typename CoDiType, bool primalRestore, typename Impl> medi::AMPI_Datatype CoDiPackToolBase<CoDiType, primalRestore, Impl>::MPI_INT_TYPE;
-template<typename CoDiType, bool primalRestore, typename Impl> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::PassiveReal, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > CoDiPackToolBase<CoDiType, primalRestore, Impl>::operatorHelper;
+template<typename CoDiType, bool primalRestore, typename Impl> medi::OperatorHelper<medi::FunctionHelper<CoDiType, CoDiType, typename CoDiType::Real, typename CoDiType::GradientData, typename CoDiType::GradientValue, Impl> > CoDiPackToolBase<CoDiType, primalRestore, Impl>::operatorHelper;
 template<typename CoDiType, bool primalRestore, typename Impl> typename CoDiType::TapeType* CoDiPackToolBase<CoDiType, primalRestore, Impl>::adjointTape;

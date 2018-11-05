@@ -149,6 +149,12 @@ DRIVER_TESTS := $(FORWARD_TESTS)
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codiForward/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiForward -DCODI_TYPE=codi::RealForward
 $(eval $(value DRIVER_INST))
 
+# Driver for RealReversePrimalIndex
+DRIVER_NAME  := CoDi2nd
+DRIVER_TESTS := $(BASIC_TESTS)
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER = $(DRIVER_DIR)/codi/codiDriver.cpp -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseGen<codi::RealForward>"
+$(eval $(value DRIVER_INST))
+
 # Driver for ADOL-c
 DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)
