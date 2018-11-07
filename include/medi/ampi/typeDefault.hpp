@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include <new>
+
 #include "../macros.h"
 #include "typeInterface.hpp"
 #include "op.hpp"
