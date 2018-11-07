@@ -30,6 +30,8 @@
 
 #include <mpi.h>
 
+#include <new>
+
 #include "../adToolPassive.hpp"
 #include "../macros.h"
 #include "typeInterface.hpp"
