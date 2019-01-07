@@ -28,7 +28,7 @@
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <externals/codiMediPackTypes.hpp>
+#include <codi/externals/codiMediPackTypes.hpp>
 
 #include <iostream>
 
