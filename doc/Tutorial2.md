@@ -27,7 +27,7 @@ The same is true for the `MINLOC` and `MAXLOC` operators. An example is:
 
 The process gets more involved if custom operators are used in the application. The default handling of MeDiPack in such
 cases is to change the reduce operation into a gather operation and to perform the reduction on the local processors.
-This enables the AD tool to *see* the operations and perform the correct adjoint implementation. An example for such an
+This enables the AD tool to see the operations and perform the correct adjoint implementation. An example for such an
 operation is:
 ~~~
   struct Residuals {
@@ -71,7 +71,7 @@ The mathematical model for a reduce operation is
 \f[
    y = h(x_0, \ldots, x_{n-1})
 \f]
-where \f$x_i\f$ represents the value one MPI rank, \f$n\f$ the number of ranks and \f$y\f$ the final result. \f$h\f$ is
+where \f$x_i\f$ represents the value of one MPI rank, \f$n\f$ the number of ranks and \f$y\f$ the final result. \f$h\f$ is
 the mathematical representation of the the reduce operation. The reverse AD formulation for this operation is
 \f[
    \bar x_i \aeq \frac{\d h}{\d x_i}(x_0, \ldots, x_{n-1}) \bar y, \quad \forall i = 0, \ldots, n-1 \eqdot
@@ -339,16 +339,24 @@ void optimizedCustomOperator() {
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  TOOL::init();
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  int size;
 
-  customOperator();
+  AMPI_Comm_size(AMPI_COMM_WORLD, &size);
+  if(size != 2) {
+    std::cout << "Please start the tutorial with two processes." << std::endl;
+  } else {
 
-  tape.reset();
+    TOOL::init();
+    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
-  optimizedCustomOperator();
+    customOperator();
 
-  TOOL::finalize();
+    tape.reset();
+
+    optimizedCustomOperator();
+
+    TOOL::finalize();
+  }
 
   AMPI_Finalize();
 }

@@ -1,7 +1,7 @@
 #
 # MeDiPack, a Message Differentiation Package
 #
-# Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+# Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
 # Homepage: http://www.scicomp.uni-kl.de
 # Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 #
@@ -23,7 +23,7 @@
 # General Public License along with MeDiPack.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-# Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+# Authors: Max Sagebaum, Tim Albring, (SciComp, TU Kaiserslautern)
 #
 
 INCLUDE_DIR=include
@@ -42,6 +42,13 @@ GENERATED_FILES= \
   $(GEN_DIR)/medi/ampiDefinitions.h
 
 ASTYLE_FILE=template.style
+
+ASTYLE:=$(shell command -v astyle 2> /dev/null)
+ifdef ASTYLE
+  ASTYLE_CMD=astyle --options=$(ASTYLE_FILE)
+else
+	ASTYLE_CMD=cat
+endif
 
 #list all source files in DOC_DIR
 DOC_FILES   = $(wildcard $(DOC_DIR)/*.cpp)
@@ -81,17 +88,17 @@ $(GEN_DIR)/medi: $(GEN_DIR)
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 $(GEN_DIR)/%.h:$(TEMPL_DIR)/%_h.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 $(GEN_DIR)/%.cpp:$(TEMPL_DIR)/%_cpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
-	astyle --options=$(ASTYLE_FILE) < $@.tmp > $@
+	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
 #rules for the tutorial files

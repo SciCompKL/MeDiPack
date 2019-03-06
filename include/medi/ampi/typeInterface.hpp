@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -215,6 +215,17 @@ namespace medi {
       virtual void clearIndices(void* buf, size_t bufOffset, int elements) const = 0;
 
       /**
+       * @brief Create indices for a reciving buffer if necessary.
+       *
+       * @param[in]          buf  The original buffer provided by the user.
+       * @param[in]    bufOffset  The offset into the original buffer, as provided by the user.
+       * @param[out]     indices  The generated buffer for indices. Indices are stored in a linearized fashion.
+       * @param[in] bufModOffset  The linearized displacement for the modified buffer. These displacements are continuous and do not contain any holes.
+       * @param[in]     elements  The number of elements that should be copied.
+       */
+      virtual void createIndices(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const = 0;
+
+      /**
        * @brief Get the primal values from the AD types.
        *
        * @param[in]          buf  The original buffer provided by the user.
@@ -322,6 +333,10 @@ namespace medi {
 
       void clearIndices(void* buf, size_t bufOffset, int elements) const {
         cast().clearIndices(castBuffer<TypeB>(buf), bufOffset, elements);
+      }
+
+      void createIndices(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
+        cast().createIndices(castBuffer<TypeB>(buf), bufOffset, castBuffer<IndexTypeB>(indices), bufModOffset, elements);
       }
 
       void getValues(const void* buf, size_t bufOffset, void* primals, size_t bufModOffset, int elements) const {

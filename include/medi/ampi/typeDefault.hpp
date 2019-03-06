@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -131,13 +131,21 @@ namespace medi {
         int indexOffset = computeActiveElements((int)bufModOffset);
 
         for(int i = 0; i < elements; ++i) {
-          indices[indexOffset + i] = ADTool::registerValue(buf[bufOffset + i], oldPrimals[indexOffset + i]);
+          ADTool::registerValue(buf[bufOffset + i], oldPrimals[indexOffset + i], indices[indexOffset + i]);
         }
       }
 
       inline void clearIndices(Type* buf, size_t bufOffset, int elements) const {
         for(int i = 0; i < elements; ++i) {
           ADTool::clearIndex(buf[bufOffset + i]);
+        }
+      }
+
+      inline void createIndices(Type* buf, size_t bufOffset, IndexType* indices, size_t bufModOffset, int elements) const {
+        int indexOffset = computeActiveElements((int)bufModOffset);
+
+        for(int i = 0; i < elements; ++i) {
+          ADTool::createIndex(buf[bufOffset + i], indices[indexOffset + i]);
         }
       }
 

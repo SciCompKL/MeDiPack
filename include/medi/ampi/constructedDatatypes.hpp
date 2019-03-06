@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -368,6 +368,19 @@ namespace medi {
 
           for(int curType = 0; curType < nTypes; ++curType) {
             types[curType]->clearIndices(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, blockLengths[curType]);
+          }
+        }
+      }
+
+      void createIndices(void* buf, size_t bufOffset, void* indices, size_t bufModOffset, int elements) const {
+        int totalIndexOffset = computeActiveElements(bufModOffset);  // indices are lineralized and counted up in the loop
+
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->createIndices(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, indices, totalIndexOffset, blockLengths[curType]);
+            totalIndexOffset +=  types[curType]->computeActiveElements(blockLengths[curType]);
           }
         }
       }

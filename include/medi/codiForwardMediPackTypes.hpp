@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -37,7 +37,7 @@
 template<typename CoDiType>
 struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<CoDiType>, typename CoDiType::GradientValue, typename CoDiType::PassiveReal, int> {
   typedef CoDiType Type;
-  typedef typename CoDiType::GradientValue AdjointType;
+  typedef void AdjointType;
   typedef CoDiType ModifiedType;
   typedef typename CoDiType::PassiveReal PassiveType;
   typedef int IndexType;
@@ -128,49 +128,12 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     return operatorHelper.convertOperator(op);
   }
 
-  inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
-    MEDI_UNUSED(indices);
-    MEDI_UNUSED(adjoints);
-    MEDI_UNUSED(elements);
-  }
-
-  inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
-    MEDI_UNUSED(indices);
-    MEDI_UNUSED(adjoints);
-    MEDI_UNUSED(elements);
-  }
-
-  inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-    MEDI_UNUSED(indices);
-    MEDI_UNUSED(primals);
-    MEDI_UNUSED(elements);
-
-    /* not required */
-  }
-
-  inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
-    MEDI_UNUSED(buf);
-    MEDI_UNUSED(elements);
-    MEDI_UNUSED(ranks);
-  }
-
-  inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-    buf = new AdjointType[size];
-  }
-
   inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
     buf = new PassiveType[size];
   }
 
   inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
     buf = new IndexType[size];
-  }
-
-  inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
-    if(NULL != buf) {
-      delete [] buf;
-      buf = NULL;
-    }
   }
 
   inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
@@ -196,6 +159,11 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     value.getGradientData() = 0;
   }
 
+  static inline void createIndex(Type& value, int& index) {
+    MEDI_UNUSED(value);
+    index = 0;
+  }
+
   static inline PassiveType getValue(const Type& value) {
     return value.getValue();
   }
@@ -210,10 +178,10 @@ struct CoDiPackForwardTool final : public medi::ADToolBase<CoDiPackForwardTool<C
     MEDI_UNUSED(modValue);
   }
 
-  static inline int registerValue(Type& value, PassiveType& oldValue) {
+  static inline void registerValue(Type& value, PassiveType& oldValue, int& index) {
     MEDI_UNUSED(value);
     MEDI_UNUSED(oldValue);
-    return 0;
+    MEDI_UNUSED(index);
   }
 
   static PassiveType getPrimalFromMod(const ModifiedType& modValue) {

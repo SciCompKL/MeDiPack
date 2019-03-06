@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -34,18 +34,10 @@
 
 typedef CODI_TYPE NUMBER;
 
-#ifndef PRIMAL_RESTORE
-# define PRIMAL_RESTORE 0
-#endif
-
 #ifndef VECTOR
 # define VECTOR 0
 #endif
 
-#if PRIMAL_RESTORE
-# define TOOL CoDiPackToolPrimalRestore<NUMBER>
-#else
-# define TOOL CoDiPackTool<NUMBER>
-#endif
+#define TOOL CoDiPackTool<NUMBER>
 
 #include "../globalDefines.h"

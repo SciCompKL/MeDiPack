@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -245,10 +245,12 @@ namespace medi {
 //        }
 //      }
 
-      static void postAdjMinMax(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count) {
+      static void postAdjMinMax(AdjointType* adjoints, PassiveType* primals, PassiveType* rootPrimals, int count, int vecSize) {
         for(int i = 0; i < count; ++i) {
           if(rootPrimals[i] != primals[i]) {
-            adjoints[i] = AdjointType(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+            for(int dim = 0; dim < vecSize; ++dim) {
+              adjoints[i * vecSize + dim] = AdjointType(); // the primal of this process was not the minimum or maximum so do not perfrom the adjoint update
+            }
           }
         }
       }

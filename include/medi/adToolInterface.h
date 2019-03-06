@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -152,52 +152,6 @@ namespace medi {
       virtual AMPI_Op convertOperator(AMPI_Op op) const = 0;
 
       /**
-       * @brief Get the adjoints for the indices from the AD tool.
-       *
-       * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
-       * @param[out] adjoints  The vector for the adjoint variables.
-       * @param[in]  elements  The number of elements in the vectors.
-       */
-      virtual void getAdjoints(const void* indices, void* adjoints, int elements) const = 0;
-
-      /**
-       * @brief Add the adjoint varaibles to the ones in the AD tool. That is the AD tool should perform the
-       * operation:
-       *
-       * internalAdjoints[indices[i]] += adjoints[i];
-       *
-       * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
-       * @param[out] adjoints  The vector with the adjoint variables.
-       * @param[in]  elements  The number of elements in the vectors.
-       */
-      virtual void updateAdjoints(const void* indices, const void* adjoints, int elements) const = 0;
-
-      /**
-       * @brief Restore the old primal values from the floating point values in the buffer.
-       *
-       * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
-       * @param[out] adjoints  The vector with the old primal variables.
-       * @param[in]  elements  The number of elements in the vectors.
-       */
-      virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;
-
-      /**
-       * @brief Perform a reduction in the first element of the buffer.
-       * @param[in,out]  buf  The buffer with adjoint values its size is elements * ranks
-       * @param[in] elements  The number of elements in the vectors.
-       * @param[in]    ranks  The number of ranks in the communication.
-       */
-      virtual void combineAdjoints(void* buf, const int elements, const int ranks) const = 0;
-
-      /**
-       * @brief Create an array for the adjoint variables.
-       *
-       * @param[out] buf  The pointer for the buffer.
-       * @param[in] size  The size of the buffer.
-       */
-      virtual void createAdjointTypeBuffer(void* &buf, size_t size) const = 0;
-
-      /**
        * @brief Create an array for the passive variables.
        *
        * @param[out] buf  The pointer for the buffer.
@@ -212,13 +166,6 @@ namespace medi {
        * @param[in] size  The size of the buffer.
        */
       virtual void createIndexTypeBuffer(void* &buf, size_t size) const = 0;
-
-      /**
-       * @brief Delete the array of the adjoint variables.
-       *
-       * @param[in,out] buf  The pointer for the buffer.
-       */
-      virtual void deleteAdjointTypeBuffer(void* &buf) const = 0;
 
       /**
        * @brief Delete the array of the passive variables.
@@ -295,15 +242,23 @@ namespace medi {
        *
        * @param[in,out]    value  The AD value in the user buffer on the receiving side.
        * @param[out]   oldPrimal  The old primal value that was overwritten by this value.
-       * @return THe identifier for the registered AD value.
+       * @param[in, out]   index  The identifier registered for the old value. This value may be set here or already
+       *                          be the value from createIndex.
        */
-      static IndexType registerValue(Type& value, PassiveType& oldPrimal);
+      static void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index);
 
       /**
        * @brief Delete the index in a buffer such that the buffer can be overwritten.
        * @param[in,out] value  The AD value in the buffer.
        */
       static void clearIndex(Type& value);
+
+      /**
+       * @brief Create an index for the given item in the buffer.
+       * @param[in,out]  value  The AD value in the buffer.
+       * @param[out]     index  The index for the value.
+       */
+      static void createIndex(Type& value, IndexType& index);
 
       /**
        * @brief Get the primal floating point value of the AD value.
@@ -335,36 +290,12 @@ namespace medi {
       ADToolBase(MPI_Datatype adjointMpiType) :
         ADToolInterface(adjointMpiType) {}
 
-      void getAdjoints(const void* indices, void* adjoints, int elements) const {
-        cast().getAdjoints(castBuffer<IndexTypeB>(indices), castBuffer<AdjointTypeB>(adjoints), elements);
-      }
-
-      void updateAdjoints(const void* indices, const void* adjoints, int elements) const {
-        cast().updateAdjoints(castBuffer<IndexTypeB>(indices), castBuffer<AdjointTypeB>(adjoints), elements);
-      }
-
-      void setReverseValues(const void* indices, const void* primals, int elements) const {
-        cast().setReverseValues(castBuffer<IndexTypeB>(indices), castBuffer<PassiveTypeB>(primals), elements);
-      }
-
-      void combineAdjoints(void* buf, const int elements, const int ranks) const {
-        cast().combineAdjoints(castBuffer<AdjointTypeB>(buf), elements, ranks);
-      }
-
-      void createAdjointTypeBuffer(void* &buf, size_t size) const {
-        cast().createAdjointTypeBuffer(castBuffer<AdjointTypeB>(buf), size);
-      }
-
       void createPassiveTypeBuffer(void* &buf, size_t size) const {
         cast().createPassiveTypeBuffer(castBuffer<PassiveTypeB>(buf), size);
       }
 
       void createIndexTypeBuffer(void* &buf, size_t size) const {
         cast().createIndexTypeBuffer(castBuffer<IndexTypeB>(buf), size);
-      }
-
-      void deleteAdjointTypeBuffer(void* &buf) const {
-        cast().deleteAdjointTypeBuffer(castBuffer<AdjointTypeB>(buf));
       }
 
       void deletePassiveTypeBuffer(void* &buf) const {

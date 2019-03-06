@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -55,23 +55,12 @@ namespace medi {
         return restorePrimal;
       }
 
-      inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-        buf = new AdjointType[size];
-      }
-
       inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
         buf = new PassiveType[size];
       }
 
       inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
         buf = new IndexType[size];
-      }
-
-      inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
-        if(NULL != buf) {
-          delete [] buf;
-          buf = NULL;
-        }
       }
 
       inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
@@ -87,7 +76,5 @@ namespace medi {
           buf = NULL;
         }
       }
-
-
   };
 }

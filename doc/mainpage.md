@@ -17,7 +17,7 @@ MeDiPack (Message Differentiation Package) is a tool for gradient evaluation in 
 ### Supported
 
 Most of the MPI standard is covered by the MeDiPack library. The functions that are not supported are mostly very
-specialized routines. The following general list describes *features* of MPI that are handled, but makes no claim to be
+specialized routines. The following general list describes features of MPI that are handled, but makes no claim to be
 complete:
  - Asynchronous communication
  - Custom data types
@@ -64,7 +64,7 @@ In order to use MeDiPack in your application the following steps have to be take
  - Include <medi/medi.hpp> in a global header
  - Use the MeDiPack namespace (using namespace medi;)
  - Rename all uses of MPI_ to AMPI_
- - Include <medi/medi.cpp> file in a translation unit of you program
+ - Include <medi/medi.cpp> file in a translation unit of your program
  - Initialize the specific implementation of your AD tool
 
 ## Hello World Example

@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -64,35 +64,6 @@ namespace medi {
       inline AMPI_Op convertOperator(AMPI_Op op) const {
         return op;
       }
-      inline void getAdjoints(const IndexType* indices, AdjointType* adjoints, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(adjoints);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void updateAdjoints(const IndexType* indices, const AdjointType* adjoints, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(adjoints);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void setReverseValues(const IndexType* indices, const PassiveType* primals, int elements) const {
-        MEDI_UNUSED(indices);
-        MEDI_UNUSED(primals);
-        MEDI_UNUSED(elements);
-      }
-
-      inline void combineAdjoints(AdjointType* buf, const int elements, const int ranks) const {
-        MEDI_UNUSED(buf);
-        MEDI_UNUSED(elements);
-        MEDI_UNUSED(ranks);
-      }
-
-      inline void createAdjointTypeBuffer(AdjointType* &buf, size_t size) const {
-        MEDI_UNUSED(size);
-
-        buf = nullptr;
-      }
 
       inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
         MEDI_UNUSED(size);
@@ -103,10 +74,6 @@ namespace medi {
       inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
         MEDI_UNUSED(size);
 
-        buf = nullptr;
-      }
-
-      inline void deleteAdjointTypeBuffer(AdjointType* &buf) const {
         buf = nullptr;
       }
 

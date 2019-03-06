@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -23,7 +23,7 @@
  * General Public License along with MeDiPack.
  * If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors: Max Sagebaum (SciComp, TU Kaiserslautern)
+ * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
 #pragma once
@@ -77,7 +77,7 @@ namespace medi {
 
   extern const AMPI_Request AMPI_REQUEST_NULL;
 
-  inline void AMPI_Wait_b(HandleBase* handle);
+  inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface);
   struct WaitHandle : HandleBase {
       ReverseFunction finishFunc;
       HandleBase* handle;
@@ -91,10 +91,10 @@ namespace medi {
       }
   };
 
-  inline void AMPI_Wait_b(HandleBase* handle) {
+  inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
-    h->finishFunc(h->handle);
+    h->finishFunc(h->handle, adjointInterface);
   }
 
   inline void performReverseAction(AMPI_Request *request) {
