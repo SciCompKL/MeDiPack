@@ -78,9 +78,10 @@ In order to use MeDiPack in your application the following steps have to be take
 The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an AD tool.
 
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+
+#include <codi.hpp>
+#include <codi/externals/codiMediPackTypes.hpp>
 
 #include <iostream>
 

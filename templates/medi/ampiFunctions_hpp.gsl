@@ -1,7 +1,7 @@
 .-
 .- MeDiPack, a Message Differentiation Package
 .-
-.- Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+.- Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
 .- Homepage: http://www.scicomp.uni-kl.de
 .- Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 .-
@@ -23,7 +23,7 @@
 .- General Public License along with MeDiPack.
 .- If not, see <http://www.gnu.org/licenses/>.
 .-
-.- Authors: Max Sagebaum, Tim Albring, (SciComp, TU Kaiserslautern)
+.- Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
 .-
 .
 .ignorecase = 0
@@ -31,6 +31,10 @@
 .include "templates/medi/basicTemplates.gsl"
 .
 .template 0
+
+PRIMAL_BUFFER = 1
+FORWARD_BUFFER = 2
+REVERSE_BUFFER = 3
 
 function addHandleData(handle, pack, del, name, type, cp)
   new my.handle.item
@@ -115,6 +119,30 @@ for functions.function as curFunction
    curFunction.argRev += comma
  endfor
 
+#build the argument list for the primal taped called
+ curFunction.argPrim = ""
+ for curFunction. as item where defined(item.arg)
+   constMod = generateConst(item)
+   if(name(item) =  "recv" | name(item) =  "send")
+     if(defined(item.displs))
+       curFunction.argPrim += "h->$(item.name)Primals, h->$(item.name)CountVec, h->$(item.name)DisplsVec"    # append adjoint and primal buffer and the byte size
+     else
+       curFunction.argPrim += "h->$(item.name)Primals, h->$(item.name)CountVec"    # append adjoint and primal buffer and the byte size
+     endif
+   elsif(name(item) = "request")
+     curFunction.argPrim += "&h->$(item.name)Reverse"
+   elsif(name(item) = "status")
+     curFunction.argPrim += "&$(item.name)"   # status is not stored
+   elsif(name(item) = "message")
+     curFunction.argPrim += "&h->$(item.name)"   # directly stored
+   else
+     curFunction.argPrim += "h->$(item.name)"
+   endif
+   comma = last()?? "" ? ", "
+   curFunction.argPrim += comma
+ endfor
+
+
  new curFunction.primalHandle as handle
    define handle.noarg = 1
  endnew
@@ -129,9 +157,9 @@ for functions.function as curFunction
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)Mod", "typename $(item.typeName)::ModifiedType*")
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)TotalSize", "int")
      addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deleteIndexTypeBuffer($(item.name)Indices);", "$(item.name)Indices", "typename $(item.typeName)::IndexType*")
-     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PassiveType*")
+     addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePrimalTypeBuffer($(item.name)Primals);", "$(item.name)Primals", "typename $(item.typeName)::PrimalType*")
      if(name(item) =  "recv")
-       addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePassiveTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PassiveType*")
+       addHandleData(curFunction->reverseHandle, 0, "$(item.type)->getADTool().deletePrimalTypeBuffer($(item.name)OldPrimals);", "$(item.name)OldPrimals", "typename $(item.typeName)::PrimalType*")
      endif
      addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Adjoints", "/* required for async */ void*")
      if(defined(item.displs))
@@ -366,7 +394,7 @@ function createBufferElementsComputation(buffer)
   endif
 endfunction
 
-function createBufferReverseSetup(buffer, curFunction, isRecv)
+function createBufferSetup(buffer, curFunction, getValues, type)
 > h->$(my.buffer.name)Adjoints = nullptr;
   startRootReverse(my.buffer)
     if(defined(my.buffer.displs))
@@ -375,36 +403,66 @@ function createBufferReverseSetup(buffer, curFunction, isRecv)
 >     h->$(my.buffer.name)CountVec = adjointInterface->getVectorSize() * h->$(my.buffer.name)Count;
     endif
     allMul = ""
-    if(defined(my.buffer.all))
+    if(REVERSE_BUFFER = my.type & defined(my.buffer.all))
       allMul = "* getCommSize(h->$(my.buffer.all))"
     endif
->   adjointInterface->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
-    if(1 = my.isRecv)
->     // Adjoint buffers are always linear in space so we can accesses them in one sweep
->     adjointInterface->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+
+    if(PRIMAL_BUFFER = my.type)
+>     adjointInterface->createPrimalTypeBuffer((void*&)h->$(my.buffer.name)Primals, h->$(my.buffer.name)TotalSize $(allMul));
+    elsif(FORWARD_BUFFER = my.type | REVERSE_BUFFER = my.type)
+>     adjointInterface->createAdjointTypeBuffer(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize $(allMul));
+    else
+      abort "Error: Missing implementation for buffer type"
+    endif
+
+    if(1 = my.getValues)
+      if(PRIMAL_BUFFER = my.type)
+>       // Primal buffers are always linear in space so we can accesses them in one sweep
+>       adjointInterface->getPrimals(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Primals, h->$(my.buffer.name)TotalSize);
+      elsif(FORWARD_BUFFER = my.type | REVERSE_BUFFER = my.type)
+>       // Adjoint buffers are always linear in space so we can accesses them in one sweep
+>       adjointInterface->getAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+      else
+        abort "Error: Missing implementation for buffer type"
+      endif
 >
-      if(defined(my.curFunction->operator))
+      if(REVERSE_BUFFER = my.type & defined(my.curFunction->operator)) #TODO: Add operator support for forward eval
 >       convOp.preAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.buffer.name)Count, adjointInterface->getVectorSize());
       endif
     endif
   endRootReverse(my.buffer)
 endfunction
 
-function createBufferReverseCleanup(buffer, curFunction, isSend)
+function createBufferCleanup(buffer, curFunction, setValues, type)
   startRootReverse(my.buffer)
-    if(1 = my.isSend)
-      if(defined(my.buffer.all))
+    if(1 = my.setValues)
+      if(REVERSE_BUFFER = my.type & defined(my.buffer.all))
 >       adjointInterface->combineAdjoints(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize, getCommSize(h->$(my.buffer.all)));
       endif
-      if(defined(my.curFunction->operator))
+      if(REVERSE_BUFFER = my.type & defined(my.curFunction->operator))
 >       // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
 >       // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
 >       convOp.postAdjointOperation(h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)Primals, h->$(my.curFunction->recv.name)Primals, h->$(my.buffer.name)TotalSize, adjointInterface->getVectorSize());
       endif
->     // Adjoint buffers are always linear in space so they can be accessed in one sweep
->     adjointInterface->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+
+      if(PRIMAL_BUFFER = my.type)
+>       // Primal buffers are always linear in space so we can accesses them in one sweep
+>       adjointInterface->setPrimals(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Primals, h->$(my.buffer.name)TotalSize);
+      elsif(FORWARD_BUFFER = my.type | REVERSE_BUFFER = my.type)
+>       // Adjoint buffers are always linear in space so we can accesses them in one sweep
+>       adjointInterface->updateAdjoints(h->$(my.buffer.name)Indices, h->$(my.buffer.name)Adjoints, h->$(my.buffer.name)TotalSize);
+      else
+        abort "Error: Missing implementation for buffer type"
+      endif
     endif
->   adjointInterface->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
+
+    if(PRIMAL_BUFFER = my.type)
+>     adjointInterface->deletePrimalTypeBuffer((void*&)h->$(my.buffer.name)Primals);
+    elsif(FORWARD_BUFFER = my.type | REVERSE_BUFFER = my.type)
+>     adjointInterface->deleteAdjointTypeBuffer(h->$(my.buffer.name)Adjoints);
+    else
+      abort "Error: Missing implementation for buffer type"
+    endif
 
     if(defined(my.buffer.displs))
 >     delete [] h->$(my.buffer.name)CountVec;
@@ -413,17 +471,24 @@ function createBufferReverseCleanup(buffer, curFunction, isSend)
   endRootReverse(my.buffer)
 endfunction
 
+# define function for primal store
+function createPrimalStore(buffer, curFunction, elementName)
+  startRootReverse(my.buffer)
+>   adjointInterface->getPrimals(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+  endRootReverse(my.buffer)
+endfunction
+
 # define function for primal restore
 function createPrimalRestore(buffer, curFunction, elementName)
   startRootReverse(my.buffer)
->   adjointInterface->setReverseValues(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   adjointInterface->setPrimals(h->$(my.buffer.name)Indices, h->$(my.buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
   endRootReverse(my.buffer)
 endfunction
 
 # define function for primal extraction
 function createPrimalExtraction(buffer, curFunction, elementName)
   startRoot(my.buffer)
->   $(my.curFunction.adType).createPassiveTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   $(my.curFunction.adType).createPrimalTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
     createBufferAccessLogic(my.buffer, 0, "$type$->getValues($name$, $pos$, h->$(my.buffer.name)$(my.elementName), $startLinPos$, $curCount$);")
   endRoot(my.buffer)
 endfunction
@@ -490,7 +555,7 @@ function addPrimalAsyncSplit(curFunction)
 >
 >      // create adjoint wait
 >      if(nullptr != h) {
->        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, h);
+>        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.name)_b_finish<$(my.curFunction.tplArg)>, (ForwardFunction)AMPI_$(my.curFunction.name)_d<$(my.curFunction.tplArg)>, h);
 >        $(my.curFunction.adType).addToolAction(waitH);
 >      }
 >    }
@@ -517,8 +582,26 @@ function addPrimalAsyncSplit(curFunction)
 >
        for my.curFunction.operator
 >        AMPI_Op convOp = $(my.curFunction.adType).convertOperator($(operator.name));
+>        (void)convOp;
        endfor
 
+  endif
+endfunction
+
+function addForwardAsyncSplit(curFunction, suffix)
+  if(defined(my.curFunction.async))
+>  }
+>
+>  template<$(my.curFunction.tplDef)>
+>  void AMPI_$(my.curFunction.name)_$(my.suffix)_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
+>
+>    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
+>    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
+>
+     for my.curFunction.operator
+>      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      (void)convOp;
+     endfor
   endif
 endfunction
 
@@ -534,6 +617,7 @@ function addReverseAsyncSplit(curFunction)
 >
      for my.curFunction.operator
 >      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      (void)convOp;
      endfor
   endif
 endfunction
@@ -547,6 +631,8 @@ endfunction
 #include "../../include/medi/ampi/async.hpp"
 #include "../../include/medi/ampi/message.hpp"
 #include "../../include/medi/ampi/reverseFunctions.hpp"
+#include "../../include/medi/ampi/forwardFunctions.hpp"
+#include "../../include/medi/ampi/primalFunctions.hpp"
 #include "../../include/medi/displacementTools.hpp"
 #include "../../include/medi/mpiTools.h"
 
@@ -585,6 +671,75 @@ namespace medi {
     };
 . endif
 
+.- create the primal function
+  template<$(curFunction.tplDef)>
+  void AMPI_$(curFunction.name)_p(HandleBase* handle, AdjointInterface* adjointInterface) {
+    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+
+.   for curFunction.status
+      $(status.type) $(status.name);
+.   endfor
+.
+.   if(defined(curFunction->operator))
+      AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
+.   endif
+.   for curFunction.recv
+.     createBufferSetup(recv, curFunction, 0, PRIMAL_BUFFER)
+.   endfor
+.
+.   for curFunction.send
+.     createBufferSetup(send, curFunction, 1, PRIMAL_BUFFER)
+.   endfor
+
+    AMPI_$(curFunction.name)_pri<$(curFunction.tplArg)>($(curFunction.argPrim));
+
+.   addForwardAsyncSplit(curFunction, "p")
+.   for curFunction.send
+.     createBufferCleanup(send, curFunction, 0, PRIMAL_BUFFER)
+.   endfor
+.
+.   for curFunction.recv
+      if(h->$(curFunction.adType).isOldPrimalsRequired()) {
+.       createPrimalStore(recv, curFunction, "OldPrimals")
+      }
+.     createBufferCleanup(recv, curFunction, 1, PRIMAL_BUFFER)
+.   endfor
+  }
+
+.- create the forward function
+  template<$(curFunction.tplDef)>
+  void AMPI_$(curFunction.name)_d(HandleBase* handle, AdjointInterface* adjointInterface) {
+    $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+
+.   for curFunction.status
+      $(status.type) $(status.name);
+.   endfor
+.
+.   if(defined(curFunction->operator))
+      AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
+.   endif
+.   for curFunction.recv
+.     createBufferSetup(recv, curFunction, 0, FORWARD_BUFFER)
+.   endfor
+.
+.   for curFunction.send
+.     createBufferSetup(send, curFunction, 1, FORWARD_BUFFER)
+.   endfor
+
+    AMPI_$(curFunction.name)_fwd<$(curFunction.tplArg)>($(curFunction.argRev));
+
+.   addForwardAsyncSplit(curFunction, "d")
+.   for curFunction.send
+.     createBufferCleanup(send, curFunction, 0, FORWARD_BUFFER)
+.   endfor
+.
+.   for curFunction.recv
+.     createBufferCleanup(recv, curFunction, 1, FORWARD_BUFFER)
+.   endfor
+  }
+
 .- create the reverse function
   template<$(curFunction.tplDef)>
   void AMPI_$(curFunction.name)_b(HandleBase* handle, AdjointInterface* adjointInterface) {
@@ -596,27 +751,28 @@ namespace medi {
 .
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+      (void)convOp;
 .   endif
 .   for curFunction.recv
-.     createBufferReverseSetup(recv, curFunction, 1)
+.     createBufferSetup(recv, curFunction, 1, REVERSE_BUFFER)
       if(h->$(curFunction.adType).isOldPrimalsRequired()) {
 .       createPrimalRestore(recv, curFunction, "OldPrimals")
       }
 .   endfor
 .
 .   for curFunction.send
-.     createBufferReverseSetup(send, curFunction, 0)
+.     createBufferSetup(send, curFunction, 0, REVERSE_BUFFER)
 .   endfor
 
     AMPI_$(curFunction.name)_adj<$(curFunction.tplArg)>($(curFunction.argRev));
 
 .   addReverseAsyncSplit(curFunction)
 .   for curFunction.send
-.     createBufferReverseCleanup(send, curFunction, 1)
+.     createBufferCleanup(send, curFunction, 1, REVERSE_BUFFER)
 .   endfor
 .
 .   for curFunction.recv
-.     createBufferReverseCleanup(recv, curFunction, 0)
+.     createBufferCleanup(recv, curFunction, 0, REVERSE_BUFFER)
 .   endfor
   }
 
@@ -634,6 +790,7 @@ namespace medi {
     int rStatus;
 .     if(defined(curFunction->operator))
         AMPI_Op convOp = $(curFunction.adType).convertOperator($(curFunction->operator.name));
+        (void)convOp;
 .     endif
 
     if(!$(curFunction.adType).isActiveType()) {
@@ -760,7 +917,14 @@ namespace medi {
 .       endfor
 
         // pack all the variables in the handle
-        h->func = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
+        h->funcReverse = AMPI_$(curFunction.name)_b<$(curFunction.tplArg)>;
+.       if(defined(curFunction.async))
+          h->funcForward = AMPI_$(curFunction.name)_d_finish<$(curFunction.tplArg)>;
+          h->funcPrimal = AMPI_$(curFunction.name)_p_finish<$(curFunction.tplArg)>;
+.       else
+          h->funcForward = AMPI_$(curFunction.name)_d<$(curFunction.tplArg)>;
+          h->funcPrimal = AMPI_$(curFunction.name)_p<$(curFunction.tplArg)>;
+.       endif
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
       }
@@ -846,6 +1010,7 @@ namespace medi {
   inline $(curFunction.type) AMPI_$(curFunction.name)($(curFunction.argDef)) {
 .   if(defined(curFunction->operator))
       AMPI_Op convOp = op;
+      (void)convOp;
 .   endif
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }

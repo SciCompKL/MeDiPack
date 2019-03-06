@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -54,6 +54,21 @@ namespace medi {
       virtual int getVectorSize() const = 0;
 
       /**
+       * @brief Create an array for the primal variables.
+       *
+       * @param[out] buf  The pointer for the buffer.
+       * @param[in] size  The size of the buffer.
+       */
+      virtual void createPrimalTypeBuffer(void* &buf, size_t size) const = 0;
+
+      /**
+       * @brief Delete the array of the primal variables.
+       *
+       * @param[in,out] buf  The pointer for the buffer.
+       */
+      virtual void deletePrimalTypeBuffer(void* &buf) const = 0;
+
+      /**
        * @brief Create an array for the adjoint variables.
        *
        * @param[out] buf  The pointer for the buffer.
@@ -98,12 +113,25 @@ namespace medi {
       virtual void updateAdjoints(const void* indices, const void* adjoints, int elements) const = 0;
 
       /**
-       * @brief Restore the old primal values from the floating point values in the buffer.
+       * @brief Get the primal values from the AD tool.
+       *
+       * Can be used to store the old primal values from the floating point values in the buffer.
        *
        * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
        * @param[out]  primals  The vector with the old primal variables.
        * @param[in]  elements  The number of elements in the vectors.
        */
-      virtual void setReverseValues(const void* indices, const void* primals, int elements) const = 0;
+      virtual void getPrimals(const void* indices, const void* primals, int elements) const = 0;
+
+      /**
+       * @brief Set the primal values on the AD tool.
+       *
+       * Can be used to restore the old primal values from the floating point values in the buffer.
+       *
+       * @param[in]   indices  The indices from the AD tool for the variables in the buffer.
+       * @param[out]  primals  The vector with the old primal variables.
+       * @param[in]  elements  The number of elements in the vectors.
+       */
+      virtual void setPrimals(const void* indices, const void* primals, int elements) const = 0;
   };
 }

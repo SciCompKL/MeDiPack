@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -66,7 +66,7 @@ namespace medi {
       typedef void Type;
       typedef void ModifiedType;
       typedef void AdjointType;
-      typedef void PassiveType;
+      typedef void PrimalType;
       typedef void IndexType;
 
     private:
@@ -420,10 +420,32 @@ namespace medi {
         }
       }
 
+      void initializeType(void* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->initializeType(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, blockLengths[curType]);
+          }
+        }
+      }
+
+      void freeType(void* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          int totalBufOffset = computeBufOffset(i + bufOffset);
+
+          for(int curType = 0; curType < nTypes; ++curType) {
+            types[curType]->freeType(computeBufferPointer(buf, totalBufOffset + blockOffsets[curType]), 0, blockLengths[curType]);
+          }
+        }
+      }
+
       void createTypeBuffer(void* &buf, size_t size) const {
         char* b = (char*)calloc(size, typeExtend);
         b -= typeOffset;
         buf = (void*)b;
+
+        initializeType(buf, 0, size);
       }
 
       void createModifiedTypeBuffer(void* &buf, size_t size) const {
@@ -431,7 +453,9 @@ namespace medi {
       }
 
 
-      void deleteTypeBuffer(void* &buf) const {
+      void deleteTypeBuffer(void* &buf, size_t size) const {
+        freeType(buf, 0, size);
+
         char* b = (char*)buf;
         b += typeOffset;
         free(b);

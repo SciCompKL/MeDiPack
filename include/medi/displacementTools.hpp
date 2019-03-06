@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -171,8 +171,11 @@ namespace medi {
     linearCounts = new int[ranks];
 
     linearCounts[0] = type->computeActiveElements(displs[0] + counts[0]);
+    int lastSum = linearCounts[0];
     for(int i = 1; i < ranks; ++i) {
-      linearCounts[i] = type->computeActiveElements(displs[i] + counts[i]) - linearCounts[i - 1];
+      int curSum = type->computeActiveElements(displs[i] + counts[i]);
+      linearCounts[i] =  curSum - lastSum;
+      lastSum = curSum;
     }
   }
 }

@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -25,9 +25,10 @@
  *
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
-#include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+
+#include <codi.hpp>
+#include <codi/externals/codiMediPackTypes.hpp>
 
 #include <iostream>
 

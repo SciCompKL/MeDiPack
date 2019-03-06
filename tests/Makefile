@@ -1,7 +1,7 @@
 #
 # MeDiPack, a Message Differentiation Package
 #
-# Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+# Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
 # Homepage: http://www.scicomp.uni-kl.de
 # Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 #
@@ -23,7 +23,7 @@
 # General Public License along with MeDiPack.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-# Authors: Max Sagebaum, Tim Albring, (SciComp, TU Kaiserslautern)
+# Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
 #
 
 # names of the basic deriectories
@@ -79,6 +79,7 @@ all:
 # define general sets for tests
 BASIC_TESTS = $(wildcard $(TEST_DIR)/misc/Test**.cpp) $(wildcard $(TEST_DIR)/datatypes/Test**.cpp) $(wildcard $(TEST_DIR)/collective/Test**.cpp) $(wildcard $(TEST_DIR)/collective/inplace/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/Test**.cpp) $(wildcard $(TEST_DIR)/wait_test/Test**.cpp)
 FORWARD_TESTS = $(wildcard $(TEST_DIR)/forward/Test**.cpp)
+PRIMAL_TESTS = $(wildcard $(TEST_DIR)/primal/Test**.cpp)
 
 # The build rules for all drivers.
 define DRIVER_RULE
@@ -159,11 +160,25 @@ DRIVER_SRC = $(DRIVER_DIR)/codiUntyped/codiDriver.cpp
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiUntyped
 $(eval $(value DRIVER_INST))
 
-# Driver for RealReverse with untyped interface
+# Driver for RealForward
 DRIVER_NAME  := CoDiForward
 DRIVER_TESTS := $(FORWARD_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codiForward/codiDriver.cpp
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiForward -DCODI_TYPE=codi::RealForward
+$(eval $(value DRIVER_INST))
+
+# Driver for RealReverse with a forward tape evaluation
+DRIVER_NAME  := CoDiTapeForward
+DRIVER_TESTS := $(FORWARD_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/codiTapeForward/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiTapeForward -DCODI_TYPE=codi::RealReverse
+$(eval $(value DRIVER_INST))
+
+# Driver for RealReverse with a primal tape evaluation
+DRIVER_NAME  := CoDiTapePrimal
+DRIVER_TESTS := $(PRIMAL_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/codiTapePrimal/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiTapePrimal -DCODI_TYPE=codi::RealReversePrimal
 $(eval $(value DRIVER_INST))
 
 # Driver for ADOL-c
@@ -171,6 +186,22 @@ DRIVER_NAME  := ADOL-c
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/adolc/adolcDriver.cpp
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolc
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
+$(eval $(value DRIVER_INST))
+
+# Driver for ADOL-c forward mode
+DRIVER_NAME  := ADOL-cForward
+DRIVER_TESTS := $(FORWARD_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/adolcForward/adolcDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolcForward
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
+$(eval $(value DRIVER_INST))
+
+# Driver for ADOL-c primal mode
+DRIVER_NAME  := ADOL-cPrimal
+DRIVER_TESTS := $(PRIMAL_TESTS)
+DRIVER_SRC = $(DRIVER_DIR)/adolcPrimal/adolcDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(ADOLC_DIR)/include -L$(ADOLC_DIR)/lib64 -ladolc -I$(DRIVER_DIR)/adolcPrimal
 $(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_LIB = -L$(ADOLC_DIR)/lib64 -ladolc
 $(eval $(value DRIVER_INST))
 

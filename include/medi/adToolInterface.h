@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -41,6 +41,7 @@ namespace medi {
    */
   class ADToolInterface {
 
+      MPI_Datatype primalMpiType;
       MPI_Datatype adjointMpiType;
 
     public:
@@ -63,7 +64,7 @@ namespace medi {
       /**
        * @brief The data type used for the floating point data.
        */
-      typedef void PassiveType;
+      typedef void PrimalType;
 
       /**
        * @brief The data type from the AD tool for the identification of AD variables.
@@ -74,10 +75,20 @@ namespace medi {
        * @brief Create an interface for the AD type.
        * @param[in] adjointMpiType  The mpi data type for the adjoint type.
        */
-      ADToolInterface(MPI_Datatype adjointMpiType) :
+      ADToolInterface(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
+        primalMpiType(primalMpiType),
         adjointMpiType(adjointMpiType) {}
 
       virtual ~ADToolInterface() {}
+
+
+      /**
+       * @brief The mpi data type for the primal type.
+       * @return The adjoint mpi data type.
+       */
+      MPI_Datatype getPrimalMpiType() const {
+        return primalMpiType;
+      }
 
       /**
        * @brief The mpi data type for the adjoint type.
@@ -157,7 +168,7 @@ namespace medi {
        * @param[out] buf  The pointer for the buffer.
        * @param[in] size  The size of the buffer.
        */
-      virtual void createPassiveTypeBuffer(void* &buf, size_t size) const = 0;
+      virtual void createPrimalTypeBuffer(void* &buf, size_t size) const = 0;
 
       /**
        * @brief Create an array for the index variables.
@@ -172,7 +183,7 @@ namespace medi {
        *
        * @param[in,out] buf  The pointer for the buffer.
        */
-      virtual void deletePassiveTypeBuffer(void* &buf) const = 0;
+      virtual void deletePrimalTypeBuffer(void* &buf) const = 0;
 
       /**
        * @brief Delete the array of the index variables.
@@ -202,7 +213,7 @@ namespace medi {
       /**
        * @brief The data type used for the floating point data.
        */
-      typedef double PassiveType;
+      typedef double PrimalType;
 
       /**
        * @brief The data type that is used for the adjoint variables.
@@ -245,7 +256,7 @@ namespace medi {
        * @param[in, out]   index  The identifier registered for the old value. This value may be set here or already
        *                          be the value from createIndex.
        */
-      static void registerValue(Type& value, PassiveType& oldPrimal, IndexType& index);
+      static void registerValue(Type& value, PrimalType& oldPrimal, IndexType& index);
 
       /**
        * @brief Delete the index in a buffer such that the buffer can be overwritten.
@@ -265,7 +276,7 @@ namespace medi {
        * @param[in] value  The AD value.
        * @return The primal floating point value that is represented by the AD value.
        */
-      static PassiveType getValue(const Type& value);
+      static PrimalType getValue(const Type& value);
   };
 
 
@@ -276,30 +287,31 @@ namespace medi {
    *
    * @tparam         Impl  The class that implements the actual interface in a type save manner.
    * @tparam AdjointTypeB  The data type for the adjoint variables that the implementation uses.
-   * @tparam PassiveTypeB  The data type for the passive variables that the implementation uses.
+   * @tparam  PrimalTypeB  The data type for the passive variables that the implementation uses.
    * @tparam   IndexTypeB  The data type for the index variables that the implementation uses.
    */
-  template <typename Impl, typename AdjointTypeB, typename PassiveTypeB, typename IndexTypeB>
+  template <typename Impl, typename AdjointTypeB, typename PrimalTypeB, typename IndexTypeB>
   class ADToolBase : public ADToolInterface {
     public:
 
       /**
        * @brief Construct the type safe wrapper.
+       * @param[in]  primalMpiType  The mpi data type for the primal type.
        * @param[in] adjointMpiType  The mpi data type for the adjoint type.
        */
-      ADToolBase(MPI_Datatype adjointMpiType) :
-        ADToolInterface(adjointMpiType) {}
+      ADToolBase(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
+        ADToolInterface(primalMpiType, adjointMpiType) {}
 
-      void createPassiveTypeBuffer(void* &buf, size_t size) const {
-        cast().createPassiveTypeBuffer(castBuffer<PassiveTypeB>(buf), size);
+      void createPrimalTypeBuffer(void* &buf, size_t size) const {
+        cast().createPrimalTypeBuffer(castBuffer<PrimalTypeB>(buf), size);
       }
 
       void createIndexTypeBuffer(void* &buf, size_t size) const {
         cast().createIndexTypeBuffer(castBuffer<IndexTypeB>(buf), size);
       }
 
-      void deletePassiveTypeBuffer(void* &buf) const {
-        cast().deletePassiveTypeBuffer(castBuffer<PassiveTypeB>(buf));
+      void deletePrimalTypeBuffer(void* &buf) const {
+        cast().deletePrimalTypeBuffer(castBuffer<PrimalTypeB>(buf));
       }
 
       void deleteIndexTypeBuffer(void* &buf) const {

@@ -1,7 +1,7 @@
 #
 # MeDiPack, a Message Differentiation Package
 #
-# Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+# Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
 # Homepage: http://www.scicomp.uni-kl.de
 # Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 #
@@ -23,7 +23,7 @@
 # General Public License along with MeDiPack.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-# Authors: Max Sagebaum, Tim Albring, (SciComp, TU Kaiserslautern)
+# Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
 #
 
 INCLUDE_DIR=include
@@ -80,10 +80,10 @@ $(GEN_DIR)/medi/ampiDefinitions.h:   $(TEMPL_DIR)/medi/ampiDefinitions_h.gsl   $
 
 # directory generation rules
 $(GEN_DIR):
-	mkdir $(GEN_DIR)
+	mkdir -p $(GEN_DIR)
 
 $(GEN_DIR)/medi: $(GEN_DIR)
-	mkdir $(GEN_DIR)/medi
+	mkdir -p $(GEN_DIR)/medi
 
 # the generation rules
 $(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl

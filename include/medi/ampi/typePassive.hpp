@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -30,6 +30,8 @@
 
 #include <mpi.h>
 
+#include <new>
+
 #include "../adToolPassive.hpp"
 #include "../macros.h"
 #include "typeInterface.hpp"
@@ -53,7 +55,7 @@ namespace medi {
 
       typedef T Type;
       typedef T ModifiedType;
-      typedef void PassiveType;
+      typedef void PrimalType;
       typedef void IndexType;
 
       typedef ADToolPassive Tool;
@@ -65,13 +67,13 @@ namespace medi {
       MpiTypePassive(MPI_Datatype type) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
         isClone(false),
-        adTool(type) {}
+        adTool(type, type) {}
 
     private:
       MpiTypePassive(MPI_Datatype type, bool clone) :
         MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
         isClone(clone),
-        adTool(type) {}
+        adTool(type, type) {}
 
     public:
       ~MpiTypePassive() {
@@ -115,7 +117,7 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PassiveType* oldPrimals, size_t bufModOffset, int elements) const {
+      inline void registerValue(Type* buf, size_t bufOffset, IndexType* indices, PrimalType* oldPrimals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(indices);
@@ -138,7 +140,7 @@ namespace medi {
         MEDI_UNUSED(elements);
       }
 
-      inline void getValues(const Type* buf, size_t bufOffset, PassiveType* primals, size_t bufModOffset, int elements) const {
+      inline void getValues(const Type* buf, size_t bufOffset, PrimalType* primals, size_t bufModOffset, int elements) const {
         MEDI_UNUSED(buf);
         MEDI_UNUSED(bufOffset);
         MEDI_UNUSED(primals);
@@ -160,6 +162,18 @@ namespace medi {
         }
       }
 
+      void initializeType(Type* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          new(&buf[bufOffset + i]) Type;
+        }
+      }
+
+      void freeType(Type* buf, size_t bufOffset, int elements) const {
+        for(int i = 0; i < elements; ++i) {
+          buf[bufOffset + elements].~Type();
+        }
+      }
+
       inline void createTypeBuffer(Type* &buf, size_t size) const {
         buf = new Type[size];
       }
@@ -168,7 +182,7 @@ namespace medi {
         buf = new ModifiedType[size];
       }
 
-      inline void deleteTypeBuffer(Type* &buf) const {
+      inline void deleteTypeBuffer(Type* &buf, size_t size) const {
         if(NULL != buf) {
           delete [] buf;
           buf = NULL;

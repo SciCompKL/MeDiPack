@@ -43,12 +43,12 @@ the MPI method. If the method does not need any handling for the AD tool it is d
 a special treatment for AD is required the additional operations are performed before and/or after the MPI method is called.
 
 The next step is the initialization of the AD tool. It needs to be done after MPI is initialized. Usually the AD tool
-provides an implementation of the medi::ADToolInterface from MeDiPack. For CoDiPack this interface is provided directly with
-MeDiPack.
+provides an implementation of the medi::ADToolInterface from MeDiPack. For CoDiPack the interfaces are provided in the externals folder.
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+
+#include <codi.hpp>
+#include <codi/externals/codiMediPackTypes.hpp>
 
 using namespace medi;
 
@@ -141,9 +141,10 @@ There are some additional options that can be used to configure MeDiPack on a gl
 
 The complete code for this tutorial is:
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
-#include <medi/codiMediPackTypes.hpp>
+
+#include <codi.hpp>
+#include <externals/codiMediPackTypes.hpp>
 
 #include <iostream>
 

@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -45,12 +45,12 @@ namespace medi {
   class ADToolPassive final : public ADToolBase<ADToolPassive, void, void, void> {
     public:
 
-      typedef void PassiveType;
+      typedef void PrimalType;
       typedef void AdjointType;
       typedef void IndexType;
 
-      ADToolPassive(MPI_Datatype adjointType) :
-        ADToolBase<ADToolPassive, void, void, void>(adjointType)
+      ADToolPassive(MPI_Datatype primalType, MPI_Datatype adjointType) :
+        ADToolBase<ADToolPassive, void, void, void>(primalType, adjointType)
       {}
 
       inline bool isActiveType() const {return false;}
@@ -65,7 +65,7 @@ namespace medi {
         return op;
       }
 
-      inline void createPassiveTypeBuffer(PassiveType* &buf, size_t size) const {
+      inline void createPrimalTypeBuffer(PrimalType* &buf, size_t size) const {
         MEDI_UNUSED(size);
 
         buf = nullptr;
@@ -77,7 +77,7 @@ namespace medi {
         buf = nullptr;
       }
 
-      inline void deletePassiveTypeBuffer(PassiveType* &buf) const {
+      inline void deletePrimalTypeBuffer(PrimalType* &buf) const {
         buf = nullptr;
       }
 

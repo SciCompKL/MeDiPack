@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -109,8 +109,6 @@ namespace medi {
 
     if(-1 == root || root == commRank) {
       datatype->performReduce(tempbuf, recvbuf, count, op, reduceSize);
-
-      datatype->deleteTypeBuffer(tempbuf);
     }
   }
 
@@ -138,6 +136,10 @@ namespace medi {
 
     performReduce<DATATYPE>(tempbuf, recvbuf, count, datatype, op, root, comm, reduceSize);
 
+    if(-1 == root || root == commRank) {
+      datatype->deleteTypeBuffer(tempbuf, count * commSize);
+    }
+
     return rValue;
   }
 
@@ -148,7 +150,14 @@ namespace medi {
     // first call the orignal function
     h->origFunc(h->origHandle);
 
+    int commSize = getCommSize(h->comm);
+    int commRank = getCommRank(h->comm);
+
     performReduce<DATATYPE>(h->tempbuf, h->recvbuf, h->count, h->datatype, h->op, h->root, h->comm, h->reduceSize);
+
+    if(-1 == h->root || h->root == commRank) {
+      h->datatype->deleteTypeBuffer(h->tempbuf, h->count * commSize);
+    }
 
     delete h;
 
@@ -200,6 +209,7 @@ namespace medi {
       typename DATATYPE::Type* tempBuf;
       DATATYPE* datatype;
       int root;
+      int count;
       AMPI_Comm comm;
 
       HandleBase* origHandle;
@@ -214,7 +224,7 @@ namespace medi {
     h->origFunc(h->origHandle);
 
     if(h->root != getCommRank(h->comm)) {
-      h->datatype->deleteTypeBuffer(h->tempBuf);
+      h->datatype->deleteTypeBuffer(h->tempBuf, h->count);
     }
 
     delete h;
@@ -238,7 +248,7 @@ namespace medi {
         }
         int result = AMPI_Allreduce_global<DATATYPE>(sendbuf, tempBuf, count, datatype, convOp, comm);
         if(root != getCommRank(comm)) {
-          datatype->deleteTypeBuffer(tempBuf);
+          datatype->deleteTypeBuffer(tempBuf, count);
         }
 
         return result;
@@ -270,6 +280,7 @@ namespace medi {
         curHandle->tempBuf = tempBuf;
         curHandle->comm = comm;
         curHandle->root = root;
+        curHandle->count = count;
         curHandle->datatype = datatype;
         curHandle->origHandle = request->handle;
         curHandle->origFunc = request->func;
