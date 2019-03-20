@@ -496,9 +496,15 @@ namespace medi {
     int* array_of_blocklengths = new int [typeCount];
     MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
-
+    
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+#else
     MPI_Aint extent, lb;
     MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
+#endif
+    
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements[i] = stride * extent * i;
@@ -544,8 +550,14 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+#else
     MPI_Aint extent, lb;
     MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
+#endif
+    
     for(int i = 0; i < count; ++i) {
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
       array_of_types[i] = oldtype;
@@ -584,8 +596,14 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+#else
     MPI_Aint extent, lb;
     MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
+#endif
+    
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
@@ -672,8 +690,13 @@ namespace medi {
     }
 
     // compute the total extend of all the blocks
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+    MPI_Aint extent;
+    MPI_Type_extent(oldtype->getMpiType(), &extent);
+#else
     MPI_Aint extent, lb;
     MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
+#endif
     MPI_Aint* extends = new MPI_Aint [ndims];
     MPI_Aint curExtent = extent;
     for(int i = ndims - 1; i >= 0; --i) {

@@ -874,7 +874,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   typedef MPI_Delete_function AMPI_Delete_function;
 #endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_4_0
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0
   typedef MPI_Handler_function AMPI_Handler_function;
 #endif
 
