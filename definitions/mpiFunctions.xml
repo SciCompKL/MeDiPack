@@ -1202,14 +1202,14 @@
       <function name="Group_range_excl" version="1.0">
         <arg name="group" type="MPI_Group" />
         <arg name="n" type="int" />
-        <arg name="ranges" type="Range*" />
+        <arg name="ranges" type="::medi::common::Range*" />
         <arg name="newgroup" type="MPI_Group*" />
       </function>
 
       <function name="Group_range_incl" version="1.0">
         <arg name="group" type="MPI_Group" />
         <arg name="n" type="int" />
-        <arg name="ranges" type="Range*" />
+        <arg name="ranges" type="::medi::common::Range*" />
         <arg name="newgroup" type="MPI_Group*" />
       </function>
 

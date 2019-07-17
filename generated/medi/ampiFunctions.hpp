@@ -10876,13 +10876,13 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Group_range_excl(AMPI_Group group, int n, Range* ranges, AMPI_Group* newgroup) {
+  inline int AMPI_Group_range_excl(AMPI_Group group, int n, ::medi::common::Range* ranges, AMPI_Group* newgroup) {
     return MPI_Group_range_excl(group, n, ranges, newgroup);
   }
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  inline int AMPI_Group_range_incl(AMPI_Group group, int n, Range* ranges, AMPI_Group* newgroup) {
+  inline int AMPI_Group_range_incl(AMPI_Group group, int n, ::medi::common::Range* ranges, AMPI_Group* newgroup) {
     return MPI_Group_range_incl(group, n, ranges, newgroup);
   }
 

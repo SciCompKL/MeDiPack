@@ -39,7 +39,9 @@
  */
 namespace medi {
 
-  typedef int Range[3];
+  namespace common {
+    typedef int Range[3];
+  }
 
 
   /**
