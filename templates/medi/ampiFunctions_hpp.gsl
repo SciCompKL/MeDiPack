@@ -1012,6 +1012,12 @@ namespace medi {
       AMPI_Op convOp = op;
       (void)convOp;
 .   endif
+.     for curFunction. as item where defined(item.arg)
+.       if(name(item) =  "recv" | name(item) =  "send")
+.         constMod = generateConst(item)
+          $(constMod) void* $(item.name)Mod = $(item.name);
+.       endif
+.     endfor
     return MPI_$(curFunction.name)($(curFunction.argArg));
   }
 

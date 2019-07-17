@@ -10528,9 +10528,33 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Recv_init(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag,
+                            AMPI_Comm comm, AMPI_Request* request) {
+    void* bufMod = buf;
+    return MPI_Recv_init(bufMod, count, datatype->getModifiedMpiType(), source, tag, comm, &request->request);
+  }
+
+#endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   inline int AMPI_Request_get_status(AMPI_Request request, int* flag, AMPI_Status* status) {
     return MPI_Request_get_status(request.request, flag, status);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  template<typename DATATYPE>
+  inline int AMPI_Send_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest,
+                            int tag, AMPI_Comm comm, AMPI_Request* request) {
+    MEDI_OPTIONAL_CONST  void* bufMod = buf;
+    return MPI_Send_init(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Start(AMPI_Request* request) {
+    return MPI_Start(&request->request);
   }
 
 #endif
