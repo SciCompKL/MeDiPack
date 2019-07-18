@@ -875,7 +875,7 @@ namespace medi {
   typedef MPI_Delete_function AMPI_Delete_function;
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  typedef MPI_Handler_function AMPI_Handler_function;
+  typedef MPI_Comm_errhandler_function AMPI_Comm_errhandler_function;
 #endif
 
   void initializeOperators();

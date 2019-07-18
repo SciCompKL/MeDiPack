@@ -2942,7 +2942,7 @@
       </function>
 
       <function name="Errhandler_create" version="1.0" deprecated="3.0">
-        <arg name="function" type="MPI_Handler_function*" />
+        <arg name="function" type="MPI_Comm_errhandler_function" />
         <arg name="errhandler" type="MPI_Errhandler*" />
       </function>
 
