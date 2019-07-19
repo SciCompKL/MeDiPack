@@ -497,8 +497,9 @@ namespace medi {
     MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements[i] = stride * extent * i;
@@ -544,8 +545,9 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
       array_of_types[i] = oldtype;
@@ -584,8 +586,9 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
@@ -672,8 +675,9 @@ namespace medi {
     }
 
     // compute the total extend of all the blocks
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     MPI_Aint* extends = new MPI_Aint [ndims];
     MPI_Aint curExtent = extent;
     for(int i = ndims - 1; i >= 0; --i) {
