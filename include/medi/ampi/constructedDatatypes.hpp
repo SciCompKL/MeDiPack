@@ -51,9 +51,9 @@ namespace medi {
 
       const ADToolInterface* adInterface;
 
-      size_t typeExtend;
+      size_t typeExtent;
       size_t typeOffset;
-      size_t modifiedExtend;
+      size_t modifiedExtent;
 
       int nTypes;
       int* blockLengths;
@@ -98,9 +98,9 @@ namespace medi {
         MpiTypeInterface(MPI_INT, MPI_INT)
       {
         adInterface = other->adInterface;
-        typeExtend = other->typeExtend;
+        typeExtent = other->typeExtent;
         typeOffset = other->typeOffset;
-        modifiedExtend = other->modifiedExtend;
+        modifiedExtent = other->modifiedExtent;
 
         cloneInternal(other);
 
@@ -118,16 +118,16 @@ namespace medi {
 
       }
 
-      MpiStructType(const MpiStructType* other, size_t offset, size_t extend) :
+      MpiStructType(const MpiStructType* other, size_t offset, size_t extent) :
         MpiTypeInterface(MPI_INT, MPI_INT)
       {
         adInterface = other->adInterface;
-        typeExtend = extend;
+        typeExtent = extent;
         typeOffset = offset;
         if(nullptr != modifiedBlockOffsets) {
-          modifiedExtend = other->modifiedExtend;
+          modifiedExtent = other->modifiedExtent;
         } else {
-          modifiedExtend = extend;
+          modifiedExtent = extent;
         }
 
         cloneInternal(other);
@@ -135,7 +135,7 @@ namespace medi {
         MPI_Datatype type;
         MPI_Datatype modType;
 
-        MPI_Type_create_resized(this->getMpiType(), offset, extend, &type);
+        MPI_Type_create_resized(this->getMpiType(), offset, extent, &type);
         if(this->getMpiType() != this->getModifiedMpiType()) {
           MPI_Type_dup(this->getModifiedMpiType(), &modType);
         } else {
@@ -188,16 +188,16 @@ namespace medi {
           MPI_Aint totalDisplacement = 0;
           for(int i = 0; i < count; ++i) {
             MPI_Aint curLowerBound;
-            MPI_Aint curExtend;
+            MPI_Aint curExtent;
 
             modifiedMpiTypes[i] = array_of_types[i]->getModifiedMpiType();
-            MPI_Type_get_extent(modifiedMpiTypes[i], &curLowerBound, &curExtend);
+            MPI_Type_get_extent(modifiedMpiTypes[i], &curLowerBound, &curExtent);
 
             mediAssert(0 == curLowerBound); // The modified types are always packed without any holes.
             modifiedDisplacements[i] = totalDisplacement;
             modifiedBlockOffsets[i] = totalDisplacement;
             modifiedArrayLength[i] = array_of_blocklengths[i];
-            totalDisplacement += curExtend * array_of_blocklengths[i];
+            totalDisplacement += curExtent * array_of_blocklengths[i];
           }
 
           // TODO: This code assumes a 64-bit machine and if the last member of a struct is a byte, that these are
@@ -209,7 +209,7 @@ namespace medi {
 
             // check if the last member was a byte, if yes recompute the total displacement
             if(modifiedMpiTypes[count - 1] == MPI_BYTE) {
-              totalDisplacement -= array_of_blocklengths[count - 1]; // extend is one
+              totalDisplacement -= array_of_blocklengths[count - 1]; // extent is one
               paddingBytes = totalDisplacement % sizeof(double);
 
               if(paddingBytes != 0) {
@@ -252,10 +252,10 @@ namespace medi {
         MPI_Aint ext = 0;
         MPI_Type_get_extent(newMpiType, &lb, &ext);
         typeOffset = lb;
-        typeExtend = ext;
+        typeExtent = ext;
 
         MPI_Type_get_extent(newModMpiType, &lb, &ext);
-        modifiedExtend = ext;
+        modifiedExtent = ext;
 
         setMpiTypes(newMpiType, newModMpiType);
 
@@ -285,11 +285,11 @@ namespace medi {
       }
 
       int computeBufOffset(size_t element) const {
-        return (int)(element * typeExtend);
+        return (int)(element * typeExtent);
       }
 
       int computeModOffset(size_t element) const {
-        return (int)(element * modifiedExtend);
+        return (int)(element * modifiedExtent);
       }
 
       const void* computeBufferPointer(const void* buf, size_t offset) const {
@@ -441,7 +441,7 @@ namespace medi {
       }
 
       void createTypeBuffer(void* &buf, size_t size) const {
-        char* b = (char*)calloc(size, typeExtend);
+        char* b = (char*)calloc(size, typeExtent);
         b -= typeOffset;
         buf = (void*)b;
 
@@ -449,7 +449,7 @@ namespace medi {
       }
 
       void createModifiedTypeBuffer(void* &buf, size_t size) const {
-        buf = calloc(size, modifiedExtend);
+        buf = calloc(size, modifiedExtent);
       }
 
 
@@ -497,8 +497,9 @@ namespace medi {
     MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements[i] = stride * extent * i;
@@ -544,8 +545,9 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
       array_of_types[i] = oldtype;
@@ -584,8 +586,9 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
     for(int i = 0; i < count; ++i) {
       array_of_blocklengths[i] = blocklength;
       array_of_displacements_byte[i] = array_of_displacements[i] * extent * i;
@@ -630,19 +633,19 @@ namespace medi {
                           const int* array_of_subsizes,
                           const int* array_of_starts,
                           int& arrayPos,
-                          const MPI_Aint* extends,
+                          const MPI_Aint* extents,
                           MPI_Aint dimDisplacement,
                           MPI_Aint* array_of_displacements) {
     int orderDim = dimToOrderDim(curDim, dimBase, dimStep);
     if(ndims == curDim + 1) {
       // I am the last so add the location
-      array_of_displacements[arrayPos] = dimDisplacement + extends[orderDim] * array_of_starts[orderDim];
+      array_of_displacements[arrayPos] = dimDisplacement + extents[orderDim] * array_of_starts[orderDim];
       arrayPos += 1;
     } else {
       // I am not the last so compute the sub array offset
       for(int pos = 0; pos < array_of_subsizes[orderDim]; ++pos) {
-        MPI_Aint curDimDisplacement = dimDisplacement + (array_of_starts[orderDim] + pos) * extends[orderDim];
-        add_subarray(curDim + 1, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extends,
+        MPI_Aint curDimDisplacement = dimDisplacement + (array_of_starts[orderDim] + pos) * extents[orderDim];
+        add_subarray(curDim + 1, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extents,
                      curDimDisplacement, array_of_displacements);
       }
     }
@@ -671,14 +674,15 @@ namespace medi {
       MEDI_EXCEPTION("Unknown order enumerator %d.", order);
     }
 
-    // compute the total extend of all the blocks
+    // compute the total extent of all the blocks
+    MPI_Aint lb;
     MPI_Aint extent;
-    MPI_Type_extent(oldtype->getMpiType(), &extent);
-    MPI_Aint* extends = new MPI_Aint [ndims];
+    MPI_Type_get_extent(oldtype->getMpiType(), &lb, &extent);
+    MPI_Aint* extents = new MPI_Aint [ndims];
     MPI_Aint curExtent = extent;
     for(int i = ndims - 1; i >= 0; --i) {
       int orderDim = dimToOrderDim(i, dimBase, dimStep);
-      extends[orderDim] = curExtent;
+      extents[orderDim] = curExtent;
       curExtent *= array_of_sizes[orderDim];
     }
 
@@ -693,7 +697,7 @@ namespace medi {
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
     int arrayPos = 0;
-    add_subarray(0, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extends, 0,
+    add_subarray(0, dimBase, dimStep, ndims, array_of_subsizes, array_of_starts, arrayPos, extents, 0,
                  array_of_displacements);
 
 
@@ -708,7 +712,7 @@ namespace medi {
     delete [] array_of_displacements;
     delete [] array_of_types;
 
-    delete [] extends;
+    delete [] extents;
 
     return 0;
   }
