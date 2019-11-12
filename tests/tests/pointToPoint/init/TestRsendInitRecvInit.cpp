@@ -28,6 +28,8 @@
 
 #include <toolDefines.h>
 
+#include <unistd.h>
+
 IN(10)
 OUT(10)
 POINTS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}, {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}}};
@@ -41,14 +43,20 @@ void func(NUMBER* x, NUMBER* y) {
 
   medi::AMPI_Request req;
   if(world_rank == 0) {
-    medi::AMPI_Send_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
+    medi::AMPI_Rsend_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
   } else {
     medi::AMPI_Recv_init(y, 10, mpiNumberType, 0, 42, AMPI_COMM_WORLD, &req);
   }
 
+  if(world_rank == 0) {
+    usleep(250000); // sleep for a quarter second
+  }
   medi::AMPI_Start(&req);
   medi::AMPI_Wait(&req, AMPI_STATUS_IGNORE);
 
+  if(world_rank == 0) {
+    usleep(250000); // sleep for a quarter second
+  }
   medi::AMPI_Start(&req);
   medi::AMPI_Wait(&req, AMPI_STATUS_IGNORE);
 

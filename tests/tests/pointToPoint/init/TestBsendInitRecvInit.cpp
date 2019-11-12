@@ -39,9 +39,13 @@ void func(NUMBER* x, NUMBER* y) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
+  size_t size = sizeof(char) * 1024 * 1024;
+  void* buf = malloc(size);
+  medi::AMPI_Buffer_attach(buf, size);
+
   medi::AMPI_Request req;
   if(world_rank == 0) {
-    medi::AMPI_Send_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
+    medi::AMPI_Bsend_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
   } else {
     medi::AMPI_Recv_init(y, 10, mpiNumberType, 0, 42, AMPI_COMM_WORLD, &req);
   }

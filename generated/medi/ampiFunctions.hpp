@@ -444,6 +444,231 @@ namespace medi {
   }
 
 #endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+
+  template<typename DATATYPE>
+  struct AMPI_Bsend_init_AsyncHandle : public HandleBase {
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
+    typename DATATYPE::ModifiedType* bufMod;
+    int count;
+    DATATYPE* datatype;
+    int dest;
+    int tag;
+    AMPI_Comm comm;
+    AMPI_Request* request;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h;
+  };
+
+
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_preStart(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_finish(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_postEnd(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Bsend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                      AMPI_Comm comm, AMPI_Request* request) {
+    int rStatus;
+
+    if(!datatype->getADTool().isActiveType()) {
+      // call the regular function if the type is not active
+      rStatus = MPI_Bsend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
+    } else {
+
+      // the type is an AD type so handle the buffers
+      AMPI_Ibsend_AdjointHandle<DATATYPE>* h = nullptr;
+      typename DATATYPE::ModifiedType* bufMod = nullptr;
+      int bufElements = 0;
+
+      // compute the total size of the buffer
+      bufElements = count;
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->createModifiedTypeBuffer(bufMod, bufElements);
+      } else {
+        bufMod = reinterpret_cast<typename DATATYPE::ModifiedType*>(const_cast<typename DATATYPE::Type*>(buf));
+      }
+
+      rStatus = MPI_Bsend_init(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
+
+      AMPI_Bsend_init_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Bsend_init_AsyncHandle<DATATYPE>();
+      asyncHandle->buf = buf;
+      asyncHandle->bufMod = bufMod;
+      asyncHandle->count = count;
+      asyncHandle->datatype = datatype;
+      asyncHandle->dest = dest;
+      asyncHandle->tag = tag;
+      asyncHandle->comm = comm;
+      asyncHandle->h = h;
+      request->handle = asyncHandle;
+      request->func = (ContinueFunction)AMPI_Bsend_init_finish<DATATYPE>;
+      request->start = (ContinueFunction)AMPI_Bsend_init_preStart<DATATYPE>;
+      request->end = (ContinueFunction)AMPI_Bsend_init_postEnd<DATATYPE>;
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_preStart(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Bsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Bsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      int bufElements = 0;
+
+      // recompute the total size of the buffer
+      bufElements = count;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
+      if(datatype->getADTool().isHandleRequired()) {
+        h = new AMPI_Ibsend_AdjointHandle<DATATYPE>();
+      }
+      datatype->getADTool().startAssembly(h);
+      if(datatype->isModifiedBufferRequired()) {
+        datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
+      }
+
+      if(nullptr != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+        h->bufCount = datatype->computeActiveElements(count);
+        h->bufTotalSize = datatype->computeActiveElements(bufElements);
+        datatype->getADTool().createIndexTypeBuffer(h->bufIndices, h->bufTotalSize);
+
+
+
+
+        datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
+
+        // pack all the variables in the handle
+        h->funcReverse = AMPI_Ibsend_b<DATATYPE>;
+        h->funcForward = AMPI_Ibsend_d_finish<DATATYPE>;
+        h->funcPrimal = AMPI_Ibsend_p_finish<DATATYPE>;
+        h->count = count;
+        h->datatype = datatype;
+        h->dest = dest;
+        h->tag = tag;
+        h->comm = comm;
+      }
+
+
+      asyncHandle->h = h;
+
+      // create adjoint wait
+      if(nullptr != h) {
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibsend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Ibsend_d<DATATYPE>, h);
+        datatype->getADTool().addToolAction(waitH);
+      }
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_finish(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Bsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Bsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      datatype->getADTool().addToolAction(h);
+
+
+      if(nullptr != h) {
+        // handle the recv buffers
+      }
+
+      datatype->getADTool().stopAssembly(h);
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Bsend_init_postEnd(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Bsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Bsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+    delete asyncHandle;
+
+    if(datatype->getADTool().isActiveType()) {
+
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->deleteModifiedTypeBuffer(bufMod);
+      }
+
+      // handle is deleted by the AD tool
+    }
+
+    return rStatus;
+  }
+
+#endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Imrecv_AdjointHandle : public HandleBase {
@@ -2456,6 +2681,231 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+
+  template<typename DATATYPE>
+  struct AMPI_Rsend_init_AsyncHandle : public HandleBase {
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
+    typename DATATYPE::ModifiedType* bufMod;
+    int count;
+    DATATYPE* datatype;
+    int dest;
+    int tag;
+    AMPI_Comm comm;
+    AMPI_Request* request;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h;
+  };
+
+
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_preStart(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_finish(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_postEnd(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Rsend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                      AMPI_Comm comm, AMPI_Request* request) {
+    int rStatus;
+
+    if(!datatype->getADTool().isActiveType()) {
+      // call the regular function if the type is not active
+      rStatus = MPI_Rsend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
+    } else {
+
+      // the type is an AD type so handle the buffers
+      AMPI_Irsend_AdjointHandle<DATATYPE>* h = nullptr;
+      typename DATATYPE::ModifiedType* bufMod = nullptr;
+      int bufElements = 0;
+
+      // compute the total size of the buffer
+      bufElements = count;
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->createModifiedTypeBuffer(bufMod, bufElements);
+      } else {
+        bufMod = reinterpret_cast<typename DATATYPE::ModifiedType*>(const_cast<typename DATATYPE::Type*>(buf));
+      }
+
+      rStatus = MPI_Rsend_init(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
+
+      AMPI_Rsend_init_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Rsend_init_AsyncHandle<DATATYPE>();
+      asyncHandle->buf = buf;
+      asyncHandle->bufMod = bufMod;
+      asyncHandle->count = count;
+      asyncHandle->datatype = datatype;
+      asyncHandle->dest = dest;
+      asyncHandle->tag = tag;
+      asyncHandle->comm = comm;
+      asyncHandle->h = h;
+      request->handle = asyncHandle;
+      request->func = (ContinueFunction)AMPI_Rsend_init_finish<DATATYPE>;
+      request->start = (ContinueFunction)AMPI_Rsend_init_preStart<DATATYPE>;
+      request->end = (ContinueFunction)AMPI_Rsend_init_postEnd<DATATYPE>;
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_preStart(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Rsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Rsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      int bufElements = 0;
+
+      // recompute the total size of the buffer
+      bufElements = count;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
+      if(datatype->getADTool().isHandleRequired()) {
+        h = new AMPI_Irsend_AdjointHandle<DATATYPE>();
+      }
+      datatype->getADTool().startAssembly(h);
+      if(datatype->isModifiedBufferRequired()) {
+        datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
+      }
+
+      if(nullptr != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+        h->bufCount = datatype->computeActiveElements(count);
+        h->bufTotalSize = datatype->computeActiveElements(bufElements);
+        datatype->getADTool().createIndexTypeBuffer(h->bufIndices, h->bufTotalSize);
+
+
+
+
+        datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
+
+        // pack all the variables in the handle
+        h->funcReverse = AMPI_Irsend_b<DATATYPE>;
+        h->funcForward = AMPI_Irsend_d_finish<DATATYPE>;
+        h->funcPrimal = AMPI_Irsend_p_finish<DATATYPE>;
+        h->count = count;
+        h->datatype = datatype;
+        h->dest = dest;
+        h->tag = tag;
+        h->comm = comm;
+      }
+
+
+      asyncHandle->h = h;
+
+      // create adjoint wait
+      if(nullptr != h) {
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irsend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Irsend_d<DATATYPE>, h);
+        datatype->getADTool().addToolAction(waitH);
+      }
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_finish(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Rsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Rsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      datatype->getADTool().addToolAction(h);
+
+
+      if(nullptr != h) {
+        // handle the recv buffers
+      }
+
+      datatype->getADTool().stopAssembly(h);
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Rsend_init_postEnd(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Rsend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Rsend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+    delete asyncHandle;
+
+    if(datatype->getADTool().isActiveType()) {
+
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->deleteModifiedTypeBuffer(bufMod);
+      }
+
+      // handle is deleted by the AD tool
+    }
+
+    return rStatus;
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   struct AMPI_Send_AdjointHandle : public HandleBase {
     int bufTotalSize;
@@ -3228,6 +3678,231 @@ namespace medi {
       }
 
       datatype->getADTool().stopAssembly(h);
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->deleteModifiedTypeBuffer(bufMod);
+      }
+
+      // handle is deleted by the AD tool
+    }
+
+    return rStatus;
+  }
+
+#endif
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+
+  template<typename DATATYPE>
+  struct AMPI_Ssend_init_AsyncHandle : public HandleBase {
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
+    typename DATATYPE::ModifiedType* bufMod;
+    int count;
+    DATATYPE* datatype;
+    int dest;
+    int tag;
+    AMPI_Comm comm;
+    AMPI_Request* request;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h;
+  };
+
+
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_preStart(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_finish(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_postEnd(HandleBase* handle);
+  template<typename DATATYPE>
+  int AMPI_Ssend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
+                      AMPI_Comm comm, AMPI_Request* request) {
+    int rStatus;
+
+    if(!datatype->getADTool().isActiveType()) {
+      // call the regular function if the type is not active
+      rStatus = MPI_Ssend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
+    } else {
+
+      // the type is an AD type so handle the buffers
+      AMPI_Issend_AdjointHandle<DATATYPE>* h = nullptr;
+      typename DATATYPE::ModifiedType* bufMod = nullptr;
+      int bufElements = 0;
+
+      // compute the total size of the buffer
+      bufElements = count;
+
+      if(datatype->isModifiedBufferRequired() ) {
+        datatype->createModifiedTypeBuffer(bufMod, bufElements);
+      } else {
+        bufMod = reinterpret_cast<typename DATATYPE::ModifiedType*>(const_cast<typename DATATYPE::Type*>(buf));
+      }
+
+      rStatus = MPI_Ssend_init(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm, &request->request);
+
+      AMPI_Ssend_init_AsyncHandle<DATATYPE>* asyncHandle = new AMPI_Ssend_init_AsyncHandle<DATATYPE>();
+      asyncHandle->buf = buf;
+      asyncHandle->bufMod = bufMod;
+      asyncHandle->count = count;
+      asyncHandle->datatype = datatype;
+      asyncHandle->dest = dest;
+      asyncHandle->tag = tag;
+      asyncHandle->comm = comm;
+      asyncHandle->h = h;
+      request->handle = asyncHandle;
+      request->func = (ContinueFunction)AMPI_Ssend_init_finish<DATATYPE>;
+      request->start = (ContinueFunction)AMPI_Ssend_init_preStart<DATATYPE>;
+      request->end = (ContinueFunction)AMPI_Ssend_init_postEnd<DATATYPE>;
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_preStart(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Ssend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ssend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      int bufElements = 0;
+
+      // recompute the total size of the buffer
+      bufElements = count;
+      // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
+      if(datatype->getADTool().isHandleRequired()) {
+        h = new AMPI_Issend_AdjointHandle<DATATYPE>();
+      }
+      datatype->getADTool().startAssembly(h);
+      if(datatype->isModifiedBufferRequired()) {
+        datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
+      }
+
+      if(nullptr != h) {
+        // gather the information for the reverse sweep
+
+        // create the index buffers
+        h->bufCount = datatype->computeActiveElements(count);
+        h->bufTotalSize = datatype->computeActiveElements(bufElements);
+        datatype->getADTool().createIndexTypeBuffer(h->bufIndices, h->bufTotalSize);
+
+
+
+
+        datatype->getIndices(buf, 0, h->bufIndices, 0, count);
+
+
+        // pack all the variables in the handle
+        h->funcReverse = AMPI_Issend_b<DATATYPE>;
+        h->funcForward = AMPI_Issend_d_finish<DATATYPE>;
+        h->funcPrimal = AMPI_Issend_p_finish<DATATYPE>;
+        h->count = count;
+        h->datatype = datatype;
+        h->dest = dest;
+        h->tag = tag;
+        h->comm = comm;
+      }
+
+
+      asyncHandle->h = h;
+
+      // create adjoint wait
+      if(nullptr != h) {
+        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Issend_b_finish<DATATYPE>,
+                                           (ForwardFunction)AMPI_Issend_d<DATATYPE>, h);
+        datatype->getADTool().addToolAction(waitH);
+      }
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_finish(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Ssend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ssend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+
+    if(datatype->getADTool().isActiveType()) {
+
+      datatype->getADTool().addToolAction(h);
+
+
+      if(nullptr != h) {
+        // handle the recv buffers
+      }
+
+      datatype->getADTool().stopAssembly(h);
+    }
+
+    return rStatus;
+  }
+
+  template<typename DATATYPE>
+  int AMPI_Ssend_init_postEnd(HandleBase* handle) {
+    int rStatus = 0;
+
+    AMPI_Ssend_init_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ssend_init_AsyncHandle<DATATYPE>*>(handle);
+    MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf = asyncHandle->buf;
+    typename DATATYPE::ModifiedType* bufMod = asyncHandle->bufMod;
+    int count = asyncHandle->count;
+    DATATYPE* datatype = asyncHandle->datatype;
+    int dest = asyncHandle->dest;
+    int tag = asyncHandle->tag;
+    AMPI_Comm comm = asyncHandle->comm;
+    AMPI_Request* request = asyncHandle->request;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    MEDI_UNUSED(buf); // Unused generated to ignore warnings
+    MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
+    MEDI_UNUSED(count); // Unused generated to ignore warnings
+    MEDI_UNUSED(datatype); // Unused generated to ignore warnings
+    MEDI_UNUSED(dest); // Unused generated to ignore warnings
+    MEDI_UNUSED(tag); // Unused generated to ignore warnings
+    MEDI_UNUSED(comm); // Unused generated to ignore warnings
+    MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
+
+    delete asyncHandle;
+
+    if(datatype->getADTool().isActiveType()) {
+
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);

@@ -41,7 +41,7 @@ void func(NUMBER* x, NUMBER* y) {
 
   medi::AMPI_Request req;
   if(world_rank == 0) {
-    medi::AMPI_Send_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
+    medi::AMPI_Ssend_init(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &req);
   } else {
     medi::AMPI_Recv_init(y, 10, mpiNumberType, 0, 42, AMPI_COMM_WORLD, &req);
   }

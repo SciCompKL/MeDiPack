@@ -39,16 +39,6 @@
         <arg name="comm" type="MPI_Comm" />
       </function>
 
-      <function name="Bsend_init" version="1.0" mediHandle="disable">
-        <send name="buf" type="datatype" count="count" const="opt"/>
-        <arg name="count" type="int" />
-        <type name="datatype" type="MPI_Datatype" />
-        <arg name="dest" type="int" />
-        <arg name="tag" type="int" />
-        <arg name="comm" type="MPI_Comm" />
-        <request name="request" type="MPI_Request*" />
-      </function>
-
       <function name="Buffer_attach" version="1.0">
         <arg name="buffer" type="void*" />
         <arg name="size" type="int" />
@@ -77,6 +67,17 @@
         <arg name="tag" type="int" />
         <arg name="comm" type="MPI_Comm" />
         <request name="request" type="MPI_Request*"/>
+      </function>
+
+      <!-- moved generation order such that Ibsend is available -->
+      <function name="Bsend_init" version="1.0" mediHandle="transform" async="request" init="Ibsend">
+        <send name="buf" type="datatype" count="count" const="opt"/>
+        <arg name="count" type="int" />
+        <type name="datatype" type="MPI_Datatype" />
+        <arg name="dest" type="int" />
+        <arg name="tag" type="int" />
+        <arg name="comm" type="MPI_Comm" />
+        <request name="request" type="MPI_Request*" />
       </function>
 
       <!-- handled in include/medi/ampi/message.hpp -->
@@ -208,7 +209,7 @@
         <arg name="comm" type="MPI_Comm" />
       </function>
 
-      <function name="Rsend_init" version="1.0" mediHandle="disable">
+      <function name="Rsend_init" version="1.0" mediHandle="transform" async="request" init="Irsend">
         <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
@@ -273,7 +274,7 @@
         <arg name="comm" type="MPI_Comm" />
       </function>
 
-      <function name="Ssend_init" version="1.0" mediHandle="disable">
+      <function name="Ssend_init" version="1.0" mediHandle="transform" async="request" init="Issend">
         <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
