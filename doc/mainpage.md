@@ -17,7 +17,7 @@ MeDiPack (Message Differentiation Package) is a tool for gradient evaluation in 
 ### Supported
 
 Most of the MPI standard is covered by the MeDiPack library. The functions that are not supported are mostly very
-specialized routines. The following general list describes features of MPI that are handled, but makes no claim to be
+specialized routines. The following general list describes *features* of MPI that are handled, but makes no claim to be
 complete:
  - Asynchronous communication
  - Custom data types
@@ -28,10 +28,10 @@ complete:
      See the tutorial for further information.
 
 Statistics about the handled functions:
-- MPI 1.* 117/129 (90 %)
+- MPI 1.* 124/129 (96 %)
 - MPI 2.* 153/183 (83 %)
 - MPI 3.* 70/109 (64 %)
-- Total  340/421 (80 %)
+- Total  347/421 (82 %)
 
 ### Unsupported
 
@@ -40,7 +40,6 @@ in the next releases. If you require a function that is in the list below please
 
 In general the following class of functions are not supported:
  - One sided communication
- - *_init methods
  - *w methods
  - Fortran conversion functions
  - \*neighbor\* functions
@@ -50,7 +49,7 @@ In general the following class of functions are not supported:
 
 The missing functions by MPI version:
  - MPI 1.0
-   - Bsend_init, Recv_init, Rsend_init, Send_init, Sendrecv_replace, Ssend_init, Start, Startall, Pack, Pack_size, Unpack, Reduce_scatter
+   - Sendrecv_replace, Pack, Pack_size, Unpack, Reduce_scatter
  - MPI 2.0
    - Pack_external, Pack_external_size, Type_create_darray, Unpack_external, Alltoallw, Accumulate, Get, Put, Win_complete, Win_create, Win_fence, Win_free, Win_get_group, Win_lock, Win_post, Win_start, Win_test, Win_wait, Type_create_f90_complex, Type_create_f90_integer, Type_create_f90_real, Type_match_size, Op_c2f, Op_f2c, Request_c2f, Request_f2c, Type_c2f, Type_f2c
  - MPI 2.2
