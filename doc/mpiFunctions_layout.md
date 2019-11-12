@@ -10,6 +10,8 @@ element: function
         [optional] deprecated -> The mpi version this definition was removed from the standard.
              [optional] async -> Defines that the function is asynchronous. The value defines the name of the
                                  argument that is the mpi request.
+             [optional]  init -> Adds additional splits for persistent requests. Implies that async is also set.
+                                 The value defines the function to which the recorded requests are wrapped.
               [optional] type -> The return type of the function. (Default: int)
             [optinal] mpiName -> Defines the name that is used for the real mpi function in the generation process. If not defined the name of the function will be taken.
          [optinal] mediHandle -> Defines the handling type of MeDiPack for this function possible options are:

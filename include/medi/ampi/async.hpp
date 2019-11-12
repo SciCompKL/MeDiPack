@@ -31,6 +31,7 @@
 #include "ampiMisc.h"
 
 #include "../../../generated/medi/ampiDefinitions.h"
+#include "../exceptions.hpp"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package
@@ -44,6 +45,11 @@ namespace medi {
       HandleBase* handle;
       ContinueFunction func;
 
+      // Required for init requests
+      ContinueFunction start;
+      ContinueFunction end;
+      bool isActive;
+
       // required for reverse communication that needs to create data
       void* reverseData;
       DeleteReverseData deleteDataFunc;
@@ -52,6 +58,9 @@ namespace medi {
         request(MPI_REQUEST_NULL),
         handle(NULL),
         func(NULL),
+        start(NULL),
+        end(NULL),
+        isActive(false),
         reverseData(NULL),
         deleteDataFunc(NULL){}
 
@@ -107,6 +116,13 @@ namespace medi {
     h->finishFuncForward(h->handle, adjointInterface);
   }
 
+  inline void performStartAction(AMPI_Request *request) {
+    if(nullptr != request->start) {
+      request->start(request->handle);
+      request->isActive = true;
+    }
+  }
+
   inline void performReverseAction(AMPI_Request *request) {
     if(nullptr != request->func) {
       request->func(request->handle);
@@ -114,7 +130,12 @@ namespace medi {
       request->deleteReverseData();
     }
 
-    *request = AMPI_REQUEST_NULL;
+    if(nullptr == request->start) {
+      // Only reset if this is a non persistent request
+      *request = AMPI_REQUEST_NULL;
+    } else {
+      request->isActive = false;
+    }
   }
 
   inline MPI_Request* convertToMPI(AMPI_Request* array, int count) {
@@ -159,9 +180,47 @@ namespace medi {
 #endif
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Start(AMPI_Request* request) {
+
+    if(AMPI_REQUEST_NULL == *request) {
+      return 0;
+    }
+
+
+    performStartAction(request);
+
+    return MPI_Start(&request->request);
+  }
+#endif
+
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
+  inline int AMPI_Startall(int count, AMPI_Request* array_of_requests) {
+    MPI_Request* array = convertToMPI(array_of_requests, count);
+
+    for(int i = 0; i < count; ++i) {
+      if(AMPI_REQUEST_NULL != array_of_requests[i]) {
+        performStartAction(&array_of_requests[i]);
+      }
+    }
+
+    int rStatus = MPI_Startall(count, array);
+
+    delete [] array;
+
+    return rStatus;
+  }
+#endif
+
+#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   inline int AMPI_Request_free(AMPI_Request *request) {
     if(AMPI_REQUEST_NULL == *request) {
       return 0;
+    }
+
+    if(nullptr != request->end && false == request->isActive) {
+      request->end(request->handle);
+    } else {
+      MEDI_EXCEPTION("Freeing a handle that is not finish with wait, waitall, etc..");
     }
 
     int rStatus = MPI_Request_free(&request->request);

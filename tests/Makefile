@@ -77,7 +77,7 @@ all:
 .SECONDARY:
 
 # define general sets for tests
-BASIC_TESTS = $(wildcard $(TEST_DIR)/misc/Test**.cpp) $(wildcard $(TEST_DIR)/datatypes/Test**.cpp) $(wildcard $(TEST_DIR)/collective/Test**.cpp) $(wildcard $(TEST_DIR)/collective/inplace/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/Test**.cpp) $(wildcard $(TEST_DIR)/wait_test/Test**.cpp)
+BASIC_TESTS = $(wildcard $(TEST_DIR)/misc/Test**.cpp) $(wildcard $(TEST_DIR)/datatypes/Test**.cpp) $(wildcard $(TEST_DIR)/collective/Test**.cpp) $(wildcard $(TEST_DIR)/collective/inplace/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/init/Test**.cpp) $(wildcard $(TEST_DIR)/wait_test/Test**.cpp)
 FORWARD_TESTS = $(wildcard $(TEST_DIR)/forward/Test**.cpp)
 PRIMAL_TESTS = $(wildcard $(TEST_DIR)/primal/Test**.cpp)
 

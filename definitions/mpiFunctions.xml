@@ -179,8 +179,8 @@
         <status name="status" type="MPI_Status"/>
       </function>
 
-      <function name="Recv_init" version="1.0" mediHandle="default">
-        <send name="buf" type="datatype" count="count"/>
+      <function name="Recv_init" version="1.0" mediHandle="transform" async="request" init="Irecv">
+        <recv name="buf" type="datatype" count="count"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
         <arg name="source" type="int" />
@@ -227,7 +227,7 @@
         <arg name="comm" type="MPI_Comm"/>
       </function>
 
-      <function name="Send_init" version="1.0" mediHandle="default">
+      <function name="Send_init" version="1.0" mediHandle="transform" async="request" init="Isend">
         <send name="buf" type="datatype" count="count" const="opt"/>
         <arg name="count" type="int" />
         <type name="datatype" type="MPI_Datatype" />
@@ -283,11 +283,11 @@
         <request name="request" type="MPI_Request*" />
       </function>
 
-      <function name="Start" version="1.0" mediHandle="default">
+      <function name="Start" version="1.0" mediHandle="handled">
         <request name="request" type="MPI_Request*" />
       </function>
 
-      <function name="Startall" version="1.0" mediHandle="disable">
+      <function name="Startall" version="1.0" mediHandle="handled">
         <arg name="count" type="int" />
         <arg name="array_of_requests" type="MPI_Request*" />
       </function>
