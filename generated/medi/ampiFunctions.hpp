@@ -11170,8 +11170,14 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   inline int AMPI_Comm_create_errhandler(AMPI_Comm_errhandler_function* comm_errhandler_fn, AMPI_Errhandler* errhandler) {
+    return MPI_Comm_create_errhandler(comm_errhandler_fn, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  inline int AMPI_Comm_create_errhandler(AMPI_Comm_errhandler_fn* comm_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_Comm_create_errhandler(comm_errhandler_fn, errhandler);
   }
 
@@ -11212,8 +11218,14 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   inline int AMPI_File_create_errhandler(AMPI_File_errhandler_function* file_errhandler_fn, AMPI_Errhandler* errhandler) {
+    return MPI_File_create_errhandler(file_errhandler_fn, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  inline int AMPI_File_create_errhandler(AMPI_File_errhandler_fn* file_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_File_create_errhandler(file_errhandler_fn, errhandler);
   }
 
@@ -11278,8 +11290,14 @@ namespace medi {
   }
 
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   inline int AMPI_Win_create_errhandler(AMPI_Win_errhandler_function* win_errhandler_fn, AMPI_Errhandler* errhandler) {
+    return MPI_Win_create_errhandler(win_errhandler_fn, errhandler);
+  }
+
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  inline int AMPI_Win_create_errhandler(AMPI_Win_errhandler_fn* win_errhandler_fn, AMPI_Errhandler* errhandler) {
     return MPI_Win_create_errhandler(win_errhandler_fn, errhandler);
   }
 

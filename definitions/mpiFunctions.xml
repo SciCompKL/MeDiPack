@@ -1633,8 +1633,13 @@
         <arg name="errorcode" type="int" />
       </function>
 
-      <function name="Comm_create_errhandler" version="2.0">
+      <function name="Comm_create_errhandler" version="2.2">
         <arg name="comm_errhandler_fn" type="MPI_Comm_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Comm_create_errhandler" version="2.0" deprecated="2.2">
+        <arg name="comm_errhandler_fn" type="MPI_Comm_errhandler_fn*" />
         <arg name="errhandler" type="MPI_Errhandler*" />
       </function>
 
@@ -1668,8 +1673,13 @@
         <arg name="errorcode" type="int" />
       </function>
 
-      <function name="File_create_errhandler" version="2.0">
+      <function name="File_create_errhandler" version="2.2">
         <arg name="file_errhandler_fn" type="MPI_File_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="File_create_errhandler" version="2.0" deprecated="2.2">
+        <arg name="file_errhandler_fn" type="MPI_File_errhandler_fn*" />
         <arg name="errhandler" type="MPI_Errhandler*" />
       </function>
 
@@ -1724,8 +1734,13 @@
         <arg name="errorcode" type="int" />
       </function>
 
-      <function name="Win_create_errhandler" version="2.0">
+      <function name="Win_create_errhandler" version="2.2">
         <arg name="win_errhandler_fn" type="MPI_Win_errhandler_function*" />
+        <arg name="errhandler" type="MPI_Errhandler*" />
+      </function>
+
+      <function name="Win_create_errhandler" version="2.0" deprecated="2.2">
+        <arg name="win_errhandler_fn" type="MPI_Win_errhandler_fn*" />
         <arg name="errhandler" type="MPI_Errhandler*" />
       </function>
 

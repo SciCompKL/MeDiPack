@@ -167,7 +167,7 @@
         <datatype name="MPI_UINT64_T" type="uint64_t" version="2.2" />
         <datatype name="MPI_AINT" type="MPI_Aint" version="2.2" />
         <datatype name="MPI_COUNT" type="MPI_Count" version="3.0" />
-        <datatype name="MPI_OFFSET" type="MPI_Offset" version="2.2" />
+        <datatype name="MPI_OFFSET" type="MPI_Offset" version="2.0" />
         <!--  <datatype name="MPI_C_COMPLEX" type="float complex" version="2.2" /> -->
         <!--  <datatype name="MPI_C_FLOAT_COMPLEX" type="float complex" version="2.2" /> -->
         <!--  <datatype name="MPI_C_DOUBLE_COMPLEX" type="double complex" version="2.2" /> -->
@@ -403,7 +403,7 @@
         <define name="MPI_Aint" version="1.0" />
         <define name="MPI_Count" version="3.0"/>
         <define name="MPI_Fint" version="2.0" />
-        <define name="MPI_Offset" version="2.1" />
+        <define name="MPI_Offset" version="2.0" />
         <define name="MPI_Status" version="1.0" />
         <define name="MPI_F08_status" version="3.0"/>
 
@@ -434,9 +434,12 @@
         <typedef name="MPI_Win_delete_attr_function" version="2.0" />
         <typedef name="MPI_Type_copy_attr_function" version="2.0" />
         <typedef name="MPI_Type_delete_attr_function" version="2.0" />
-        <typedef name="MPI_Comm_errhandler_function" version="2.0" />
-        <typedef name="MPI_Win_errhandler_function" version="2.0" />
-        <typedef name="MPI_File_errhandler_function" version="2.0" />
+        <typedef name="MPI_Comm_errhandler_function" version="2.2" />
+        <typedef name="MPI_Win_errhandler_function" version="2.2" />
+        <typedef name="MPI_File_errhandler_function" version="2.2" />
+        <typedef name="MPI_Comm_errhandler_fn" version="2.0" deprecated="2.2" />
+        <typedef name="MPI_Win_errhandler_fn" version="2.0" deprecated="2.2" />
+        <typedef name="MPI_File_errhandler_fn" version="2.0" deprecated="2.2" />
         <typedef name="MPI_Grequest_query_function" version="2.0" />
         <typedef name="MPI_Grequest_free_function" version="2.0" />
         <typedef name="MPI_Grequest_cancel_function" version="2.0" />
