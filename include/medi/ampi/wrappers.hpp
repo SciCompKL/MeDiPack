@@ -72,7 +72,7 @@ namespace medi {
 #endif
 
   template<typename DATATYPE>
-  struct AMPI_Ireduce_local_Handle : public HandleBase {
+  struct AMPI_Ireduce_local_Handle : public AsyncHandle {
       AMPI_Comm comm;
       int root;
       int count;
@@ -196,6 +196,7 @@ namespace medi {
     curHandle->origHandle = request->handle;
     curHandle->origFunc = request->func;
     curHandle->reduceSize = reduceSize;
+    curHandle->toolHandle = request->handle->toolHandle;
 
     // set our own handle now to the request
     request->handle = curHandle;
@@ -205,7 +206,7 @@ namespace medi {
   }
 
   template<typename DATATYPE>
-  struct AMPI_Ireduce_modified_Handle : public HandleBase {
+  struct AMPI_Ireduce_modified_Handle : public AsyncHandle {
       typename DATATYPE::Type* tempBuf;
       DATATYPE* datatype;
       int root;
@@ -284,6 +285,7 @@ namespace medi {
         curHandle->datatype = datatype;
         curHandle->origHandle = request->handle;
         curHandle->origFunc = request->func;
+        curHandle->toolHandle = request->handle->toolHandle;
 
         // set our own handle now to the request
         request->handle = curHandle;

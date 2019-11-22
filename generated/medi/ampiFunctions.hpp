@@ -42,7 +42,7 @@
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Bsend_AdjointHandle : public HandleBase {
+  struct AMPI_Bsend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -197,7 +197,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Ibsend_AdjointHandle : public HandleBase {
+  struct AMPI_Ibsend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -224,7 +224,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Ibsend_AsyncHandle : public HandleBase {
+  struct AMPI_Ibsend_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -233,7 +233,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -381,7 +380,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ibsend_finish<DATATYPE>;
 
@@ -409,7 +408,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -418,7 +417,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -447,7 +445,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
-  struct AMPI_Bsend_init_AsyncHandle : public HandleBase {
+  struct AMPI_Bsend_init_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -456,7 +454,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h;
   };
 
 
@@ -500,7 +497,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Bsend_init_finish<DATATYPE>;
       request->start = (ContinueFunction)AMPI_Bsend_init_preStart<DATATYPE>;
@@ -523,7 +520,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -532,7 +529,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -576,7 +572,7 @@ namespace medi {
       }
 
 
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
 
       // create adjoint wait
       if(nullptr != h) {
@@ -602,7 +598,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -611,7 +607,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -642,7 +637,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -651,7 +646,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -671,7 +665,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Imrecv_AdjointHandle : public HandleBase {
+  struct AMPI_Imrecv_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -701,14 +695,13 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Imrecv_AsyncHandle : public HandleBase {
+  struct AMPI_Imrecv_AsyncHandle : public AsyncHandle {
     typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
     DATATYPE* datatype;
     AMPI_Message* message;
     AMPI_Request* request;
-    AMPI_Imrecv_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -860,7 +853,7 @@ namespace medi {
       asyncHandle->count = count;
       asyncHandle->datatype = datatype;
       asyncHandle->message = message;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Imrecv_finish<DATATYPE>;
 
@@ -886,14 +879,13 @@ namespace medi {
     DATATYPE* datatype = asyncHandle->datatype;
     AMPI_Message* message = asyncHandle->message;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
     MEDI_UNUSED(datatype); // Unused generated to ignore warnings
     MEDI_UNUSED(message); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -925,7 +917,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Irecv_AdjointHandle : public HandleBase {
+  struct AMPI_Irecv_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -957,7 +949,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Irecv_AsyncHandle : public HandleBase {
+  struct AMPI_Irecv_AsyncHandle : public AsyncHandle {
     typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -966,7 +958,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -1125,7 +1116,7 @@ namespace medi {
       asyncHandle->source = source;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Irecv_finish<DATATYPE>;
 
@@ -1153,7 +1144,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1162,7 +1153,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -1194,7 +1184,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Irsend_AdjointHandle : public HandleBase {
+  struct AMPI_Irsend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -1221,7 +1211,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Irsend_AsyncHandle : public HandleBase {
+  struct AMPI_Irsend_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -1230,7 +1220,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -1378,7 +1367,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Irsend_finish<DATATYPE>;
 
@@ -1406,7 +1395,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1415,7 +1404,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -1443,7 +1431,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Isend_AdjointHandle : public HandleBase {
+  struct AMPI_Isend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -1470,7 +1458,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Isend_AsyncHandle : public HandleBase {
+  struct AMPI_Isend_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -1479,7 +1467,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -1627,7 +1614,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Isend_finish<DATATYPE>;
 
@@ -1655,7 +1642,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1664,7 +1651,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -1692,7 +1678,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Issend_AdjointHandle : public HandleBase {
+  struct AMPI_Issend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -1719,7 +1705,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Issend_AsyncHandle : public HandleBase {
+  struct AMPI_Issend_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -1728,7 +1714,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -1876,7 +1861,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Issend_finish<DATATYPE>;
 
@@ -1904,7 +1889,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1913,7 +1898,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -1941,7 +1925,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Mrecv_AdjointHandle : public HandleBase {
+  struct AMPI_Mrecv_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2114,7 +2098,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Recv_AdjointHandle : public HandleBase {
+  struct AMPI_Recv_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2293,7 +2277,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
-  struct AMPI_Recv_init_AsyncHandle : public HandleBase {
+  struct AMPI_Recv_init_AsyncHandle : public AsyncHandle {
     typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -2302,7 +2286,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h;
   };
 
 
@@ -2346,7 +2329,7 @@ namespace medi {
       asyncHandle->source = source;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Recv_init_finish<DATATYPE>;
       request->start = (ContinueFunction)AMPI_Recv_init_preStart<DATATYPE>;
@@ -2369,7 +2352,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2378,7 +2361,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2428,7 +2410,7 @@ namespace medi {
         datatype->clearIndices(buf, 0, count);
       }
 
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
 
       // create adjoint wait
       if(nullptr != h) {
@@ -2454,7 +2436,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2463,7 +2445,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2498,7 +2479,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irecv_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2507,7 +2488,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -2527,7 +2507,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Rsend_AdjointHandle : public HandleBase {
+  struct AMPI_Rsend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2683,7 +2663,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
-  struct AMPI_Rsend_init_AsyncHandle : public HandleBase {
+  struct AMPI_Rsend_init_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -2692,7 +2672,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h;
   };
 
 
@@ -2736,7 +2715,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Rsend_init_finish<DATATYPE>;
       request->start = (ContinueFunction)AMPI_Rsend_init_preStart<DATATYPE>;
@@ -2759,7 +2738,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2768,7 +2747,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2812,7 +2790,7 @@ namespace medi {
       }
 
 
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
 
       // create adjoint wait
       if(nullptr != h) {
@@ -2838,7 +2816,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2847,7 +2825,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2878,7 +2855,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Irsend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2887,7 +2864,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -2907,7 +2883,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Send_AdjointHandle : public HandleBase {
+  struct AMPI_Send_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -3063,7 +3039,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
-  struct AMPI_Send_init_AsyncHandle : public HandleBase {
+  struct AMPI_Send_init_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -3072,7 +3048,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h;
   };
 
 
@@ -3116,7 +3091,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Send_init_finish<DATATYPE>;
       request->start = (ContinueFunction)AMPI_Send_init_preStart<DATATYPE>;
@@ -3139,7 +3114,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3148,7 +3123,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -3192,7 +3166,7 @@ namespace medi {
       }
 
 
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
 
       // create adjoint wait
       if(nullptr != h) {
@@ -3218,7 +3192,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3227,7 +3201,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -3258,7 +3231,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Isend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3267,7 +3240,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -3287,7 +3259,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Sendrecv_AdjointHandle : public HandleBase {
+  struct AMPI_Sendrecv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -3537,7 +3509,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Ssend_AdjointHandle : public HandleBase {
+  struct AMPI_Ssend_AdjointHandle : public AsyncAdjointHandle {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -3693,7 +3665,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
 
   template<typename DATATYPE>
-  struct AMPI_Ssend_init_AsyncHandle : public HandleBase {
+  struct AMPI_Ssend_init_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* buf;
     typename DATATYPE::ModifiedType* bufMod;
     int count;
@@ -3702,7 +3674,6 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h;
   };
 
 
@@ -3746,7 +3717,7 @@ namespace medi {
       asyncHandle->dest = dest;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ssend_init_finish<DATATYPE>;
       request->start = (ContinueFunction)AMPI_Ssend_init_preStart<DATATYPE>;
@@ -3769,7 +3740,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3778,7 +3749,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -3822,7 +3792,7 @@ namespace medi {
       }
 
 
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
 
       // create adjoint wait
       if(nullptr != h) {
@@ -3848,7 +3818,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3857,7 +3827,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -3888,7 +3857,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Issend_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3897,7 +3866,6 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -3917,7 +3885,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Allgather_AdjointHandle : public HandleBase {
+  struct AMPI_Allgather_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -4172,7 +4140,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Allgatherv_AdjointHandle : public HandleBase {
+  struct AMPI_Allgatherv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -4472,7 +4440,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Allreduce_global_AdjointHandle : public HandleBase {
+  struct AMPI_Allreduce_global_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -4748,7 +4716,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Alltoall_AdjointHandle : public HandleBase {
+  struct AMPI_Alltoall_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -5001,7 +4969,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Alltoallv_AdjointHandle : public HandleBase {
+  struct AMPI_Alltoallv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -5331,7 +5299,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Bcast_wrap_AdjointHandle : public HandleBase {
+  struct AMPI_Bcast_wrap_AdjointHandle : public AsyncAdjointHandle {
     int bufferSendTotalSize;
     typename DATATYPE::IndexType* bufferSendIndices;
     typename DATATYPE::PrimalType* bufferSendPrimals;
@@ -5601,7 +5569,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Gather_AdjointHandle : public HandleBase {
+  struct AMPI_Gather_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -5889,7 +5857,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Gatherv_AdjointHandle : public HandleBase {
+  struct AMPI_Gatherv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -6224,7 +6192,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iallgather_AdjointHandle : public HandleBase {
+  struct AMPI_Iallgather_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -6270,7 +6238,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iallgather_AsyncHandle : public HandleBase {
+  struct AMPI_Iallgather_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -6281,7 +6249,6 @@ namespace medi {
     RECVTYPE* recvtype;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -6506,7 +6473,7 @@ namespace medi {
       asyncHandle->recvcount = recvcount;
       asyncHandle->recvtype = recvtype;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Iallgather_finish<SENDTYPE, RECVTYPE>;
 
@@ -6537,7 +6504,8 @@ namespace medi {
     RECVTYPE* recvtype = asyncHandle->recvtype;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -6548,7 +6516,6 @@ namespace medi {
     MEDI_UNUSED(recvtype); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -6583,7 +6550,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iallgatherv_AdjointHandle : public HandleBase {
+  struct AMPI_Iallgatherv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -6635,7 +6602,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iallgatherv_AsyncHandle : public HandleBase {
+  struct AMPI_Iallgatherv_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -6648,7 +6615,6 @@ namespace medi {
     RECVTYPE* recvtype;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -6909,7 +6875,7 @@ namespace medi {
       asyncHandle->displs = displs;
       asyncHandle->recvtype = recvtype;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Iallgatherv_finish<SENDTYPE, RECVTYPE>;
 
@@ -6942,7 +6908,8 @@ namespace medi {
     RECVTYPE* recvtype = asyncHandle->recvtype;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
+      static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -6955,7 +6922,6 @@ namespace medi {
     MEDI_UNUSED(recvtype); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -6997,7 +6963,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Iallreduce_global_AdjointHandle : public HandleBase {
+  struct AMPI_Iallreduce_global_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -7042,7 +7008,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Iallreduce_global_AsyncHandle : public HandleBase {
+  struct AMPI_Iallreduce_global_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
@@ -7052,7 +7018,6 @@ namespace medi {
     AMPI_Op op;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -7302,7 +7267,7 @@ namespace medi {
       asyncHandle->datatype = datatype;
       asyncHandle->op = op;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Iallreduce_global_finish<DATATYPE>;
 
@@ -7332,7 +7297,8 @@ namespace medi {
     AMPI_Op op = asyncHandle->op;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(recvbuf); // Unused generated to ignore warnings
@@ -7342,7 +7308,6 @@ namespace medi {
     MEDI_UNUSED(op); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -7384,7 +7349,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Ialltoall_AdjointHandle : public HandleBase {
+  struct AMPI_Ialltoall_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -7430,7 +7395,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Ialltoall_AsyncHandle : public HandleBase {
+  struct AMPI_Ialltoall_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -7441,7 +7406,6 @@ namespace medi {
     RECVTYPE* recvtype;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -7664,7 +7628,7 @@ namespace medi {
       asyncHandle->recvcount = recvcount;
       asyncHandle->recvtype = recvtype;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ialltoall_finish<SENDTYPE, RECVTYPE>;
 
@@ -7695,7 +7659,8 @@ namespace medi {
     RECVTYPE* recvtype = asyncHandle->recvtype;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -7706,7 +7671,6 @@ namespace medi {
     MEDI_UNUSED(recvtype); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -7741,7 +7705,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Ialltoallv_AdjointHandle : public HandleBase {
+  struct AMPI_Ialltoallv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -7799,7 +7763,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Ialltoallv_AsyncHandle : public HandleBase {
+  struct AMPI_Ialltoallv_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     const int* sdisplsMod;
@@ -7814,7 +7778,6 @@ namespace medi {
     RECVTYPE* recvtype;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -8095,7 +8058,7 @@ namespace medi {
       asyncHandle->rdispls = rdispls;
       asyncHandle->recvtype = recvtype;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ialltoallv_finish<SENDTYPE, RECVTYPE>;
 
@@ -8130,7 +8093,8 @@ namespace medi {
     RECVTYPE* recvtype = asyncHandle->recvtype;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sdisplsMod); // Unused generated to ignore warnings
@@ -8145,7 +8109,6 @@ namespace medi {
     MEDI_UNUSED(recvtype); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -8190,7 +8153,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Ibcast_wrap_AdjointHandle : public HandleBase {
+  struct AMPI_Ibcast_wrap_AdjointHandle : public AsyncAdjointHandle {
     int bufferSendTotalSize;
     typename DATATYPE::IndexType* bufferSendIndices;
     typename DATATYPE::PrimalType* bufferSendPrimals;
@@ -8235,7 +8198,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Ibcast_wrap_AsyncHandle : public HandleBase {
+  struct AMPI_Ibcast_wrap_AsyncHandle : public AsyncHandle {
     typename DATATYPE::Type* bufferSend;
     typename DATATYPE::ModifiedType* bufferSendMod;
     typename DATATYPE::Type* bufferRecv;
@@ -8245,7 +8208,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -8480,7 +8442,7 @@ namespace medi {
       asyncHandle->datatype = datatype;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ibcast_wrap_finish<DATATYPE>;
 
@@ -8509,7 +8471,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(bufferSend); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferSendMod); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferRecv); // Unused generated to ignore warnings
@@ -8519,7 +8482,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -8556,7 +8518,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Igather_AdjointHandle : public HandleBase {
+  struct AMPI_Igather_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -8603,7 +8565,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Igather_AsyncHandle : public HandleBase {
+  struct AMPI_Igather_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -8615,7 +8577,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -8869,7 +8830,7 @@ namespace medi {
       asyncHandle->recvtype = recvtype;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Igather_finish<SENDTYPE, RECVTYPE>;
 
@@ -8901,7 +8862,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -8913,7 +8875,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -8954,7 +8915,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Igatherv_AdjointHandle : public HandleBase {
+  struct AMPI_Igatherv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -9007,7 +8968,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Igatherv_AsyncHandle : public HandleBase {
+  struct AMPI_Igatherv_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -9021,7 +8982,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -9311,7 +9271,7 @@ namespace medi {
       asyncHandle->recvtype = recvtype;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Igatherv_finish<SENDTYPE, RECVTYPE>;
 
@@ -9345,7 +9305,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -9359,7 +9320,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -9407,7 +9367,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Ireduce_global_AdjointHandle : public HandleBase {
+  struct AMPI_Ireduce_global_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -9453,7 +9413,7 @@ namespace medi {
   };
 
   template<typename DATATYPE>
-  struct AMPI_Ireduce_global_AsyncHandle : public HandleBase {
+  struct AMPI_Ireduce_global_AsyncHandle : public AsyncHandle {
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod;
     typename DATATYPE::Type* recvbuf;
@@ -9464,7 +9424,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h;
   };
 
   template<typename DATATYPE>
@@ -9737,7 +9696,7 @@ namespace medi {
       asyncHandle->op = op;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Ireduce_global_finish<DATATYPE>;
 
@@ -9768,7 +9727,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = asyncHandle->h;
+    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(recvbuf); // Unused generated to ignore warnings
@@ -9779,7 +9739,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -9831,7 +9790,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iscatter_AdjointHandle : public HandleBase {
+  struct AMPI_Iscatter_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -9878,7 +9837,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iscatter_AsyncHandle : public HandleBase {
+  struct AMPI_Iscatter_AsyncHandle : public AsyncHandle {
     typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
@@ -9890,7 +9849,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -10139,7 +10097,7 @@ namespace medi {
       asyncHandle->recvtype = recvtype;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Iscatter_finish<SENDTYPE, RECVTYPE>;
 
@@ -10171,7 +10129,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -10183,7 +10142,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -10229,7 +10187,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iscatterv_AdjointHandle : public HandleBase {
+  struct AMPI_Iscatterv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -10282,7 +10240,7 @@ namespace medi {
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Iscatterv_AsyncHandle : public HandleBase {
+  struct AMPI_Iscatterv_AsyncHandle : public AsyncHandle {
     typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     const int* displsMod;
@@ -10296,7 +10254,6 @@ namespace medi {
     int root;
     AMPI_Comm comm;
     AMPI_Request* request;
-    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h;
   };
 
   template<typename SENDTYPE, typename RECVTYPE>
@@ -10582,7 +10539,7 @@ namespace medi {
       asyncHandle->recvtype = recvtype;
       asyncHandle->root = root;
       asyncHandle->comm = comm;
-      asyncHandle->h = h;
+      asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Iscatterv_finish<SENDTYPE, RECVTYPE>;
 
@@ -10616,7 +10573,8 @@ namespace medi {
     int root = asyncHandle->root;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
-    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = asyncHandle->h;
+    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+        (asyncHandle->toolHandle);
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(displsMod); // Unused generated to ignore warnings
@@ -10630,7 +10588,6 @@ namespace medi {
     MEDI_UNUSED(root); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
-    MEDI_UNUSED(h); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -10684,7 +10641,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Reduce_global_AdjointHandle : public HandleBase {
+  struct AMPI_Reduce_global_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -10999,7 +10956,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Scatter_AdjointHandle : public HandleBase {
+  struct AMPI_Scatter_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -11290,7 +11247,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Scatterv_AdjointHandle : public HandleBase {
+  struct AMPI_Scatterv_AdjointHandle : public AsyncAdjointHandle {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;

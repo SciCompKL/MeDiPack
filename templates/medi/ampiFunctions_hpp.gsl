@@ -204,8 +204,6 @@ for functions.function as curFunction
      addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.taType)")
    endif
  endfor
- # also add the async handle to the primal handle
- addHandleData(curFunction->primalHandle, 1, "", "h", "$(curFunction.handleName)<$(curFunction.tplArg)>*")
 
 #build the argument lists and the list for the handles
  curFunction.argDef = ""
@@ -589,6 +587,7 @@ function addPrimalSplit(curFunction, splitPos)
 >
 >      $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>* asyncHandle = new $(my.curFunction.asyncHandleName)<$(my.curFunction.tplArg)>();
        packHandle(my.curFunction->primalHandle, "asyncHandle")
+>      asyncHandle->toolHandle = h;
 >      $(my.curFunction.async)->handle = asyncHandle;
 >      $(my.curFunction.async)->func = (ContinueFunction)AMPI_$(my.curFunction.name)_finish<$(my.curFunction.tplArg)>;
        if(my.isInit)
@@ -597,7 +596,7 @@ function addPrimalSplit(curFunction, splitPos)
        endif
   endif
   if(my.genUpdate)
->      asyncHandle->h = h;
+>      asyncHandle->toolHandle = h;
   endif
   if(SPLIT_POS_FINISH = my.splitPos)
 >
@@ -621,6 +620,7 @@ function addPrimalSplit(curFunction, splitPos)
      for my.curFunction->primalHandle. as item
 >      $(item.type) $(item.name) = asyncHandle->$(item.name);
      endfor
+>    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(asyncHandle->toolHandle);
      for my.curFunction->primalHandle. as item
 >      MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
      endfor
@@ -707,7 +707,7 @@ namespace medi {
 .- create the struct for the data store
 . if(!defined(curFunction.init))
     template<$(curFunction.tplDef)>
-    struct $(curFunction.handleName) : public HandleBase {
+    struct $(curFunction.handleName) : public AsyncAdjointHandle {
 .   for curFunction->reverseHandle. as item
       $(item.type) $(item.name);
 .   endfor
@@ -727,7 +727,7 @@ namespace medi {
 
 . if(defined(curFunction.async))
     template<$(curFunction.tplDef)>
-    struct $(curFunction.asyncHandleName) : public HandleBase {
+    struct $(curFunction.asyncHandleName) : public AsyncHandle {
 .   for curFunction->primalHandle. as item
       $(item.type) $(item.name);
 .   endfor

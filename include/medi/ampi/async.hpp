@@ -40,9 +40,30 @@ namespace medi {
 
   typedef void (*DeleteReverseData)(void* data);
 
+  struct AsyncAdjointHandle : public HandleBase {
+
+    AsyncAdjointHandle* linkedHandle;
+
+    AsyncAdjointHandle() :
+      HandleBase() {}
+
+    void link(AsyncAdjointHandle* link) {
+      this->linkedHandle = link;
+      link->linkedHandle = this;
+    }
+  };
+
+  struct AsyncHandle : public HandleBase {
+
+    AsyncAdjointHandle* toolHandle;
+
+    AsyncHandle() :
+      HandleBase() {}
+  };
+
   struct AMPI_Request {
       MPI_Request request;
-      HandleBase* handle;
+      AsyncHandle* handle;
       ContinueFunction func;
 
       // Required for init requests
@@ -88,32 +109,33 @@ namespace medi {
 
   inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface);
   inline void AMPI_Wait_d(HandleBase* handle, AdjointInterface* adjointInterface);
-  struct WaitHandle : HandleBase {
+  struct WaitHandle : public AsyncAdjointHandle {
       ReverseFunction finishFuncReverse;
       ForwardFunction finishFuncForward;
-      HandleBase* handle;
 
-      WaitHandle(ReverseFunction finishFuncReverse, ForwardFunction finishFuncForward, HandleBase* handle) :
+      WaitHandle(ReverseFunction finishFuncReverse, ForwardFunction finishFuncForward, AsyncAdjointHandle* handle) :
         finishFuncReverse(finishFuncReverse),
-        finishFuncForward(finishFuncForward),
-        handle(handle) {
+        finishFuncForward(finishFuncForward) {
          this->funcReverse = (ReverseFunction)AMPI_Wait_b;
         this->funcForward = (ForwardFunction)AMPI_Wait_d;
         this->deleteType = ManualDeleteType::Wait;
-        this->handle->deleteType = ManualDeleteType::Async;
+
+
+        handle->deleteType = ManualDeleteType::Async;
+        this->link(handle);
       }
   };
 
   inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
-    h->finishFuncReverse(h->handle, adjointInterface);
+    h->finishFuncReverse(h->linkedHandle, adjointInterface);
   }
 
   inline void AMPI_Wait_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
-    h->finishFuncForward(h->handle, adjointInterface);
+    h->finishFuncForward(h->linkedHandle, adjointInterface);
   }
 
   inline void performStartAction(AMPI_Request *request) {
