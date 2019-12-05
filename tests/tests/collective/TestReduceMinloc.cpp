@@ -52,7 +52,7 @@ void func(NUMBER* x, NUMBER* y) {
     xI[i].i = i + 1 + 100 * world_rank;
   }
 
-  medi::AMPI_Reduce(xI, yI, 10, TOOL::MPI_INT_TYPE, medi::AMPI_MINLOC, 0, MPI_COMM_WORLD);
+  medi::AMPI_Reduce(xI, yI, 10, mpiNumberIntType, medi::AMPI_MINLOC, 0, MPI_COMM_WORLD);
 
   if(world_rank == 0) {
     for(int i = 0; i < 10; ++i) {

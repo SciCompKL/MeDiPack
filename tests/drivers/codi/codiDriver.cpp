@@ -31,6 +31,41 @@
 #include <iostream>
 #include <vector>
 
+void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
+  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+
+  for(size_t i = 0; i < size; ++i) {
+    if(i != 0) {
+      std::cout << ", ";
+    }
+    double val = getEvalSeed(curPoint, world_rank, i);
+    std::cout << val;
+#if PRIMAL_TAPE
+    tape.primalValue(vec[i].getGradientData()) = val;
+#elif VECTOR
+    vec[i].gradient()[0] = val;
+#else
+    vec[i].gradient() = val;
+#endif
+  }
+}
+
+void outputGradient(NUMBER* vec, size_t size) {
+  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+
+  for(size_t i = 0; i < size; ++i) {
+    NUMBER::Real grad;
+#if PRIMAL_TAPE
+    grad = tape.primalValue(vec[i].getGradientData());
+#elif VECTOR
+    grad = vec[i].gradient()[0];
+#else
+    grad = vec[i].gradient();
+#endif
+    std::cout << i << " " << grad << std::endl;
+  }
+}
+
 int main(int nargs, char** args) {
 
   medi::AMPI_Init(&nargs, &args);
@@ -40,8 +75,7 @@ int main(int nargs, char** args) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-
-  TOOL::init();
+  TOOL = new TOOL_TYPE();
 
   int evalPoints = getEvalPointsCount();
   int inputs = getInputCount();
@@ -82,31 +116,28 @@ int main(int nargs, char** args) {
     }
 
     std::cout << "Seed " << curPoint << " : {";
-    for(int i = 0; i < outputs; ++i) {
-      if(i != 0) {
-        std::cout << ", ";
-      }
-      double val = getEvalSeed(curPoint, world_rank, i);
-      std::cout << val;
-#if VECTOR
-      y[i].gradient()[0] = val;
+
+#if FORWARD_TAPE
+    seedValues(curPoint, world_rank, x, inputs);
+#elif PRIMAL_TAPE
+    seedValues(curPoint, world_rank, x, inputs);
 #else
-      y[i].gradient() = val;
+    seedValues(curPoint, world_rank, y, outputs);
 #endif
-    }
+
     std::cout << "}\n";
 
-    tape.evaluate();
 
-    for(int curIn = 0; curIn < inputs; ++curIn) {
-      NUMBER::Real grad;
-#if VECTOR
-      grad = x[curIn].gradient()[0];
+#if FORWARD_TAPE
+    tape.evaluateForward();
+    outputGradient(y, outputs);
+#elif PRIMAL_TAPE
+    tape.evaluatePrimal();
+    outputGradient(y, outputs);
 #else
-      grad = x[curIn].gradient();
+    tape.evaluate();
+    outputGradient(x, inputs);
 #endif
-      std::cout << curIn << " " << grad << std::endl;
-    }
 
     tape.reset();
   }
@@ -114,8 +145,11 @@ int main(int nargs, char** args) {
   delete [] y;
   delete [] x;
 
-  TOOL::finalize();
+  delete TOOL;
+
   medi::AMPI_Finalize();
 }
+
+TOOL_TYPE* TOOL;
 
 #include <medi/medi.cpp>

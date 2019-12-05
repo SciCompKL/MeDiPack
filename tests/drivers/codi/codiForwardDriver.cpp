@@ -40,17 +40,13 @@ int main(int nargs, char** args) {
   int world_size;
   medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-  TOOL::init();
+  TOOL = new TOOL_TYPE();
 
   int evalPoints = getEvalPointsCount();
   int inputs = getInputCount();
   int outputs = getOutputCount();
   NUMBER* x = new NUMBER[inputs];
   NUMBER* y = new NUMBER[outputs];
-
-  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
-  tape.resize(2, 3);
-  tape.setActive();
 
   for(int curPoint = 0; curPoint < evalPoints; ++curPoint) {
     std::cout << "Point " << curPoint << " : {";
@@ -70,16 +66,6 @@ int main(int nargs, char** args) {
       y[i] = 0.0;
     }
 
-    for(int i = 0; i < inputs; ++i) {
-      tape.registerInput(x[i]);
-    }
-
-    func(x, y);
-
-    for(int i = 0; i < outputs; ++i) {
-      tape.registerOutput(y[i]);
-    }
-
     std::cout << "Seed " << curPoint << " : {";
     for(int i = 0; i < inputs; ++i) {
       if(i != 0) {
@@ -95,7 +81,7 @@ int main(int nargs, char** args) {
     }
     std::cout << "}\n";
 
-    tape.evaluateForward();
+    func(x, y);
 
     for(int curIn = 0; curIn < inputs; ++curIn) {
       double grad;
@@ -106,15 +92,16 @@ int main(int nargs, char** args) {
 #endif
       std::cout << curIn << " " << grad << std::endl;
     }
-
-    tape.reset();
   }
 
   delete [] y;
   delete [] x;
 
-  TOOL::finalize();
+  delete TOOL;
+
   medi::AMPI_Finalize();
 }
+
+TOOL_TYPE* TOOL;
 
 #include <medi/medi.cpp>

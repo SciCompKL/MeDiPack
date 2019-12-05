@@ -273,8 +273,6 @@ namespace medi {
       AMPI_Op OP_MINLOC;
       AMPI_Op OP_MAXLOC;
 
-      AMPI_Datatype MPI_INT_TYPE;
-
       void createOperators() {
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedAdd, 1, &OP_SUM);
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMul, 1, &OP_PROD);
@@ -303,22 +301,7 @@ namespace medi {
         }
       }
 
-      void createType(const AMPI_Datatype type) {
-        AMPI_Aint offsets[3] = {
-          offsetof(typename FuncHelp::TypeInt, value),
-          offsetof(typename FuncHelp::TypeInt, index),
-          offsetof(typename FuncHelp::TypeInt, index) + sizeof(int)
-        };
-        int blockLength[3] = {1, 1, (int)(sizeof(typename FuncHelp::TypeInt) - offsets[2])};
-        const AMPI_Datatype types[3] = {type, AMPI_INT, AMPI_BYTE};
-
-        AMPI_Type_create_struct(3, blockLength, offsets, types, &MPI_INT_TYPE);
-        AMPI_Type_commit(&MPI_INT_TYPE);
-      }
-
-      void init(const AMPI_Datatype type) {
-
-        createType(type);
+      void init() {
         createOperators();
       }
 
@@ -329,8 +312,27 @@ namespace medi {
         OP_MAX.free();
         OP_MINLOC.free();
         OP_MAXLOC.free();
+      }
 
-        AMPI_Type_free(&MPI_INT_TYPE);
+      static AMPI_Datatype createIntType(const AMPI_Datatype type) {
+
+        AMPI_Datatype intType;
+        AMPI_Aint offsets[3] = {
+          offsetof(typename FuncHelp::TypeInt, value),
+          offsetof(typename FuncHelp::TypeInt, index),
+          offsetof(typename FuncHelp::TypeInt, index) + sizeof(int)
+        };
+        int blockLength[3] = {1, 1, (int)(sizeof(typename FuncHelp::TypeInt) - offsets[2])};
+        const AMPI_Datatype types[3] = {type, AMPI_INT, AMPI_BYTE};
+
+        AMPI_Type_create_struct(3, blockLength, offsets, types, &intType);
+        AMPI_Type_commit(&intType);
+
+        return intType;
+      }
+
+      static void freeIntType(AMPI_Datatype& type) {
+        AMPI_Type_free(&type);
       }
   };
 }

@@ -30,7 +30,7 @@
 
 #include <codi.hpp>
 #include <medi/medi.hpp>
-#include <externals/codiMediPackTypes.hpp>
+#include <codi/externals/codiMpiTypes.hpp>
 
 typedef CODI_TYPE NUMBER;
 
@@ -38,6 +38,29 @@ typedef CODI_TYPE NUMBER;
 # define VECTOR 0
 #endif
 
-#define TOOL CoDiPackTool<NUMBER>
+#ifndef UNTYPED
+# define UNTYPED 0
+#endif
+
+#ifndef FORWARD_TAPE
+# define FORWARD_TAPE 0
+#endif
+
+#ifndef PRIMAL_TAPE
+# define PRIMAL_TAPE 0
+#endif
+
+#define TOOL_TYPE CoDiMpiTypes<NUMBER>
+#define TOOL codiTypes
+
+extern TOOL_TYPE* codiTypes;
 
 #include "../globalDefines.h"
+
+#if UNTYPED
+  #undef mpiNumberType
+  #undef mpiNumberIntType
+
+  #define mpiNumberType ((medi::MpiTypeInterface*)TOOL->MPI_TYPE)
+  #define mpiNumberIntType ((medi::MpiTypeInterface*)TOOL->MPI_INT_TYPE)
+#endif

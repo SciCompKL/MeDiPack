@@ -66,18 +66,18 @@ namespace medi {
 
       bool isClone;
 
-      Tool adTool;
+      Tool* adTool;
 
-      MpiTypeDefault() :
-        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(Tool::MpiType, Tool::ModifiedMpiType),
+      MpiTypeDefault(Tool* adTool, MPI_Datatype type, MPI_Datatype modType) :
+        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
         isClone(false),
-        adTool(Tool::PrimalMpiType, Tool::AdjointMpiType) {}
+        adTool(adTool) {}
 
     private:
-      MpiTypeDefault(MPI_Datatype type, MPI_Datatype modType) :
+      MpiTypeDefault(Tool* adTool, MPI_Datatype type, MPI_Datatype modType, bool isClone) :
         MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
-        isClone(true),
-        adTool(Tool::PrimalMpiType, Tool::AdjointMpiType) {}
+        isClone(isClone),
+        adTool(adTool) {}
 
     public:
 
@@ -94,7 +94,7 @@ namespace medi {
       }
 
       const Tool& getADTool() const {
-        return adTool;
+        return *adTool;
       }
 
       int computeActiveElements(const int count) const {
@@ -102,11 +102,11 @@ namespace medi {
       }
 
       bool isModifiedBufferRequired() const {
-        return adTool.isModifiedBufferRequired();
+        return adTool->isModifiedBufferRequired();
       }
 
       inline void copyIntoModifiedBuffer(const Type* buf, size_t bufOffset, ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(adTool.isModifiedBufferRequired()) {
+        if(adTool->isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::setIntoModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }
@@ -114,7 +114,7 @@ namespace medi {
       }
 
       inline void copyFromModifiedBuffer(Type* buf, size_t bufOffset, const ModifiedType* bufMod, size_t bufModOffset, int elements) const {
-        if(adTool.isModifiedBufferRequired()) {
+        if(adTool->isModifiedBufferRequired()) {
           for(int i = 0; i < elements; ++i) {
             ADTool::getFromModifyBuffer(bufMod[bufModOffset + i], buf[bufOffset + i]);
           }
@@ -223,7 +223,7 @@ namespace medi {
           modType = type;
         }
 
-        return new MpiTypeDefault(type, modType);
+        return new MpiTypeDefault(adTool, this->getMpiType(), this->getModifiedMpiType(), true);
       }
   };
 }

@@ -67,14 +67,14 @@ void func(NUMBER* x, NUMBER* y) {
   int starts[3] = {1, 0, 1};
 
   medi::AMPI_Datatype testType;
-  medi::AMPI_Type_create_subarray(3, sizes, subSizes, starts, AMPI_ORDER_C, TOOL::MPI_TYPE , &testType);
+  medi::AMPI_Type_create_subarray(3, sizes, subSizes, starts, AMPI_ORDER_C, mpiNumberType , &testType);
   medi::AMPI_Type_commit(&testType);
 
 
   if(world_rank == 0) {
     medi::AMPI_Send(x, 1, testType, 1, 42, AMPI_COMM_WORLD);
   } else {
-    medi::AMPI_Recv(y, 24, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+    medi::AMPI_Recv(y, 24, mpiNumberType, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
   }
 
   // We do not free the type here since it is required for the reverse evaluation

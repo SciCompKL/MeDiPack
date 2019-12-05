@@ -156,29 +156,30 @@ $(eval $(value DRIVER_INST))
 # Driver for RealReverse with untyped interface
 DRIVER_NAME  := CoDiUntyped
 DRIVER_TESTS := $(BASIC_TESTS)
-DRIVER_SRC = $(DRIVER_DIR)/codiUntyped/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiUntyped
+DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DUNTYPED -DCODI_TYPE=codi::RealReverse
+
 $(eval $(value DRIVER_INST))
 
 # Driver for RealForward
 DRIVER_NAME  := CoDiForward
 DRIVER_TESTS := $(FORWARD_TESTS)
-DRIVER_SRC = $(DRIVER_DIR)/codiForward/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiForward -DCODI_TYPE=codi::RealForward
+DRIVER_SRC = $(DRIVER_DIR)/codi/codiForwardDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealForward
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with a forward tape evaluation
 DRIVER_NAME  := CoDiTapeForward
 DRIVER_TESTS := $(FORWARD_TESTS)
-DRIVER_SRC = $(DRIVER_DIR)/codiTapeForward/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiTapeForward -DCODI_TYPE=codi::RealReverse
+DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse -DFORWARD_TAPE
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with a primal tape evaluation
 DRIVER_NAME  := CoDiTapePrimal
 DRIVER_TESTS := $(PRIMAL_TESTS)
-DRIVER_SRC = $(DRIVER_DIR)/codiTapePrimal/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codiTapePrimal -DCODI_TYPE=codi::RealReversePrimal
+DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal -DPRIMAL_TAPE
 $(eval $(value DRIVER_INST))
 
 # Driver for 2nd order
