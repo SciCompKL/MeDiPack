@@ -189,7 +189,6 @@ for functions.function as curFunction
      endif
    elsif(name(item) = "request")
      addHandleData(curFunction->primalHandle, 0, "", "$(item.name)", "$(item.taType)")
-     addHandleData(curFunction->reverseHandle, 0, "", "$(item.name)Reverse", "AMPI_Request")
    elsif(name(item) = "type")
      addHandleData(curFunction->primalHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
      addHandleData(curFunction->reverseHandle, 1, "", "$(item.name)", "$(constMod) $(item.tplName)*")
@@ -707,7 +706,11 @@ namespace medi {
 .- create the struct for the data store
 . if(!defined(curFunction.init))
     template<$(curFunction.tplDef)>
+. if(defined(curFunction.async))
     struct $(curFunction.handleName) : public AsyncAdjointHandle {
+. else
+    struct $(curFunction.handleName) : public HandleBase {
+. endif
 .   for curFunction->reverseHandle. as item
       $(item.type) $(item.name);
 .   endfor

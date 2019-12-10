@@ -42,7 +42,7 @@
 namespace medi {
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Bsend_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Bsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -209,7 +209,6 @@ namespace medi {
     int dest;
     int tag;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Ibsend_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -676,7 +675,6 @@ namespace medi {
     int count;
     DATATYPE* datatype;
     AMPI_Message message;
-    AMPI_Request requestReverse;
 
     ~AMPI_Imrecv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -930,7 +928,6 @@ namespace medi {
     int source;
     int tag;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Irecv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -1196,7 +1193,6 @@ namespace medi {
     int dest;
     int tag;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Irsend_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -1443,7 +1439,6 @@ namespace medi {
     int dest;
     int tag;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Isend_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -1690,7 +1685,6 @@ namespace medi {
     int dest;
     int tag;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Issend_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -1925,7 +1919,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Mrecv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Mrecv_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2098,7 +2092,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Recv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Recv_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2507,7 +2501,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Rsend_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Rsend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -2883,7 +2877,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Send_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Send_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -3259,7 +3253,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Sendrecv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Sendrecv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -3509,7 +3503,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Ssend_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Ssend_AdjointHandle : public HandleBase {
     int bufTotalSize;
     typename DATATYPE::IndexType* bufIndices;
     typename DATATYPE::PrimalType* bufPrimals;
@@ -3885,7 +3879,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Allgather_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Allgather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -4140,7 +4134,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Allgatherv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Allgatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -4440,7 +4434,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Allreduce_global_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Allreduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -4716,7 +4710,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Alltoall_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Alltoall_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -4969,7 +4963,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Alltoallv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Alltoallv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -5299,7 +5293,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Bcast_wrap_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Bcast_wrap_AdjointHandle : public HandleBase {
     int bufferSendTotalSize;
     typename DATATYPE::IndexType* bufferSendIndices;
     typename DATATYPE::PrimalType* bufferSendPrimals;
@@ -5569,7 +5563,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Gather_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Gather_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -5857,7 +5851,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Gatherv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Gatherv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -6211,7 +6205,6 @@ namespace medi {
     int recvcount;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Iallgather_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -6571,7 +6564,6 @@ namespace medi {
     const  int* displs;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Iallgatherv_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -6981,7 +6973,6 @@ namespace medi {
     DATATYPE* datatype;
     AMPI_Op op;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Iallreduce_global_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -7368,7 +7359,6 @@ namespace medi {
     int recvcount;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Ialltoall_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -7728,7 +7718,6 @@ namespace medi {
     const  int* rdispls;
     RECVTYPE* recvtype;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Ialltoallv_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -8171,7 +8160,6 @@ namespace medi {
     DATATYPE* datatype;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Ibcast_wrap_AdjointHandle () {
       if(nullptr != bufferSendIndices) {
@@ -8538,7 +8526,6 @@ namespace medi {
     RECVTYPE* recvtype;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Igather_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -8937,7 +8924,6 @@ namespace medi {
     RECVTYPE* recvtype;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Igatherv_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -9386,7 +9372,6 @@ namespace medi {
     AMPI_Op op;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Ireduce_global_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -9810,7 +9795,6 @@ namespace medi {
     RECVTYPE* recvtype;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Iscatter_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -10209,7 +10193,6 @@ namespace medi {
     RECVTYPE* recvtype;
     int root;
     AMPI_Comm comm;
-    AMPI_Request requestReverse;
 
     ~AMPI_Iscatterv_AdjointHandle () {
       if(nullptr != sendbufIndices) {
@@ -10641,7 +10624,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  struct AMPI_Reduce_global_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Reduce_global_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename DATATYPE::IndexType* sendbufIndices;
     typename DATATYPE::PrimalType* sendbufPrimals;
@@ -10956,7 +10939,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Scatter_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Scatter_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
@@ -11247,7 +11230,7 @@ namespace medi {
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename SENDTYPE, typename RECVTYPE>
-  struct AMPI_Scatterv_AdjointHandle : public AsyncAdjointHandle {
+  struct AMPI_Scatterv_AdjointHandle : public HandleBase {
     int sendbufTotalSize;
     typename SENDTYPE::IndexType* sendbufIndices;
     typename SENDTYPE::PrimalType* sendbufPrimals;
