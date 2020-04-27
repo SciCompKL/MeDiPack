@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2020 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -765,7 +765,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
 #define AMPI_Fint MPI_Fint
 #endif
-#if MEDI_MPI_VERSION_2_1 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
 #define AMPI_Offset MPI_Offset
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -844,14 +844,23 @@ namespace medi {
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   typedef MPI_Type_delete_attr_function AMPI_Type_delete_attr_function;
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   typedef MPI_Comm_errhandler_function AMPI_Comm_errhandler_function;
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   typedef MPI_Win_errhandler_function AMPI_Win_errhandler_function;
 #endif
-#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
   typedef MPI_File_errhandler_function AMPI_File_errhandler_function;
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  typedef MPI_Comm_errhandler_fn AMPI_Comm_errhandler_fn;
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  typedef MPI_Win_errhandler_fn AMPI_Win_errhandler_fn;
+#endif
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET && MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_2
+  typedef MPI_File_errhandler_fn AMPI_File_errhandler_fn;
 #endif
 #if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   typedef MPI_Grequest_query_function AMPI_Grequest_query_function;
@@ -1007,7 +1016,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   typedef MpiTypePassive<MPI_Count> AMPI_COUNT_Type;
 #endif
-#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   typedef MpiTypePassive<MPI_Offset> AMPI_OFFSET_Type;
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -1119,7 +1128,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   extern AMPI_COUNT_Type* AMPI_COUNT;
 #endif
-#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   extern AMPI_OFFSET_Type* AMPI_OFFSET;
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET

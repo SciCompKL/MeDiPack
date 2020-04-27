@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2020 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *

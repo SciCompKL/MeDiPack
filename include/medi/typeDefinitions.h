@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2017-2019 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2017-2020 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -45,7 +45,7 @@ namespace medi {
   typedef void (*ReverseFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*ForwardFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*PrimalFunction)(HandleBase* h, AdjointInterface* a);
-  typedef void (*ContinueFunction)(HandleBase* h);
+  typedef int (*ContinueFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count, int dim);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count, int dim);
 

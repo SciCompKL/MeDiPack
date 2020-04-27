@@ -1,7 +1,7 @@
 /*
  * MeDiPack, a Message Differentiation Package
  *
- * Copyright (C) 2018 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+ * Copyright (C) 2020 Chair for Scientific Computing (SciComp), TU Kaiserslautern
  * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
@@ -162,7 +162,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   AMPI_COUNT_Type* AMPI_COUNT;
 #endif
-#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
   AMPI_OFFSET_Type* AMPI_OFFSET;
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -320,7 +320,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
     AMPI_COUNT = new AMPI_COUNT_Type(MPI_COUNT);
 #endif
-#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
     AMPI_OFFSET = new AMPI_OFFSET_Type(MPI_OFFSET);
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
@@ -434,7 +434,7 @@ namespace medi {
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
     delete AMPI_COUNT;
 #endif
-#if MEDI_MPI_VERSION_2_2 <= MEDI_MPI_TARGET
+#if MEDI_MPI_VERSION_2_0 <= MEDI_MPI_TARGET
     delete AMPI_OFFSET;
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
