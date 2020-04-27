@@ -25,16 +25,19 @@
  *
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
-#include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMediPackTypes.hpp>
+#include <medi/medi.hpp>
+#include <codi/externals/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-#define TOOL CoDiPackTool<codi::RealReverse>
+using CoDiTypes = CoDiMpiTypes<codi::RealReverse>;
+CoDiTypes* codiTypes;
+
+#define TOOL CoDiTypes::Tool
 
 struct Residuals {
   codi::RealReverse l1;
@@ -53,7 +56,7 @@ void customOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, TOOL::MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op;
@@ -119,7 +122,7 @@ void optimizedCustomOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, TOOL::MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op2;
@@ -167,7 +170,7 @@ int main(int nargs, char** args) {
     std::cout << "Please start the tutorial with two processes." << std::endl;
   } else {
 
-    TOOL::init();
+    codiTypes = new CoDiTypes();
     codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
     customOperator();
@@ -176,7 +179,7 @@ int main(int nargs, char** args) {
 
     optimizedCustomOperator();
 
-    TOOL::finalize();
+    delete codiTypes;
   }
 
   AMPI_Finalize();

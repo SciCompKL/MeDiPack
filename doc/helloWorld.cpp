@@ -25,21 +25,22 @@
  *
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
-#include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMediPackTypes.hpp>
+#include <medi/medi.hpp>
+#include <codi/externals/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-#define TOOL CoDiPackTool<codi::RealReverse>
+using CoDiTypes = CoDiMpiTypes<codi::RealReverse>;
+CoDiTypes* codiTypes;
 
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  TOOL::init();
+  codiTypes = new CoDiTypes();
 
   int rank;
 
@@ -52,9 +53,9 @@ int main(int nargs, char** args) {
   if( 0 == rank ) {
     tape.registerInput(a);
 
-    AMPI_Send(&a, 1, TOOL::MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+    AMPI_Send(&a, 1, codiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
   } else {
-    AMPI_Recv(&a, 1, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+    AMPI_Recv(&a, 1, codiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
     tape.registerOutput(a);
 
@@ -69,7 +70,7 @@ int main(int nargs, char** args) {
     std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
   }
 
-  TOOL::finalize();
+  delete codiTypes;
 
   AMPI_Finalize();
 }
