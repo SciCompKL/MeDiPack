@@ -193,7 +193,13 @@ namespace medi {
             MPI_Aint curExtent;
 
             modifiedMpiTypes[i] = array_of_types[i]->getModifiedMpiType();
+
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+            MPI_Type_lb(modifiedMpiTypes[i], &curLowerBound);
+            MPI_Type_extent(modifiedMpiTypes[i], &curExtent);
+#else
             MPI_Type_get_extent(modifiedMpiTypes[i], &curLowerBound, &curExtent);
+#endif
 
             mediAssert(0 == curLowerBound); // The modified types are always packed without any holes.
             modifiedDisplacements[i] = totalDisplacement;
@@ -252,11 +258,21 @@ namespace medi {
 
         MPI_Aint lb = 0;
         MPI_Aint ext = 0;
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+        MPI_Type_lb(newMpiType, &lb);
+        MPI_Type_extent(newMpiType, &ext);
+#else
         MPI_Type_get_extent(newMpiType, &lb, &ext);
+#endif
         typeOffset = lb;
         typeExtent = ext;
 
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
+        MPI_Type_lb(newModMpiType, &lb);
+        MPI_Type_extent(newModMpiType, &ext);
+#else
         MPI_Type_get_extent(newModMpiType, &lb, &ext);
+#endif
         modifiedExtent = ext;
 
         setMpiTypes(newMpiType, newModMpiType);
@@ -499,7 +515,7 @@ namespace medi {
     MPI_Aint* array_of_displacements = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
     
-#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
     MPI_Aint extent;
     MPI_Type_extent(oldtype->getMpiType(), &extent);
 #else
@@ -552,7 +568,7 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
-#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
     MPI_Aint extent;
     MPI_Type_extent(oldtype->getMpiType(), &extent);
 #else
@@ -598,7 +614,7 @@ namespace medi {
     MPI_Aint* array_of_displacements_byte = new MPI_Aint [typeCount];
     MpiTypeInterface** array_of_types = new MpiTypeInterface*[typeCount];
 
-#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
     MPI_Aint extent;
     MPI_Type_extent(oldtype->getMpiType(), &extent);
 #else
@@ -692,7 +708,7 @@ namespace medi {
     }
 
     // compute the total extend of all the blocks
-#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_3_0_0
+#if MEDI_MPI_TARGET < MEDI_MPI_VERSION_2_0
     MPI_Aint extent;
     MPI_Type_extent(oldtype->getMpiType(), &extent);
 #else
