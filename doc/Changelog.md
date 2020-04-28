@@ -1,6 +1,14 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.2 - 2020-04-28
+ - Support for persistent communication requests
+ - Improved accessibility of internal handles and reverse requests
+ - Changes to the AD tool interface (not backwards compatible)
+ - Fixes for MS-MPI and Open MPI
+ - Disabled ADOL-C tests (until ADOL-C is patched)
+ - Handling of 82% of the MPI standard
+
 ### v 1.1.2 - 2019-01-07
  - Documentation change for new CoDiPack folder layout
 
