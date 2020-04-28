@@ -26,8 +26,9 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
-#include <codi.hpp>
 #include <medi/medi.hpp>
+
+#include <codi.hpp>
 #include <codi/externals/codiMpiTypes.hpp>
 
 #include <iostream>

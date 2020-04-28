@@ -207,8 +207,9 @@ The creation of the MPI operator can now be done with
 ###Full code
 
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
+
+#include <codi.hpp>
 #include <codi/externals/codiMpiTypes.hpp>
 
 #include <iostream>

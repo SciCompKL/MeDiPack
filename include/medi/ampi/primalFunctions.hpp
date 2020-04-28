@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include "ampiMisc.h"
 #include "async.hpp"
 #include "message.hpp"

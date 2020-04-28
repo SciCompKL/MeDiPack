@@ -45,8 +45,9 @@ a special treatment for AD is required the additional operations are performed b
 The next step is the initialization of the AD tool. It needs to be done after MPI is initialized. Usually the AD tool
 provides an implementation of the medi::ADToolInterface from MeDiPack. For CoDiPack the interfaces are provided in the externals folder.
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
+
+#include <codi.hpp>
 #include <codi/externals/codiMpiTypes.hpp>
 
 using namespace medi;
@@ -140,8 +141,9 @@ There are some additional options that can be used to configure MeDiPack on a gl
 
 The complete code for this tutorial is:
 ~~~
-#include <codi.hpp>
 #include <medi/medi.hpp>
+
+#include <codi.hpp>
 #include <codi/externals/codiMpiTypes.hpp>
 
 #include <iostream>

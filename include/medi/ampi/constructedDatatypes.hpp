@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include <cstdlib>
+
 #include "../macros.h"
 #include "typeInterface.hpp"
 #include "../exceptions.hpp"

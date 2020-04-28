@@ -28,6 +28,9 @@
 
 #pragma once
 
+#include <cstdlib>
+#include <cstdint>
+
 #include <mpi.h>
 
 #include "../../include/medi/ampi/typePassive.hpp"
