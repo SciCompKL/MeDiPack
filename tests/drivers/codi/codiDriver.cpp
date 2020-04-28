@@ -33,6 +33,7 @@
 
 void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
   NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+  (void)tape;
 
   for(size_t i = 0; i < size; ++i) {
     if(i != 0) {
@@ -52,6 +53,7 @@ void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
 
 void outputGradient(NUMBER* vec, size_t size) {
   NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+  (void)tape;
 
   for(size_t i = 0; i < size; ++i) {
     NUMBER::Real grad;

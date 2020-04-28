@@ -408,6 +408,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -520,6 +521,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -598,6 +600,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -637,6 +640,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -878,6 +882,7 @@ namespace medi {
     AMPI_Message* message = asyncHandle->message;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1142,6 +1147,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1392,6 +1398,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1638,6 +1645,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -1884,6 +1892,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2347,6 +2356,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2431,6 +2441,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2474,6 +2485,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2733,6 +2745,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2811,6 +2824,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -2850,6 +2864,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3109,6 +3124,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3187,6 +3203,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3226,6 +3243,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3735,6 +3753,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3813,6 +3832,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -3852,6 +3872,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(count); // Unused generated to ignore warnings
@@ -6499,6 +6520,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -6902,6 +6924,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -7290,6 +7313,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(recvbuf); // Unused generated to ignore warnings
@@ -7651,6 +7675,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -8084,6 +8109,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sdisplsMod); // Unused generated to ignore warnings
@@ -8461,6 +8487,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferSend); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferSendMod); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferRecv); // Unused generated to ignore warnings
@@ -8851,6 +8878,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -9293,6 +9321,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -9714,6 +9743,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(recvbuf); // Unused generated to ignore warnings
@@ -10115,6 +10145,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(sendcount); // Unused generated to ignore warnings
@@ -10558,6 +10589,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
         (asyncHandle->toolHandle);
+    MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
     MEDI_UNUSED(displsMod); // Unused generated to ignore warnings

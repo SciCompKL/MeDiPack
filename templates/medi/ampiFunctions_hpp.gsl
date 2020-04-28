@@ -620,6 +620,7 @@ function addPrimalSplit(curFunction, splitPos)
 >      $(item.type) $(item.name) = asyncHandle->$(item.name);
      endfor
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(asyncHandle->toolHandle);
+>    MEDI_UNUSED(h); // Unused generated to ignore warnings
      for my.curFunction->primalHandle. as item
 >      MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
      endfor
