@@ -80,13 +80,13 @@ The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an A
 
 using namespace medi;
 
-using CoDiTypes = CoDiMpiTypes<codi::RealReverse>;
-CoDiTypes* codiTypes;
+using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  codiTypes = new CoDiTypes();
+  mpiTypes = new MpiTypes();
 
   int rank;
 
@@ -99,9 +99,9 @@ int main(int nargs, char** args) {
   if( 0 == rank ) {
     tape.registerInput(a);
 
-    AMPI_Send(&a, 1, codiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+    AMPI_Send(&a, 1, mpiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
   } else {
-    AMPI_Recv(&a, 1, codiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+    AMPI_Recv(&a, 1, mpiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
     tape.registerOutput(a);
 
@@ -116,7 +116,7 @@ int main(int nargs, char** args) {
     std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
   }
 
-  delete codiTypes;
+  delete mpiTypes;
 
   AMPI_Finalize();
 }

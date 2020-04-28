@@ -6,7 +6,7 @@ the source code. That is
 ~~~
   codi::RealReverse a = ...;
   codi::RealReverse c;
-  AMPI_Reduce(&a, &c, 1, codiTypes->MPI_TYPE, AMPI_SUM, 0, AMPI_COMM_WORLD);
+  AMPI_Reduce(&a, &c, 1, mpiTypes->MPI_TYPE, AMPI_SUM, 0, AMPI_COMM_WORLD);
 ~~~
 
 will work without any problems and the MPI data type provided by the AD behaves like a build in MPI type.
@@ -22,7 +22,7 @@ The same is true for the `MINLOC` and `MAXLOC` operators. An example is:
   a.p = ...;
   a.i = rank;
   IntType c;
-  AMPI_Reduce(&a, &c, 1, codiTypes->MPI_INT_TYPE, AMPI_MINLOC, 0, MPI_COMM_WORLD);
+  AMPI_Reduce(&a, &c, 1, mpiTypes->MPI_INT_TYPE, AMPI_MINLOC, 0, MPI_COMM_WORLD);
 ~~~
 
 The process gets more involved if custom operators are used in the application. The default handling of MeDiPack in such
@@ -45,7 +45,7 @@ operation is:
   ...
 
     AMPI_Datatype residualMpiType;
-    AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
+    AMPI_Type_create_contiguous(2, mpiTypes->MPI_TYPE, &residualMpiType);
     AMPI_Type_commit(&residualMpiType);
 
     AMPI_Op op;
@@ -157,14 +157,14 @@ which is the technique described above. The implementation can now be done with 
 important to know that the CoDiPack types are not modified in the MPI buffers. So the implementation can directly use
 the CoDiPack type.
 ~~~
-#define TOOL CoDiTypes::Tool
+using MpiTool = MpiTypes::Tool;
 
 void modifiedCustomOpp(Residuals* invec, Residuals* inoutvec, int* len, MPI_Datatype* datatype) {
 
   // Special treatment for CoDiPack for online dependency analysis. Take a look at the Tool implementation for CoDiPack.
   for(int i = 0; i < *len; ++i) {
-    TOOL::modifyDependency(invec[i].l1, inoutvec[i].l1);
-    TOOL::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
+    MpiTool::modifyDependency(invec[i].l1, inoutvec[i].l1);
+    MpiTool::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
   }
 
   for(int i = 0; i < *len; ++i) {
@@ -216,10 +216,9 @@ The creation of the MPI operator can now be done with
 
 using namespace medi;
 
-using CoDiTypes = CoDiMpiTypes<codi::RealReverse>;
-CoDiTypes* codiTypes;
-
-#define TOOL CoDiTypes::Tool
+using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTool = MpiTypes::Tool;
+MpiTypes* mpiTypes;
 
 struct Residuals {
   codi::RealReverse l1;
@@ -238,7 +237,7 @@ void customOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, mpiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op;
@@ -275,8 +274,8 @@ void modifiedCustomOpp(Residuals* invec, Residuals* inoutvec, int* len, MPI_Data
 
   // Special treatment for CoDiPack for online dependency analysis. Take a look at the Tool implementation for CoDiPack.
   for(int i = 0; i < *len; ++i) {
-    TOOL::modifyDependency(invec[i].l1, inoutvec[i].l1);
-    TOOL::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
+    MpiTool::modifyDependency(invec[i].l1, inoutvec[i].l1);
+    MpiTool::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
   }
 
   for(int i = 0; i < *len; ++i) {
@@ -304,7 +303,7 @@ void optimizedCustomOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, mpiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op2;
@@ -352,7 +351,7 @@ int main(int nargs, char** args) {
     std::cout << "Please start the tutorial with two processes." << std::endl;
   } else {
 
-    codiTypes = new CoDiTypes();
+    mpiTypes = new MpiTypes();
     codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
     customOperator();
@@ -361,7 +360,7 @@ int main(int nargs, char** args) {
 
     optimizedCustomOperator();
 
-    delete codiTypes;
+    delete mpiTypes;
   }
 
   AMPI_Finalize();

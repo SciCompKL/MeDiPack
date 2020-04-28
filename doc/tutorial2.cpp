@@ -35,10 +35,9 @@
 
 using namespace medi;
 
-using CoDiTypes = CoDiMpiTypes<codi::RealReverse>;
-CoDiTypes* codiTypes;
-
-#define TOOL CoDiTypes::Tool
+using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTool = MpiTypes::Tool;
+MpiTypes* mpiTypes;
 
 struct Residuals {
   codi::RealReverse l1;
@@ -57,7 +56,7 @@ void customOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, mpiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op;
@@ -94,8 +93,8 @@ void modifiedCustomOpp(Residuals* invec, Residuals* inoutvec, int* len, MPI_Data
 
   // Special treatment for CoDiPack for online dependency analysis. Take a look at the Tool implementation for CoDiPack.
   for(int i = 0; i < *len; ++i) {
-    TOOL::modifyDependency(invec[i].l1, inoutvec[i].l1);
-    TOOL::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
+    MpiTool::modifyDependency(invec[i].l1, inoutvec[i].l1);
+    MpiTool::modifyDependency(invec[i].lMax, inoutvec[i].lMax);
   }
 
   for(int i = 0; i < *len; ++i) {
@@ -123,7 +122,7 @@ void optimizedCustomOperator() {
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
   AMPI_Datatype residualMpiType;
-  AMPI_Type_create_contiguous(2, codiTypes->MPI_TYPE, &residualMpiType);
+  AMPI_Type_create_contiguous(2, mpiTypes->MPI_TYPE, &residualMpiType);
   AMPI_Type_commit(&residualMpiType);
 
   AMPI_Op op2;
@@ -171,7 +170,7 @@ int main(int nargs, char** args) {
     std::cout << "Please start the tutorial with two processes." << std::endl;
   } else {
 
-    codiTypes = new CoDiTypes();
+    mpiTypes = new MpiTypes();
     codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
 
     customOperator();
@@ -180,7 +179,7 @@ int main(int nargs, char** args) {
 
     optimizedCustomOperator();
 
-    delete codiTypes;
+    delete mpiTypes;
   }
 
   AMPI_Finalize();
