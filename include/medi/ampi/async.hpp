@@ -139,14 +139,14 @@ namespace medi {
   }
 
   inline void performStartAction(AMPI_Request *request) {
-    if(nullptr != request->start) {
+    if(nullptr != request->start && !request->isActive) {
       request->start(request->handle);
       request->isActive = true;
     }
   }
 
   inline void performReverseAction(AMPI_Request *request) {
-    if(nullptr != request->func) {
+    if(nullptr != request->func && (nullptr == request->start || request->isActive)) {
       request->func(request->handle);
 
       request->deleteReverseData();
