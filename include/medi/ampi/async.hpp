@@ -48,6 +48,7 @@ namespace medi {
       ContinueFunction func;
 
       // Required for init requests
+      // note that request activity tracking is only performed for persistent communication
       ContinueFunction start;
       ContinueFunction end;
       bool isActive;
@@ -139,14 +140,17 @@ namespace medi {
   }
 
   inline void performStartAction(AMPI_Request *request) {
-    if(nullptr != request->start && !request->isActive) {
+    if( nullptr != request->start   // indicates a persistent communication request
+        && !request->isActive) {    // only perform start action if the persistent communication request is not active
       request->start(request->handle);
       request->isActive = true;
     }
   }
 
   inline void performReverseAction(AMPI_Request *request) {
-    if(nullptr != request->func && (nullptr == request->start || request->isActive)) {
+    if( nullptr != request->func      // if there is a reverse action, proceed if
+        && (nullptr == request->start // either the request is not persistent
+            || request->isActive)) {  // or it is active
       request->func(request->handle);
 
       request->deleteReverseData();
