@@ -26,16 +26,11 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
  */
 
-#include "../../../generated/medi/ampiDefinitions.cpp"
-#include "async.cpp"
-#include "op.cpp"
-
-#include "../../../include/medi/ampi/inPlace.hpp"
+#include "../../../include/medi/ampi/op.hpp"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package
  */
 namespace medi {
-
-  const AMPI_IN_PLACE_IMPL AMPI_IN_PLACE;
+  const AMPI_Op AMPI_OP_NULL;
 }

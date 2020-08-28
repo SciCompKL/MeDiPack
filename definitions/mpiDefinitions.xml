@@ -232,7 +232,7 @@
         <define name="MPI_COMM_NULL" version="1.0" />
         <define name="MPI_DATATYPE_NULL" version="1.0" />
         <define name="MPI_REQUEST_NULL" special="include/medi/ampi/async.hpp" version="1.0" />
-        <define name="MPI_OP_NULL" version="1.0" />
+        <define name="MPI_OP_NULL" special="include/medi/ampi/op.hpp" version="1.0" />
         <define name="MPI_ERRHANDLER_NULL" version="1.0" />
         <define name="MPI_FILE_NULL" version="2.0" />
         <define name="MPI_INFO_NULL" version="2.0" />
@@ -415,7 +415,7 @@
         <define name="MPI_Group" version="1.0" />
         <define name="MPI_Info" version="2.0" />
         <define name="MPI_Message" special="include/medi/ampi/message.hpp" version="3.0" />
-        <define name="MPI_Op" special="include/medi/mpiOp.hpp" version="1.0" />
+        <define name="MPI_Op" special="include/medi/ampi/op.hpp" version="1.0" />
         <define name="MPI_Request" special="include/medi/ampi/async.hpp" version="1.0" />
         <define name="MPI_Win" version="2.0" />
 

@@ -99,8 +99,8 @@ namespace medi {
       AMPI_Op() :
         requiresPrimal(false),
         requiresPrimalSend(false),
-        primalFunction(MPI_SUM),
-        modifiedPrimalFunction(MPI_SUM),
+        primalFunction(MPI_OP_NULL),
+        modifiedPrimalFunction(MPI_OP_NULL),
         preAdjointOperation(noPreAdjointOperation),
         postAdjointOperation(noPostAdjointOperation),
         hasAdjoint(false) {}
@@ -191,4 +191,6 @@ namespace medi {
         return MPI_Op_free(&this->primalFunction);
       }
   };
+
+  extern const AMPI_Op AMPI_OP_NULL;
 }
