@@ -192,5 +192,14 @@ namespace medi {
       }
   };
 
+  bool operator ==(AMPI_Op const& a, AMPI_Op const& b) {
+    // Just check the equality for the primal function.
+    return a.primalFunction == b.primalFunction;
+  }
+
+  bool operator !=(AMPI_Op const& a, AMPI_Op const& b) {
+    return !(a == b);
+  }
+
   extern const AMPI_Op AMPI_OP_NULL;
 }
