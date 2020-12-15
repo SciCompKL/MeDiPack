@@ -42,6 +42,10 @@ function generateConst(item)
    return constMod
 endfunction
 
+function nonConst(typename, variable)
+  return "const_cast<typename " + my.typename + "::Type*>(" + my.variable + ")"
+endfunction
+
 function modifyTypeName(type)
   return string.replace(my.type, "MPI_|AMPI_")
 endfunction

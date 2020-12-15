@@ -917,7 +917,7 @@
       </function>
 
       <function name="Iscatter" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
+        <send name="sendbuf" const="1" type="sendtype" count="sendcount" root="root" ranks="comm"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf" />
@@ -929,7 +929,7 @@
       </function>
 
       <function name="Iscatterv" version="3.0" async="request" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
+        <send name="sendbuf" const="1" type="sendtype" count="sendcounts" root="root" displs="displs"/>
         <arg name="sendcounts" type="int*" const="1"/>
         <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
         <type name="sendtype" type="MPI_Datatype"/>
@@ -1005,7 +1005,7 @@
       </function>
 
       <function name="Scatter" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcount" root="root" ranks="comm"/>
+        <send name="sendbuf" const="opt" type="sendtype" count="sendcount" root="root" ranks="comm"/>
         <arg name="sendcount" type="int"/>
         <type name="sendtype" type="MPI_Datatype"/>
         <recv name="recvbuf" type="recvtype" count="recvcount" inplace="sendbuf"/>
@@ -1016,7 +1016,7 @@
       </function>
 
       <function name="Scatterv" version="1.0" mediHandle="transform"> <!-- all defined -->
-        <send name="sendbuf" type="sendtype" count="sendcounts" root="root" displs="displs"/>
+        <send name="sendbuf" const="opt" type="sendtype" count="sendcounts" root="root" displs="displs"/>
         <arg name="sendcounts" type="int*" const="1"/>
         <displs name="displs" type="int*" const="1" ranks="comm" counts="sendcounts" />
         <type name="sendtype" type="MPI_Datatype"/>

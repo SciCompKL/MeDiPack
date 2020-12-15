@@ -9852,7 +9852,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iscatter_AsyncHandle : public AsyncHandle {
-    typename SENDTYPE::Type* sendbuf;
+    const  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     int sendcount;
     SENDTYPE* sendtype;
@@ -9985,8 +9985,8 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatter_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iscatter(typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
-                    int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
+  int AMPI_Iscatter(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {
@@ -10074,7 +10074,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
         } else {
-          sendtype->createIndices(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, 0, sendcount);
+          sendtype->createIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), h->recvbufIndices,
+                                  0, sendcount);
         }
 
         // pack all the variables in the handle
@@ -10093,7 +10094,7 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->clearIndices(recvbuf, 0, recvcount);
         } else {
-          sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
+          sendtype->clearIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), sendcount);
         }
       }
 
@@ -10132,7 +10133,7 @@ namespace medi {
 
     AMPI_Iscatter_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iscatter_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
     SENDTYPE* sendtype = asyncHandle->sendtype;
@@ -10168,8 +10169,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount);
         } else {
-          sendtype->copyFromModifiedBuffer(sendbuf, sendcount * getCommRank(comm), sendbufMod, sendcount * getCommRank(comm),
-                                           sendcount);
+          sendtype->copyFromModifiedBuffer(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm),
+                                           sendbufMod, sendcount * getCommRank(comm), sendcount);
         }
       }
 
@@ -10178,7 +10179,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount);
         } else {
-          sendtype->registerValue(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, h->recvbufOldPrimals, 0, sendcount);
+          sendtype->registerValue(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), h->recvbufIndices,
+                                  h->recvbufOldPrimals, 0, sendcount);
         }
       }
 
@@ -10255,7 +10257,7 @@ namespace medi {
 
   template<typename SENDTYPE, typename RECVTYPE>
   struct AMPI_Iscatterv_AsyncHandle : public AsyncHandle {
-    typename SENDTYPE::Type* sendbuf;
+    const  typename SENDTYPE::Type* sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod;
     const int* displsMod;
     const  int* sendcounts;
@@ -10402,7 +10404,7 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatterv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Iscatterv(typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
+  int AMPI_Iscatterv(const typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
 
@@ -10509,7 +10511,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->createIndices(sendbuf, displs[rank], h->recvbufIndices, 0, sendcounts[rank]);
+            sendtype->createIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], h->recvbufIndices, 0,
+                                    sendcounts[rank]);
           }
         }
 
@@ -10532,7 +10535,7 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
+            sendtype->clearIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], sendcounts[rank]);
           }
         }
       }
@@ -10574,7 +10577,7 @@ namespace medi {
 
     AMPI_Iscatterv_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle =
       static_cast<AMPI_Iscatterv_AsyncHandle<SENDTYPE, RECVTYPE>*>(handle);
-    typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
+    const  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     const int* displsMod = asyncHandle->displsMod;
     const  int* sendcounts = asyncHandle->sendcounts;
@@ -10616,7 +10619,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->copyFromModifiedBuffer(sendbuf, displs[rank], sendbufMod, displsMod[rank], sendcounts[rank]);
+            sendtype->copyFromModifiedBuffer(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], sendbufMod,
+                                             displsMod[rank], sendcounts[rank]);
           }
         }
       }
@@ -10628,7 +10632,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->registerValue(sendbuf, displs[rank], h->recvbufIndices, h->recvbufOldPrimals, 0, sendcounts[rank]);
+            sendtype->registerValue(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], h->recvbufIndices,
+                                    h->recvbufOldPrimals, 0, sendcounts[rank]);
           }
         }
       }
@@ -11108,8 +11113,8 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Scatter(typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
-                   int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
+  int AMPI_Scatter(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
+                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {
@@ -11197,7 +11202,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->createIndices(recvbuf, 0, h->recvbufIndices, 0, recvcount);
         } else {
-          sendtype->createIndices(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, 0, sendcount);
+          sendtype->createIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), h->recvbufIndices,
+                                  0, sendcount);
         }
 
         // pack all the variables in the handle
@@ -11216,7 +11222,7 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->clearIndices(recvbuf, 0, recvcount);
         } else {
-          sendtype->clearIndices(sendbuf, sendcount * getCommRank(comm), sendcount);
+          sendtype->clearIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), sendcount);
         }
       }
 
@@ -11228,8 +11234,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount);
         } else {
-          sendtype->copyFromModifiedBuffer(sendbuf, sendcount * getCommRank(comm), sendbufMod, sendcount * getCommRank(comm),
-                                           sendcount);
+          sendtype->copyFromModifiedBuffer(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm),
+                                           sendbufMod, sendcount * getCommRank(comm), sendcount);
         }
       }
 
@@ -11238,7 +11244,8 @@ namespace medi {
         if(AMPI_IN_PLACE != recvbuf) {
           recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount);
         } else {
-          sendtype->registerValue(sendbuf, sendcount * getCommRank(comm), h->recvbufIndices, h->recvbufOldPrimals, 0, sendcount);
+          sendtype->registerValue(const_cast<typename SENDTYPE::Type*>(sendbuf), sendcount * getCommRank(comm), h->recvbufIndices,
+                                  h->recvbufOldPrimals, 0, sendcount);
         }
       }
 
@@ -11414,8 +11421,8 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
-  int AMPI_Scatterv(typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
-                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
+  int AMPI_Scatterv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs,
+                    SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
 
     if(!recvtype->getADTool().isActiveType()) {
@@ -11521,7 +11528,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->createIndices(sendbuf, displs[rank], h->recvbufIndices, 0, sendcounts[rank]);
+            sendtype->createIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], h->recvbufIndices, 0,
+                                    sendcounts[rank]);
           }
         }
 
@@ -11544,7 +11552,7 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->clearIndices(sendbuf, displs[rank], sendcounts[rank]);
+            sendtype->clearIndices(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], sendcounts[rank]);
           }
         }
       }
@@ -11559,7 +11567,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->copyFromModifiedBuffer(sendbuf, displs[rank], sendbufMod, displsMod[rank], sendcounts[rank]);
+            sendtype->copyFromModifiedBuffer(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], sendbufMod,
+                                             displsMod[rank], sendcounts[rank]);
           }
         }
       }
@@ -11571,7 +11580,8 @@ namespace medi {
         } else {
           {
             const int rank = getCommRank(comm);
-            sendtype->registerValue(sendbuf, displs[rank], h->recvbufIndices, h->recvbufOldPrimals, 0, sendcounts[rank]);
+            sendtype->registerValue(const_cast<typename SENDTYPE::Type*>(sendbuf), displs[rank], h->recvbufIndices,
+                                    h->recvbufOldPrimals, 0, sendcounts[rank]);
           }
         }
       }

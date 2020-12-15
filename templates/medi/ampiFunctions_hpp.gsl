@@ -506,28 +506,40 @@ function createPrimalExtraction(buffer, curFunction, elementName)
   endRoot(my.buffer)
 endfunction
 
-function outputStatement(statement, type, name, pos, linPos, startLinPos, count)
-> $(string.replace(my.statement, "$type$|$(my.type),$name$|$(my.name),$pos$|$(my.pos),$linPos$|$(my.linPos),$startLinPos$|$(my.startLinPos),$curCount$|$(my.count)"))
+function outputStatement(statement, type, name, nonconstname, pos, linPos, startLinPos, count)
+> $(string.replace(my.statement, "$type$|$(my.type),$name$|$(my.name),$nonconstname$|$(my.nonconstname),$pos$|$(my.pos),$linPos$|$(my.linPos),$startLinPos$|$(my.startLinPos),$curCount$|$(my.count)"))
 endfunction
 
 #create a loop around a statement
 function generateLoop(buffer, statement)
+  nonConstName = ""
+  if(defined(buffer.const))
+    nonConstName = nonConst(my.buffer.typeName, my.buffer.name)
+  else
+    nonConstName = my.buffer.name
+  endif
   if(defined(my.buffer.displs))
 >   for(int i = 0; i < getCommSize(comm); ++i) {
       pos = "$(my.buffer.displs)[i]"
       linPos = "$(my.buffer.displs)Mod[i]"
       curCount = "$(my.buffer.count)[i]"
-      outputStatement(my.statement, my.buffer.type, my.buffer.name, pos, linPos, linPos, curCount)
+      outputStatement(my.statement, my.buffer.type, my.buffer.name, nonConstName, pos, linPos, linPos, curCount)
 >   }
   elsif(defined(my.buffer.ranks))
-    outputStatement(my.statement, my.buffer.type, my.buffer.name, "0", "0", "0", "$(my.buffer.count) * getCommSize($(my.buffer.ranks))")
+    outputStatement(my.statement, my.buffer.type, my.buffer.name, nonConstName, "0", "0", "0", "$(my.buffer.count) * getCommSize($(my.buffer.ranks))")
   else
-    outputStatement(my.statement, my.buffer.type, my.buffer.name, "0", "0", "0", "$(my.buffer.count)")
+    outputStatement(my.statement, my.buffer.type, my.buffer.name, nonConstName, "0", "0", "0", "$(my.buffer.count)")
   endif
 endfunction
 
 #create a loop around a statement
 function generateInplaceLoop(buffer, inplaceBuffer, statement)
+  nonConstName = ""
+  if(defined(my.inplaceBuffer.const))
+    nonConstName = nonConst(my.inplaceBuffer.typeName, my.inplaceBuffer.name)
+  else
+    nonConstName = my.inplaceBuffer.name
+  endif
   if(defined(my.buffer.displs) | defined(my.buffer.ranks))
     # this buffer has a special layout so the other buffer must have the same layout
     generateLoop(my.inplaceBuffer, my.statement)
@@ -538,12 +550,12 @@ function generateInplaceLoop(buffer, inplaceBuffer, statement)
       pos = "$(my.inplaceBuffer.displs)[rank]"
       linPos = "$(my.inplaceBuffer.displs)Mod[rank]"
       curCount = "$(my.inplaceBuffer.count)[rank]"
-      outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, pos, linPos, "0", curCount)
+      outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, nonConstName, pos, linPos, "0", curCount)
 >   }
   elsif(defined(my.inplaceBuffer.ranks))
      pos = "$(my.inplaceBuffer.count) * getCommRank($(my.inplaceBuffer.ranks))"
      curCount = "$(my.inplaceBuffer.count)"
-    outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, pos, pos, "0", curCount)
+    outputStatement(my.statement, my.inplaceBuffer.type, my.inplaceBuffer.name, nonConstName, pos, pos, "0", curCount)
   else
     generateLoop(my.inplaceBuffer, my.statement)
   endif
@@ -996,7 +1008,7 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$type$->createIndices($name$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->createIndices($nonconstname$, $pos$, h->$(item.name)Indices, $startLinPos$, $curCount$);")
 .         endif
 .       endfor
 
@@ -1015,7 +1027,7 @@ namespace medi {
 
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv")
-.         createBufferAccessLogic(item, -1, "$type$->clearIndices($name$, $pos$, $curCount$);")
+.         createBufferAccessLogic(item, -1, "$type$->clearIndices($nonconstname$, $pos$, $curCount$);")
 .       endif
 .     endfor
 
@@ -1030,7 +1042,7 @@ namespace medi {
 .-    copy the data from the modified buffers
 .     for curFunction. as item where defined(item.arg)
 .       if(name(item) =  "recv")
-.         createBufferAccessLogic(item, 1, "$type$->copyFromModifiedBuffer($name$, $pos$, $name$Mod, $linPos$, $curCount$);")
+.         createBufferAccessLogic(item, 1, "$type$->copyFromModifiedBuffer($nonconstname$, $pos$, $name$Mod, $linPos$, $curCount$);")
 .       endif
 .     endfor
 
@@ -1039,7 +1051,7 @@ namespace medi {
 .       for curFunction. as item where defined(item.arg)
 .         if(name(item) =  "recv")
 .-          The index buffer is always the one from the buffer we are currently handling
-.           createBufferAccessLogic(item, 0, "$type$->registerValue($name$, $pos$, h->$(item.name)Indices, h->$(item.name)OldPrimals, $startLinPos$, $curCount$);")
+.           createBufferAccessLogic(item, 0, "$type$->registerValue($nonconstname$, $pos$, h->$(item.name)Indices, h->$(item.name)OldPrimals, $startLinPos$, $curCount$);")
 .         endif
 .       endfor
       }
