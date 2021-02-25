@@ -11735,22 +11735,6 @@ namespace medi {
 
 #endif
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  template<typename OLDTYPE, typename NEWTYPE>
-  inline int AMPI_Type_hindexed(int count, const int* array_of_blocklengths, const AMPI_Aint* array_of_displacements,
-                                OLDTYPE* oldtype, NEWTYPE* newtype) {
-    return MPI_Type_hindexed(count, array_of_blocklengths, array_of_displacements, oldtype->getModifiedMpiType(),
-                             newtype->getModifiedMpiType());
-  }
-
-#endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  template<typename OLDTYPE, typename NEWTYPE>
-  inline int AMPI_Type_hvector(int count, int blocklength, AMPI_Aint stride, OLDTYPE* oldtype, NEWTYPE* newtype) {
-    return MPI_Type_hvector(count, blocklength, stride, oldtype->getModifiedMpiType(), newtype->getModifiedMpiType());
-  }
-
-#endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
   inline int AMPI_Type_size(DATATYPE* datatype, int* size) {
     return MPI_Type_size(datatype->getModifiedMpiType(), size);
@@ -11761,15 +11745,6 @@ namespace medi {
   template<typename DATATYPE>
   inline int AMPI_Type_size_x(DATATYPE* datatype, AMPI_Count* size) {
     return MPI_Type_size_x(datatype->getModifiedMpiType(), size);
-  }
-
-#endif
-#if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
-  template<typename ARRAY_OF_TYPES, typename NEWTYPE>
-  inline int AMPI_Type_struct(int count, const int* array_of_blocklengths, const AMPI_Aint* array_of_displacements,
-                              const ARRAY_OF_TYPES* array_of_types, NEWTYPE* newtype) {
-    return MPI_Type_struct(count, array_of_blocklengths, array_of_displacements, array_of_types->getModifiedMpiType(),
-                           newtype->getModifiedMpiType());
   }
 
 #endif

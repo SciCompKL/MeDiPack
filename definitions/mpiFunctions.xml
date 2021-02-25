@@ -567,7 +567,7 @@
       </function>
 
       <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
-      <function name="Type_hindexed" version="1.0">
+      <function name="Type_hindexed" version="1.0" mediHandle="handled">
         <arg name="count" type="int" />
         <arg name="array_of_blocklengths" type="int*" const="1"/>
         <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
@@ -576,7 +576,7 @@
       </function>
 
       <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
-      <function name="Type_hvector" version="1.0">
+      <function name="Type_hvector" version="1.0"  mediHandle="handled">
         <arg name="count" type="int" />
         <arg name="blocklength" type="int" />
         <arg name="stride" type="MPI_Aint" />
@@ -595,7 +595,7 @@
       </function>
 
       <!-- special handling in include/medi/ampi/mpiConstructedDatatypes.hpp -->
-      <function name="Type_struct" version="1.0">
+      <function name="Type_struct" version="1.0" mediHandle="handled">
         <arg name="count" type="int" />
         <arg name="array_of_blocklengths" type="int*" const="1"/>
         <arg name="array_of_displacements" type="MPI_Aint*" const="1"/>
