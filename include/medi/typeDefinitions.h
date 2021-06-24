@@ -48,6 +48,7 @@ namespace medi {
   typedef int (*ContinueFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count, int dim);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count, int dim);
+  typedef void (*CustomFunction)(void* data);
 
   struct HandleBase {
     ReverseFunction funcReverse;
