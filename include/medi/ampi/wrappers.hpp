@@ -85,8 +85,8 @@ namespace medi {
       ContinueFunction origFunc;
       int reduceSize;
 
-      CustomFunction customFunc;
-      void* customData;
+      CustomFunction customOpPriorToLocalReduce;
+      void* customDataPriorToLocalReduce;
   };
 
   template<typename DATATYPE>
@@ -154,8 +154,8 @@ namespace medi {
     h->origFunc(h->origHandle);
 
     // call custom function if present
-    if (h->customFunc != nullptr) {
-      h->customFunc(h->customData);
+    if (h->customOpPriorToLocalReduce != nullptr) {
+      h->customOpPriorToLocalReduce(h->customDataPriorToLocalReduce);
     }
 
     int commSize = getCommSize(h->comm);
@@ -219,8 +219,8 @@ namespace medi {
     AMPI_Ireduce_local_Handle<DATATYPE>* reduceHandle = dynamic_cast<AMPI_Ireduce_local_Handle<DATATYPE>*>(request->handle);
 
     if (reduceHandle != nullptr) {
-      reduceHandle->customFunc = func;
-      reduceHandle->customData = data;
+      reduceHandle->customOpPriorToLocalReduce = func;
+      reduceHandle->customDataPriorToLocalReduce = data;
       return true;
     } else { // no local reduce performed
       return false;
