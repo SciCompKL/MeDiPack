@@ -80,33 +80,37 @@ The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an A
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMediPackTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-#define TOOL CoDiPackTool<codi::RealReverse>
+using Real = codi::RealReverse;
+using Tape = typename Real::Tape;
+
+using MpiTypes = codi::CoDiMpiTypes<Real>;
+MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
   AMPI_Init(&nargs, &args);
 
-  TOOL::init();
+  mpiTypes = new MpiTypes();
 
   int rank;
 
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  Tape& tape = Real::getTape();
   tape.setActive();
 
-  codi::RealReverse a = 3.0;
+  Real a = 3.0;
   if( 0 == rank ) {
     tape.registerInput(a);
 
-    AMPI_Send(&a, 1, TOOL::MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+    AMPI_Send(&a, 1, mpiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
   } else {
-    AMPI_Recv(&a, 1, TOOL::MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+    AMPI_Recv(&a, 1, mpiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
     tape.registerOutput(a);
 
@@ -121,7 +125,7 @@ int main(int nargs, char** args) {
     std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
   }
 
-  TOOL::finalize();
+  delete mpiTypes;
 
   AMPI_Finalize();
 }
