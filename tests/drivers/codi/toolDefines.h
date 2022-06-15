@@ -30,7 +30,11 @@
 
 #include <codi.hpp>
 #include <medi/medi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#if CODI_MAJOR_VERSION >= 2
+  #include <codi/tools/mpi/codiMpiTypes.hpp>
+#else
+  #include <codi/externals/codiMpiTypes.hpp>
+#endif
 
 typedef CODI_TYPE NUMBER;
 
@@ -50,7 +54,11 @@ typedef CODI_TYPE NUMBER;
 # define PRIMAL_TAPE 0
 #endif
 
-#define TOOL_TYPE CoDiMpiTypes<NUMBER>
+#if CODI_MAJOR_VERSION >= 2
+  #define TOOL_TYPE codi::CoDiMpiTypes<NUMBER>
+#else
+  #define TOOL_TYPE CoDiMpiTypes<NUMBER>
+#endif
 #define TOOL codiTypes
 
 extern TOOL_TYPE* codiTypes;

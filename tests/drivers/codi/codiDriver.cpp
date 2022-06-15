@@ -31,8 +31,26 @@
 #include <iostream>
 #include <vector>
 
+#if CODI_MAJOR_VERSION >= 2
+  using Tape = NUMBER::Tape;
+  using Real = NUMBER::Real;
+
+  Tape& getTape() { return NUMBER::getTape(); }
+#if PRIMAL_TAPE
+  Real& primalValueFromTape(Tape& tape, NUMBER& value) { return tape.primal(value.getIdentifier()); }
+#endif
+#else
+  using Tape = NUMBER::TapeType;
+  using Real = NUMBER::Real;
+
+  Tape& getTape() { return NUMBER::getGlobalTape(); }
+#if PRIMAL_TAPE
+  Real& primalValueFromTape(Tape& tape, NUMBER& value) { return tape.primalValue(value.getGradientData()); }
+#endif
+#endif
+
 void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
-  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+  Tape& tape = getTape();
   (void)tape;
 
   for(size_t i = 0; i < size; ++i) {
@@ -42,7 +60,7 @@ void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
     double val = getEvalSeed(curPoint, world_rank, i);
     std::cout << val;
 #if PRIMAL_TAPE
-    tape.primalValue(vec[i].getGradientData()) = val;
+    primalValueFromTape(tape, vec[i]) = val;
 #elif VECTOR
     vec[i].gradient()[0] = val;
 #else
@@ -52,13 +70,13 @@ void seedValues(size_t curPoint, size_t world_rank, NUMBER* vec, size_t size) {
 }
 
 void outputGradient(NUMBER* vec, size_t size) {
-  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
+  Tape& tape = getTape();
   (void)tape;
 
   for(size_t i = 0; i < size; ++i) {
     NUMBER::Real grad;
 #if PRIMAL_TAPE
-    grad = tape.primalValue(vec[i].getGradientData());
+    grad = primalValueFromTape(tape, vec[i]);
 #elif VECTOR
     grad = vec[i].gradient()[0];
 #else
@@ -85,8 +103,7 @@ int main(int nargs, char** args) {
   NUMBER* x = new NUMBER[inputs];
   NUMBER* y = new NUMBER[outputs];
 
-  NUMBER::TapeType& tape = NUMBER::getGlobalTape();
-  tape.resize(2, 3);
+  Tape& tape = getTape();
   tape.setActive();
 
   for(int curPoint = 0; curPoint < evalPoints; ++curPoint) {
