@@ -63,6 +63,10 @@ The missing functions by MPI version:
  - MPI 3.0
    - Ialltoallw, Ireduce_scatter, Ireduce_scatter_block, Ineighbor_allgather, Ineighbor_allgatherv, Ineighbor_alltoall, Ineighbor_alltoallv, Ineighbor_alltoallw, Neighbor_allgather, Neighbor_allgatherv, Neighbor_alltoall, Neighbor_alltoallv, Neighbor_alltoallw, Compare_and_swap, Fetch_and_op, Get_accumulate, Raccumulate, Rget, Rget_accumulate, Rput, Win_allocate, Win_allocate_shared, Win_attach, Win_create_dynamic, Win_detach, Win_flush, Win_flush_all, Win_flush_local, Win_flush_local_all, Win_get_info, Win_lock_all, Win_set_info, Win_shared_query, Win_sync, Win_unlock_all, Message_c2f, Message_f2c, T_cvar_get_info, T_pvar_get_info
 
+## License
+
+MeDiPack is published under the [GNU LGPL v3](https://www.gnu.org/licenses/lgpl-3.0.html) license.
+
 ## Usage
 
 In order to use MeDiPack in your application the following steps have to be taken:
