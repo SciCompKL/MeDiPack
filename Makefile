@@ -1,11 +1,11 @@
 #
 # MeDiPack, a Message Differentiation Package
 #
-# Copyright (C) 2017-2023 Chair for Scientific Computing (SciComp), TU Kaiserslautern
+# Copyright (C) 2017-2023 Chair for Scientific Computing (SciComp), University of Kaiserslautern-Landau
 # Homepage: http://www.scicomp.uni-kl.de
 # Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
 #
-# Lead developers: Max Sagebaum (SciComp, TU Kaiserslautern)
+# Lead developers: Max Sagebaum (SciComp, University of Kaiserslautern-Landau)
 #
 # This file is part of MeDiPack (http://www.scicomp.uni-kl.de/software/codi).
 #
@@ -23,7 +23,7 @@
 # Lesser General Public License along with MeDiPack.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-# Authors: Max Sagebaum, Tim Albring (SciComp, TU Kaiserslautern)
+# Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
 #
 
 INCLUDE_DIR=include
