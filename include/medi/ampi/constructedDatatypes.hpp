@@ -164,6 +164,7 @@ namespace medi {
         // check if a modified buffer is required and populate the mpiTypes as well as the arrayes
         modificationRequired = false;
         valuesPerElement = 0;
+        adInterface = &array_of_types[0]->getADTool(); // Set AD interface of first type as the default.
         for(int i = 0; i < count; ++i) {
           modificationRequired |= array_of_types[i]->isModifiedBufferRequired();
           if(array_of_types[i]->getADTool().isActiveType()) {
