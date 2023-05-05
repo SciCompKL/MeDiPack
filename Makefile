@@ -34,12 +34,12 @@ BUILD_DIR = build
 DOC_DIR   = doc
 MEDI_DIR := .
 
-GEN_DIR=generated
+GEN_DIR=include/medi/generated
 
 GENERATED_FILES= \
-  $(GEN_DIR)/medi/ampiFunctions.hpp \
-  $(GEN_DIR)/medi/ampiDefinitions.cpp \
-  $(GEN_DIR)/medi/ampiDefinitions.h
+  $(GEN_DIR)/ampiFunctions.hpp \
+  $(GEN_DIR)/ampiDefinitions.cpp \
+  $(GEN_DIR)/ampiDefinitions.h
 
 ASTYLE_FILE=template.style
 
@@ -71,32 +71,29 @@ else
 	MPICXX := $(MPICXX)
 endif
 
-all: $(GEN_DIR)/medi $(GENERATED_FILES)
+all: $(GEN_DIR) $(GENERATED_FILES)
 
 # define the dependencies for all the files
-$(GEN_DIR)/medi/ampiFunctions.hpp: 	 $(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl   $(DEF_DIR)/mpiFunctions.xml
-$(GEN_DIR)/medi/ampiDefinitions.cpp: $(TEMPL_DIR)/medi/ampiDefinitions_cpp.gsl $(DEF_DIR)/mpiDefinitions.xml
-$(GEN_DIR)/medi/ampiDefinitions.h:   $(TEMPL_DIR)/medi/ampiDefinitions_h.gsl   $(DEF_DIR)/mpiDefinitions.xml
+$(GEN_DIR)/ampiFunctions.hpp: 	$(TEMPL_DIR)/medi/ampiFunctions_hpp.gsl   $(DEF_DIR)/mpiFunctions.xml
+$(GEN_DIR)/ampiDefinitions.cpp: $(TEMPL_DIR)/medi/ampiDefinitions_cpp.gsl $(DEF_DIR)/mpiDefinitions.xml
+$(GEN_DIR)/ampiDefinitions.h:   $(TEMPL_DIR)/medi/ampiDefinitions_h.gsl   $(DEF_DIR)/mpiDefinitions.xml
 
 # directory generation rules
 $(GEN_DIR):
 	mkdir -p $(GEN_DIR)
 
-$(GEN_DIR)/medi: $(GEN_DIR)
-	mkdir -p $(GEN_DIR)/medi
-
 # the generation rules
-$(GEN_DIR)/%.hpp:$(TEMPL_DIR)/%_hpp.gsl
+$(GEN_DIR)/%.hpp:$(TEMPL_DIR)/medi/%_hpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
 	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
-$(GEN_DIR)/%.h:$(TEMPL_DIR)/%_h.gsl
+$(GEN_DIR)/%.h:$(TEMPL_DIR)/medi/%_h.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
 	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp
 
-$(GEN_DIR)/%.cpp:$(TEMPL_DIR)/%_cpp.gsl
+$(GEN_DIR)/%.cpp:$(TEMPL_DIR)/medi/%_cpp.gsl
 	gsl -script:$< -a $(filter-out $<,$^) $@.tmp
 	$(ASTYLE_CMD) < $@.tmp > $@
 	@rm $@.tmp

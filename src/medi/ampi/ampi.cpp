@@ -26,7 +26,7 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
  */
 
-#include "../../../generated/medi/ampiDefinitions.cpp"
+#include "../../../include/medi/generated/ampiDefinitions.cpp"
 #include "async.cpp"
 #include "op.cpp"
 

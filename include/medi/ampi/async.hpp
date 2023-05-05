@@ -30,7 +30,7 @@
 
 #include "ampiMisc.h"
 
-#include "../../../generated/medi/ampiDefinitions.h"
+#include "../generated/ampiDefinitions.h"
 #include "../exceptions.hpp"
 
 /**
