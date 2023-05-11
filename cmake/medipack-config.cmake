@@ -1,0 +1,10 @@
+include(${CMAKE_CURRENT_LIST_DIR}/medipack-include.cmake)
+
+add_library(${MEDIPACK_NAME} INTERFACE IMPORTED)
+
+set_target_properties(${MEDIPACK_NAME} PROPERTIES
+  INTERFACE_COMPILE_FEATURES ${MEDIPACK_CXX_VERSION}
+)
+target_include_directories(${MEDIPACK_NAME}
+    INTERFACE ${MEDIPACK_INCLUDE_DIR}
+    INTERFACE ${MEDIPACK_SRC_DIR})

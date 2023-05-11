@@ -1,6 +1,9 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.2.2 - 2023-05-11
+ - CMake support.
+
 ### v 1.2.1 - 2022-11-30
  - License change to GNU LGPL v3
  - Minor/fixes:
