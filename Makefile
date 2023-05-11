@@ -34,6 +34,11 @@ BUILD_DIR = build
 DOC_DIR   = doc
 MEDI_DIR := .
 
+MAJOR_VERSION = $(shell grep -oP 'define MEDI_MAJOR_VERSION \K\d+' include/medi/medi.hpp)
+MINOR_VERSION = $(shell grep -oP 'define MEDI_MINOR_VERSION \K\d+' include/medi/medi.hpp)
+BUILD_VERSION = $(shell grep -oP 'define MEDI_BUILD_VERSION \K\d+' include/medi/medi.hpp)
+MEDI_VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_VERSION)
+
 GEN_DIR=include/medi/generated
 
 GENERATED_FILES= \
@@ -106,6 +111,12 @@ $(BUILD_DIR)/%.exe : $(DOC_DIR)/%.cpp
 
 tutorials: $(TUTORIALS)
 	@mkdir -p $(BUILD_DIR)
+
+.PHONY: doc
+doc:
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/documentation
+	MEDI_VERSION=$(MEDI_VERSION) doxygen
 
 .PHONY: clean
 clean:

@@ -32,8 +32,8 @@
 
 #define MEDI_MAJOR_VERSION 1
 #define MEDI_MINOR_VERSION 2
-#define MEDI_BUILD_VERSION 1
-#define MEDI_VERSION "1.2.1"
+#define MEDI_BUILD_VERSION 2
+#define MEDI_VERSION "1.2.2"
 
 
 namespace medi {
