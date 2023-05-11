@@ -74,13 +74,13 @@ The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an A
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTypes = codi::CoDiMpiTypes<Real>;
 MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
@@ -92,7 +92,7 @@ int main(int nargs, char** args) {
 
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
   tape.setActive();
 
   codi::RealReverse a = 3.0;
@@ -121,7 +121,9 @@ int main(int nargs, char** args) {
   AMPI_Finalize();
 }
 
+#if MEDI_HeaderOnly
 #include <medi/medi.cpp>
+#endif
 ~~~
 
 Please visit the \ref tutorialPage "tutorial page" for further information.

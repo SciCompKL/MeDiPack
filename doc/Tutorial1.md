@@ -43,16 +43,16 @@ the MPI method. If the method does not need any handling for the AD tool it is d
 a special treatment for AD is required the additional operations are performed before and/or after the MPI method is called.
 
 The next step is the initialization of the AD tool. It needs to be done after MPI is initialized. Usually the AD tool
-provides an implementation of the medi::ADToolInterface from MeDiPack. For CoDiPack the interfaces are provided in the externals folder.
+provides an implementation of the medi::ADToolInterface from MeDiPack. For CoDiPack the interfaces are provided in the tools/mpi folder.
 ~~~
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 using namespace medi;
 
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTypes = codi::CoDiMpiTypes<codi::RealReverse>;
 MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
@@ -79,7 +79,7 @@ and can be used to send AD variables over the network. For a simple send/recv pa
 
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
   tape.setActive();
 
   codi::RealReverse a = 3.0;
@@ -137,67 +137,7 @@ There are some additional options that can be used to configure MeDiPack on a gl
    `MPI_SUBVERSION`. If these macros are not available the default is 3.1. The default and detection can be overwritten
    by setting the macro `MEDI_MPI_TARGET` to *MMmm* where *MM* is the major version and *mm* the minor version. For MPI 3.1
    this would be 301.
-   
+
 ### Full code
-
 The complete code for this tutorial is:
-~~~
-#include <medi/medi.hpp>
-
-#include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
-
-#include <iostream>
-
-using namespace medi;
-
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
-MpiTypes* mpiTypes;
-
-int main(int nargs, char** args) {
-  AMPI_Init(&nargs, &args);
-
-  mpiTypes = new MpiTypes();
-
-  int rank;
-  int size;
-
-  AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
-  AMPI_Comm_size(AMPI_COMM_WORLD, &size);
-
-  if(size != 2) {
-    std::cout << "Please start the tutorial with two processes." << std::endl;
-  } else {
-
-    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
-    tape.setActive();
-
-    codi::RealReverse a = 3.0;
-    if( 0 == rank ) {
-      tape.registerInput(a);
-
-      AMPI_Send(&a, 1, mpiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
-    } else {
-      AMPI_Recv(&a, 1, mpiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
-
-      tape.registerOutput(a);
-
-      a.setGradient(100.0);
-    }
-
-    tape.setPassive();
-
-    tape.evaluate();
-
-    if(0 == rank) {
-      std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
-    }
-  }
-
-  delete mpiTypes;
-
-  AMPI_Finalize();
-}
-
-#include <medi/medi.cpp>
-~~~
+\snippet tutorial1.cpp Tutorial 1 - Basic use

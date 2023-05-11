@@ -26,6 +26,7 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
  */
 
+//! [Tutorial 2 - Reduce functions and custom operators]
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
@@ -188,3 +189,4 @@ int main(int nargs, char** args) {
 #if MEDI_HeaderOnly
 #include <medi/medi.cpp>
 #endif
+//! [Tutorial 2 - Reduce functions and custom operators]

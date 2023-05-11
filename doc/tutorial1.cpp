@@ -26,6 +26,7 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
  */
 
+//! [Tutorial 1 - Basic use]
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
@@ -86,3 +87,4 @@ int main(int nargs, char** args) {
 #if MEDI_HeaderOnly
 #include <medi/medi.cpp>
 #endif
+//! [Tutorial 1 - Basic use]
