@@ -134,7 +134,31 @@ int main(int nargs, char** args) {
   AMPI_Finalize();
 }
 
+#if MEDI_HeaderOnly
 #include <medi/medi.cpp>
+#endif
 ~~~
+
+### CMake
+
+CMake should be able to find MeDiPack either if `CMAKE_PREFIX_PATH` contains the MeDiPack directory or if the parameter
+`MeDiPack_DIR` is provided to CMake. If you install MeDiPack into a directory which is in the default search path for
+CMake then you do not need to specify any additional path. An installed MeDiPack also no longer requires the include of
+`medi/medi.cpp`. The library will automatically be linked.
+
+The path is different if you use the MeDiPack directory or a CMake installation of MeDiPack.
+
+ - MeDiPack directory (e.g. github checkout):
+   - `export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:<MeDiPack root>/cmake`
+   - `cmake . -DMeDiPack_DIR=<MeDiPack root>/cmake`
+ - MeDiPack CMake installation:
+   - `export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:<MeDiPack install>/share/MeDiPack/cmake`
+   - `cmake . -DMeDiPack_DIR=<MeDiPack install>/share/MeDiPack/cmake`
+
+You also have to add MeDiPack as a target link library in the `CMakeLists.txt` of your project:
+~~~~{.cmake}
+find_package(MeDiPack CONFIG REQUIRED)
+target_link_libraries(<target> MeDiPack)
+~~~~
 
 Please visit the [tutorial page](http://www.scicomp.uni-kl.de/medi/db/d3c/tutorialPage.html) for further information.

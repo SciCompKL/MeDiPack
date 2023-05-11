@@ -29,13 +29,13 @@
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTypes = codi::CoDiMpiTypes<codi::RealReverse>;
 MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
@@ -53,28 +53,29 @@ int main(int nargs, char** args) {
     std::cout << "Please start the tutorial with two processes." << std::endl;
   } else {
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
-  tape.setActive();
+    codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
+    tape.setActive();
 
-  codi::RealReverse a = 3.0;
-  if( 0 == rank ) {
-    tape.registerInput(a);
+    codi::RealReverse a = 3.0;
+    if( 0 == rank ) {
+      tape.registerInput(a);
 
-    AMPI_Send(&a, 1, mpiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
-  } else {
-    AMPI_Recv(&a, 1, mpiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
+      AMPI_Send(&a, 1, mpiTypes->MPI_TYPE, 1, 42, AMPI_COMM_WORLD);
+    } else {
+      AMPI_Recv(&a, 1, mpiTypes->MPI_TYPE, 0, 42, AMPI_COMM_WORLD, AMPI_STATUS_IGNORE);
 
-    tape.registerOutput(a);
+      tape.registerOutput(a);
 
-    a.setGradient(100.0);
-  }
+      a.setGradient(100.0);
+    }
 
-  tape.setPassive();
+    tape.setPassive();
 
-  tape.evaluate();
+    tape.evaluate();
 
-  if(0 == rank) {
-    std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
+    if(0 == rank) {
+      std::cout << "Adjoint of 'a' on rank 0 is: " << a.getGradient() << std::endl;
+    }
   }
 
   delete mpiTypes;
@@ -82,4 +83,6 @@ int main(int nargs, char** args) {
   AMPI_Finalize();
 }
 
+#if MEDI_HeaderOnly
 #include <medi/medi.cpp>
+#endif

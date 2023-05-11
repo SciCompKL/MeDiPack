@@ -33,7 +33,7 @@
 
 #include <mpi.h>
 
-#include "../../include/medi/ampi/typePassive.hpp"
+#include "../ampi/typePassive.hpp"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package

@@ -29,13 +29,13 @@
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using MpiTypes = codi::CoDiMpiTypes<codi::RealReverse>;
 using MpiTool = MpiTypes::Tool;
 MpiTypes* mpiTypes;
 
@@ -62,7 +62,7 @@ void customOperator() {
   AMPI_Op op;
   AMPI_Op_create((MPI_User_function*)customOpp, 1, &op);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
   tape.setActive();
 
   Residuals res;
@@ -133,7 +133,7 @@ void optimizedCustomOperator() {
                  (PostAdjointOperation)postAdjResidual,
                  &op2);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
   tape.setActive();
 
   Residuals res;
@@ -171,7 +171,7 @@ int main(int nargs, char** args) {
   } else {
 
     mpiTypes = new MpiTypes();
-    codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+    codi::RealReverse::Tape& tape = codi::RealReverse::getTape();
 
     customOperator();
 
@@ -185,4 +185,6 @@ int main(int nargs, char** args) {
   AMPI_Finalize();
 }
 
+#if MEDI_HeaderOnly
 #include <medi/medi.cpp>
+#endif

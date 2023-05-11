@@ -701,13 +701,13 @@ endfunction
 
 #pragma once
 
-#include "../../include/medi/ampi/async.hpp"
-#include "../../include/medi/ampi/message.hpp"
-#include "../../include/medi/ampi/reverseFunctions.hpp"
-#include "../../include/medi/ampi/forwardFunctions.hpp"
-#include "../../include/medi/ampi/primalFunctions.hpp"
-#include "../../include/medi/displacementTools.hpp"
-#include "../../include/medi/mpiTools.h"
+#include "../ampi/async.hpp"
+#include "../ampi/message.hpp"
+#include "../ampi/reverseFunctions.hpp"
+#include "../ampi/forwardFunctions.hpp"
+#include "../ampi/primalFunctions.hpp"
+#include "../displacementTools.hpp"
+#include "../mpiTools.h"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package

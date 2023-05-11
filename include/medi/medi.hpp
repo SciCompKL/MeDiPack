@@ -30,4 +30,19 @@
 
 #include <mpi.h>
 
+#define MEDI_MAJOR_VERSION 1
+#define MEDI_MINOR_VERSION 2
+#define MEDI_BUILD_VERSION 2
+#define MEDI_VERSION "1.2.2"
+
+
+namespace medi {
+#ifndef MEDI_HeaderOnly
+  /// See medi::HeaderOnly.
+  #define MEDI_HeaderOnly true
+#endif
+    /// If MeDiPack is included as header only library or as a regular library.
+    bool constexpr HeaderOnly = MEDI_HeaderOnly;
+}
+
 #include "ampi/ampi.hpp"

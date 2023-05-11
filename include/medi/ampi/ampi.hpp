@@ -37,5 +37,5 @@
 #include "typeDefault.hpp"
 #include "wrappers.hpp"
 
-#include "../../../generated/medi/ampiDefinitions.h"
-#include "../../../generated/medi/ampiFunctions.hpp"
+#include "../generated/ampiDefinitions.h"
+#include "../generated/ampiFunctions.hpp"

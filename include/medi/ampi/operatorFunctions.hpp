@@ -30,7 +30,7 @@
 
 #include "../macros.h"
 #include "op.hpp"
-#include "../../../generated/medi/ampiDefinitions.h"
+#include "../generated/ampiDefinitions.h"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package

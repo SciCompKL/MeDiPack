@@ -1,14 +1,13 @@
 .idea
 CoDi
-generated
-CMakeLists.txt
+MeDiPack.cflags
 MeDiPack.config
 MeDiPack.creator
 MeDiPack.creator.user
 MeDiPack.creator.user.*
+MeDiPack.cxxflags
 MeDiPack.files
 MeDiPack.includes
-mpi31-report.pdf
 setup_env.txt
 tests/build
 tests/results

@@ -30,7 +30,7 @@
 
 #include <mpi.h>
 
-#include "../../include/medi/macros.h"
+#include "../macros.h"
 #include "ampiDefinitions.h"
 
 /**

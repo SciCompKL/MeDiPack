@@ -1,0 +1,14 @@
+include(${CMAKE_CURRENT_LIST_DIR}/medipack-include.cmake)
+
+set(PACKAGE_VERSION ${MEDIPACK_VERSION})
+
+# Check whether the requested PACKAGE_FIND_VERSION is compatible
+if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
+else()
+  message(STATUS "MeDiPack version is ${MEDIPACK_VERSION}")
+  set(PACKAGE_VERSION_COMPATIBLE TRUE)
+  if ("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
+    set(PACKAGE_VERSION_EXACT TRUE)
+  endif()
+endif()
