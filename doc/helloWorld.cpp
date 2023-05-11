@@ -29,13 +29,16 @@
 #include <medi/medi.hpp>
 
 #include <codi.hpp>
-#include <codi/externals/codiMpiTypes.hpp>
+#include <codi/tools/mpi/codiMpiTypes.hpp>
 
 #include <iostream>
 
 using namespace medi;
 
-using MpiTypes = CoDiMpiTypes<codi::RealReverse>;
+using Real = codi::RealReverse;
+using Tape = typename Real::Tape;
+
+using MpiTypes = codi::CoDiMpiTypes<Real>;
 MpiTypes* mpiTypes;
 
 int main(int nargs, char** args) {
@@ -47,10 +50,10 @@ int main(int nargs, char** args) {
 
   AMPI_Comm_rank(AMPI_COMM_WORLD, &rank);
 
-  codi::RealReverse::TapeType& tape = codi::RealReverse::getGlobalTape();
+  Tape& tape = Real::getTape();
   tape.setActive();
 
-  codi::RealReverse a = 3.0;
+  Real a = 3.0;
   if( 0 == rank ) {
     tape.registerInput(a);
 
@@ -76,4 +79,6 @@ int main(int nargs, char** args) {
   AMPI_Finalize();
 }
 
+#if MEDI_HeaderOnly
 #include <medi/medi.cpp>
+#endif
