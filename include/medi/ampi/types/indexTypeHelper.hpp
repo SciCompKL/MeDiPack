@@ -274,7 +274,12 @@ namespace medi {
       AMPI_Op OP_MAXLOC;
 
       void createOperators() {
-        AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedAdd, 1, &OP_SUM);
+        AMPI_Op_create(false, false,
+                       (MPI_User_function*)FuncHelp::unmodifiedAdd, 1,
+                       (MPI_User_function*)FuncHelp::modifiedAdd, 1,
+                       medi::noPreAdjointOperation,
+                       medi::noPostAdjointOperation,
+                       &OP_SUM);
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMul, 1, &OP_PROD);
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMin, 1, &OP_MIN);
         AMPI_Op_create((MPI_User_function*)FuncHelp::unmodifiedMax, 1, &OP_MAX);
