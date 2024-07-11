@@ -1,6 +1,10 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.3.0 - 2024-07-16
+ - Recv, Mrecv, Irecv and Mirecv have now an optional parameter for the definition of the adjoint send.
+ - Use optimized operator for add reduce.
+
 ### v 1.2.2 - 2023-05-11
  - CMake support.
 

@@ -2,12 +2,12 @@
  * MeDiPack, a Message Differentiation Package
  *
  * Copyright (C) 2015-2024 Chair for Scientific Computing (SciComp), University of Kaiserslautern-Landau
- * Homepage: http://scicomp.rptu.de
+ * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
  * Lead developers: Max Sagebaum (SciComp, University of Kaiserslautern-Landau)
  *
- * This file is part of MeDiPack (http://scicomp.rptu.de/software/codi).
+ * This file is part of MeDiPack (http://www.scicomp.uni-kl.de/software/codi).
  *
  * MeDiPack is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,17 +26,25 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
  */
 
-#pragma once
+#include <toolDefines.h>
 
+IN(10)
+OUT(10)
+POINTS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}, {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}}};
+SEEDS(1) = {{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}, {11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0}}};
 
-#include "ampiMisc.h"
-#include "async.hpp"
-#include "constructedDatatypes.hpp"
-#include "enums.hpp"
-#include "operatorFunctions.hpp"
-#include "typeInterface.hpp"
-#include "typeDefault.hpp"
-#include "wrappers.hpp"
+void func(NUMBER* x, NUMBER* y) {
+  int world_rank;
+  medi::AMPI_Comm_rank(AMPI_COMM_WORLD, &world_rank);
+  int world_size;
+  medi::AMPI_Comm_size(AMPI_COMM_WORLD, &world_size);
 
-#include "../generated/ampiDefinitions.h"
-#include "../generated/ampiFunctions.hpp"
+  medi::AMPI_Request request;
+  if(world_rank == 0) {
+    medi::AMPI_Issend(x, 10, mpiNumberType, 1, 42, AMPI_COMM_WORLD, &request);
+  } else {
+    medi::AMPI_Irecv(y, 10, mpiNumberType, 0, 42, AMPI_COMM_WORLD, &request, medi::IrecvAdjCall::Issend);
+  }
+
+  medi::AMPI_Wait(&request, AMPI_STATUS_IGNORE);
+}

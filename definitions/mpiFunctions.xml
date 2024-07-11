@@ -96,6 +96,7 @@
         <type name="datatype" type="MPI_Datatype" />
         <message name="message" type="MPI_Message*" />
         <request name="request" type="MPI_Request*" />
+        <arg name="reverse_send" type="IrecvAdjCall" default="IrecvAdjCall::Isend" extra="true"/>
       </function>
 
       <function name="Iprobe" version="1.0">
@@ -114,6 +115,7 @@
         <arg name="tag" type="int"/>
         <arg name="comm" type="MPI_Comm"/>
         <request name="request" type="MPI_Request*"/>
+        <arg name="reverse_send" type="IrecvAdjCall" default="IrecvAdjCall::Isend" extra="true"/>
       </function>
 
       <function name="Irsend" version="1.0" async="request" mediHandle="transform"> <!-- all defined -->
@@ -161,6 +163,7 @@
         <type name="datatype" type="MPI_Datatype" />
         <message name="message" type="MPI_Message*" />
         <arg name="status" type="MPI_Status*" />
+        <arg name="reverse_send" type="RecvAdjCall" default="RecvAdjCall::Send" extra="true"/>
       </function>
 
       <function name="Probe" version="1.0">
@@ -178,6 +181,7 @@
         <arg name="tag" type="int"/>
         <arg name="comm" type="MPI_Comm"/>
         <status name="status" type="MPI_Status"/>
+        <arg name="reverse_send" type="RecvAdjCall" default="RecvAdjCall::Send" extra="true"/>
       </function>
 
       <function name="Recv_init" version="1.0" mediHandle="transform" async="request" init="Irecv">
@@ -188,6 +192,7 @@
         <arg name="tag" type="int" />
         <arg name="comm" type="MPI_Comm" />
         <request name="request" type="MPI_Request*" />
+        <arg name="reverse_send" type="IrecvAdjCall" default="IrecvAdjCall::Isend" extra="true"/>
       </function>
 
       <function name="Request_free" version="1.0" mediHandle="handled">

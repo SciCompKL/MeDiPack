@@ -222,13 +222,17 @@ for functions.function as curFunction
      curFunction.argDef += "$(item.taType) $(item.name)"
    endif
 
+   if defined(item.default)
+     curFunction.argDef += " = $(item.default)"
+   endif
+
    comma = last()?? "" ? ", "
    curFunction.argDef += comma
  endfor
 
 #build the argument list for the regular call
  curFunction.argReg = ""
- for curFunction. as item where defined(item.arg)
+ for curFunction. as item where defined(item.arg) & !defined(item.extra)
    if(name(item) = "type")
      curFunction.argReg += "$(item.name)->getMpiType()"    # get the regular mpi type
    elsif(name(item) = "operator")
@@ -249,7 +253,7 @@ for functions.function as curFunction
 
 #build the argument list for the call with modified items
  curFunction.argArg = ""
- for curFunction. as item where defined(item.arg)
+ for curFunction. as item where defined(item.arg) & !defined(item.extra)
    if(name(item) =  "recv" | name(item) =  "send")
      curFunction.argArg += "$(item.name)Mod"
    elsif(name(item) = "type")

@@ -679,6 +679,7 @@ namespace medi {
     int count;
     DATATYPE* datatype;
     AMPI_Message message;
+    IrecvAdjCall reverse_send;
 
     ~AMPI_Imrecv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -704,6 +705,7 @@ namespace medi {
     DATATYPE* datatype;
     AMPI_Message* message;
     AMPI_Request* request;
+    IrecvAdjCall reverse_send;
   };
 
   template<typename DATATYPE>
@@ -714,7 +716,8 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createPrimalTypeBuffer((void*&)h->bufPrimals, h->bufTotalSize );
 
-    AMPI_Imrecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse);
+    AMPI_Imrecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse,
+                              h->reverse_send);
 
   }
 
@@ -740,7 +743,8 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
 
-    AMPI_Imrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse);
+    AMPI_Imrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse,
+                              h->reverse_send);
 
   }
 
@@ -769,7 +773,8 @@ namespace medi {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
-    AMPI_Imrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse);
+    AMPI_Imrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, &h->requestReverse,
+                              h->reverse_send);
 
   }
 
@@ -786,7 +791,7 @@ namespace medi {
   int AMPI_Imrecv_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Imrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
-                  AMPI_Request* request) {
+                  AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
 
     if(!datatype->getADTool().isActiveType()) {
@@ -841,6 +846,7 @@ namespace medi {
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
+        h->reverse_send = reverse_send;
       }
 
       if(!datatype->isModifiedBufferRequired()) {
@@ -855,6 +861,7 @@ namespace medi {
       asyncHandle->count = count;
       asyncHandle->datatype = datatype;
       asyncHandle->message = message;
+      asyncHandle->reverse_send = reverse_send;
       asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Imrecv_finish<DATATYPE>;
@@ -881,6 +888,7 @@ namespace medi {
     DATATYPE* datatype = asyncHandle->datatype;
     AMPI_Message* message = asyncHandle->message;
     AMPI_Request* request = asyncHandle->request;
+    IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
@@ -889,6 +897,7 @@ namespace medi {
     MEDI_UNUSED(datatype); // Unused generated to ignore warnings
     MEDI_UNUSED(message); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -933,6 +942,7 @@ namespace medi {
     int source;
     int tag;
     AMPI_Comm comm;
+    IrecvAdjCall reverse_send;
 
     ~AMPI_Irecv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -960,6 +970,7 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
+    IrecvAdjCall reverse_send;
   };
 
   template<typename DATATYPE>
@@ -971,7 +982,7 @@ namespace medi {
     adjointInterface->createPrimalTypeBuffer((void*&)h->bufPrimals, h->bufTotalSize );
 
     AMPI_Irecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm,
-                             &h->requestReverse);
+                             &h->requestReverse, h->reverse_send);
 
   }
 
@@ -998,7 +1009,7 @@ namespace medi {
     adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
 
     AMPI_Irecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm,
-                             &h->requestReverse);
+                             &h->requestReverse, h->reverse_send);
 
   }
 
@@ -1028,7 +1039,7 @@ namespace medi {
     }
 
     AMPI_Irecv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm,
-                             &h->requestReverse);
+                             &h->requestReverse, h->reverse_send);
 
   }
 
@@ -1045,7 +1056,7 @@ namespace medi {
   int AMPI_Irecv_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Irecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
-                 AMPI_Request* request) {
+                 AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
 
     if(!datatype->getADTool().isActiveType()) {
@@ -1102,6 +1113,7 @@ namespace medi {
         h->source = source;
         h->tag = tag;
         h->comm = comm;
+        h->reverse_send = reverse_send;
       }
 
       if(!datatype->isModifiedBufferRequired()) {
@@ -1118,6 +1130,7 @@ namespace medi {
       asyncHandle->source = source;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
+      asyncHandle->reverse_send = reverse_send;
       asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Irecv_finish<DATATYPE>;
@@ -1146,6 +1159,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
+    IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
@@ -1156,6 +1170,7 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
     delete asyncHandle;
 
@@ -1940,6 +1955,7 @@ namespace medi {
     DATATYPE* datatype;
     AMPI_Message message;
     AMPI_Status* status;
+    RecvAdjCall reverse_send;
 
     ~AMPI_Mrecv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -1966,7 +1982,7 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createPrimalTypeBuffer((void*&)h->bufPrimals, h->bufTotalSize );
 
-    AMPI_Mrecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, &h->message, h->status);
+    AMPI_Mrecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, &h->message, h->status, h->reverse_send);
 
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
@@ -1984,7 +2000,8 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
 
-    AMPI_Mrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, h->status);
+    AMPI_Mrecv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, h->status,
+                             h->reverse_send);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
@@ -2005,14 +2022,15 @@ namespace medi {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
-    AMPI_Mrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, h->status);
+    AMPI_Mrecv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, &h->message, h->status,
+                             h->reverse_send);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
   }
 
   template<typename DATATYPE>
-  int AMPI_Mrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
-                 AMPI_Status* status) {
+  int AMPI_Mrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status,
+                 RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
 
     if(!datatype->getADTool().isActiveType()) {
@@ -2068,6 +2086,7 @@ namespace medi {
         h->datatype = datatype;
         h->message = *message;
         h->status = status;
+        h->reverse_send = reverse_send;
       }
 
       if(!datatype->isModifiedBufferRequired()) {
@@ -2114,6 +2133,7 @@ namespace medi {
     int source;
     int tag;
     AMPI_Comm comm;
+    RecvAdjCall reverse_send;
 
     ~AMPI_Recv_AdjointHandle () {
       if(nullptr != bufIndices) {
@@ -2141,7 +2161,8 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createPrimalTypeBuffer((void*&)h->bufPrimals, h->bufTotalSize );
 
-    AMPI_Recv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status);
+    AMPI_Recv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status,
+                            h->reverse_send);
 
     if(h->datatype->getADTool().isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
@@ -2160,7 +2181,8 @@ namespace medi {
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
     adjointInterface->createAdjointTypeBuffer(h->bufAdjoints, h->bufTotalSize );
 
-    AMPI_Recv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status);
+    AMPI_Recv_fwd<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status,
+                            h->reverse_send);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->updateAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
@@ -2182,14 +2204,15 @@ namespace medi {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
-    AMPI_Recv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status);
+    AMPI_Recv_adj<DATATYPE>(h->bufAdjoints, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status,
+                            h->reverse_send);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
   }
 
   template<typename DATATYPE>
   int AMPI_Recv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
-                AMPI_Status* status) {
+                AMPI_Status* status, RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
 
     if(!datatype->getADTool().isActiveType()) {
@@ -2246,6 +2269,7 @@ namespace medi {
         h->source = source;
         h->tag = tag;
         h->comm = comm;
+        h->reverse_send = reverse_send;
       }
 
       if(!datatype->isModifiedBufferRequired()) {
@@ -2289,6 +2313,7 @@ namespace medi {
     int tag;
     AMPI_Comm comm;
     AMPI_Request* request;
+    IrecvAdjCall reverse_send;
   };
 
 
@@ -2300,7 +2325,7 @@ namespace medi {
   int AMPI_Recv_init_postEnd(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Recv_init(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
-                     AMPI_Request* request) {
+                     AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
 
     if(!datatype->getADTool().isActiveType()) {
@@ -2332,6 +2357,7 @@ namespace medi {
       asyncHandle->source = source;
       asyncHandle->tag = tag;
       asyncHandle->comm = comm;
+      asyncHandle->reverse_send = reverse_send;
       asyncHandle->toolHandle = h;
       request->handle = asyncHandle;
       request->func = (ContinueFunction)AMPI_Recv_init_finish<DATATYPE>;
@@ -2355,6 +2381,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
+    IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
@@ -2365,6 +2392,7 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2408,6 +2436,7 @@ namespace medi {
         h->source = source;
         h->tag = tag;
         h->comm = comm;
+        h->reverse_send = reverse_send;
       }
 
       if(!datatype->isModifiedBufferRequired()) {
@@ -2440,6 +2469,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
+    IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
@@ -2450,6 +2480,7 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
 
     if(datatype->getADTool().isActiveType()) {
@@ -2484,6 +2515,7 @@ namespace medi {
     int tag = asyncHandle->tag;
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
+    IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
@@ -2494,6 +2526,7 @@ namespace medi {
     MEDI_UNUSED(tag); // Unused generated to ignore warnings
     MEDI_UNUSED(comm); // Unused generated to ignore warnings
     MEDI_UNUSED(request); // Unused generated to ignore warnings
+    MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
     delete asyncHandle;
 

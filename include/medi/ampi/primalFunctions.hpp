@@ -33,6 +33,7 @@
 #include "ampiMisc.h"
 #include "async.hpp"
 #include "message.hpp"
+#include "enums.hpp"
 #include "../displacementTools.hpp"
 
 /**
@@ -106,32 +107,36 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Recv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status) {
+  void AMPI_Recv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status, RecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
+    MEDI_UNUSED(reverse_call);
     MPI_Recv(bufAdjoints, bufSize, datatype->getADTool().getPrimalMpiType(), src, tag, comm, status);
   }
 #endif
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Mrecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status) {
+  void AMPI_Mrecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status, RecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
+    MEDI_UNUSED(reverse_call);
     MPI_Mrecv(bufAdjoints, bufSize, datatype->getADTool().getPrimalMpiType(), &message->message, status);
   }
 #endif
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Irecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Irecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request, IrecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
+    MEDI_UNUSED(reverse_call);
     MPI_Irecv(bufAdjoints, bufSize, datatype->getADTool().getPrimalMpiType(), src, tag, comm, &request->request);
   }
 #endif
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Imrecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request) {
+  void AMPI_Imrecv_pri(typename DATATYPE::PrimalType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request, IrecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
+    MEDI_UNUSED(reverse_call);
     MPI_Imrecv(bufAdjoints, bufSize, datatype->getADTool().getPrimalMpiType(), &message->message, &request->request);
   }
 #endif

@@ -30,6 +30,7 @@
 
 #include "ampiMisc.h"
 #include "async.hpp"
+#include "enums.hpp"
 #include "message.hpp"
 #include "../displacementTools.hpp"
 
@@ -104,35 +105,53 @@ namespace medi {
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status) {
+  void AMPI_Recv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Status* status, RecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
     MEDI_UNUSED(status);
-    MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
+    if (RecvAdjCall::Send == reverse_call) {
+      MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
+    } else if (RecvAdjCall::Bsend == reverse_call) {
+      MPI_Bsend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
+    } else if (RecvAdjCall::Rsend == reverse_call) {
+      MPI_Rsend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
+    } else if (RecvAdjCall::Ssend == reverse_call) {
+      MPI_Ssend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm);
+    } else {
+      MEDI_EXCEPTION("Unimplemented case for RecvAdjCall %d.", (int)reverse_call);
+    }
   }
 #endif
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Mrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status) {
-    MEDI_UNUSED(count);
-    MEDI_UNUSED(status);
-    MPI_Send(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm);
+  void AMPI_Mrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status, RecvAdjCall reverse_call) {
+    AMPI_Recv_adj(bufAdjoints, bufSize, count, datatype, message->src, message->tag, message->comm, status, reverse_call);
   }
 #endif
 
 #if MEDI_MPI_VERSION_1_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request) {
+  void AMPI_Irecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, int src, int tag, AMPI_Comm comm, AMPI_Request* request, IrecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
-    MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+    if (IrecvAdjCall::Isend == reverse_call) {
+      MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+    } else if (IrecvAdjCall::Ibsend == reverse_call) {
+      MPI_Ibsend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+    } else if (IrecvAdjCall::Irsend == reverse_call) {
+      MPI_Irsend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+    } else if (IrecvAdjCall::Issend == reverse_call) {
+      MPI_Issend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), src, tag, comm, &request->request);
+    } else {
+      MEDI_EXCEPTION("Unimplemented case for IrecvAdjCall %d.", (int)reverse_call);
+    }
   }
 #endif
 
 #if MEDI_MPI_VERSION_3_0 <= MEDI_MPI_TARGET
   template<typename DATATYPE>
-  void AMPI_Imrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request) {
+  void AMPI_Imrecv_adj(typename DATATYPE::AdjointType* bufAdjoints, int bufSize, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Request* request, IrecvAdjCall reverse_call) {
     MEDI_UNUSED(count);
-    MPI_Isend(bufAdjoints, bufSize, datatype->getADTool().getAdjointMpiType(), message->src, message->tag, message->comm, &request->request);
+    AMPI_Irecv_adj(bufAdjoints, bufSize, count, datatype, message->src, message->tag, message->comm, request, reverse_call);
   }
 #endif
 

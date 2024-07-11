@@ -2,12 +2,12 @@
  * MeDiPack, a Message Differentiation Package
  *
  * Copyright (C) 2015-2024 Chair for Scientific Computing (SciComp), University of Kaiserslautern-Landau
- * Homepage: http://scicomp.rptu.de
+ * Homepage: http://www.scicomp.uni-kl.de
  * Contact:  Prof. Nicolas R. Gauger (codi@scicomp.uni-kl.de)
  *
  * Lead developers: Max Sagebaum (SciComp, University of Kaiserslautern-Landau)
  *
- * This file is part of MeDiPack (http://scicomp.rptu.de/software/codi).
+ * This file is part of MeDiPack (http://www.scicomp.uni-kl.de/software/codi).
  *
  * MeDiPack is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,15 +28,22 @@
 
 #pragma once
 
-
 #include "ampiMisc.h"
-#include "async.hpp"
-#include "constructedDatatypes.hpp"
-#include "enums.hpp"
-#include "operatorFunctions.hpp"
-#include "typeInterface.hpp"
-#include "typeDefault.hpp"
-#include "wrappers.hpp"
 
 #include "../generated/ampiDefinitions.h"
-#include "../generated/ampiFunctions.hpp"
+
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
+namespace medi {
+
+enum class IrecvAdjCall {
+  Isend, Ibsend, Irsend, Issend
+};
+
+enum class RecvAdjCall {
+  Send, Bsend, Rsend, Ssend
+};
+
+
+}
