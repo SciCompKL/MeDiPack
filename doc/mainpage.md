@@ -68,7 +68,7 @@ In order to use MeDiPack in your application the following steps have to be take
 
 ## Hello World Example
 
-The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an AD tool.
+The example uses [CoDiPack](http://scicomp.rptu.de/software/codi/) as an AD tool.
 
 ~~~
 #include <medi/medi.hpp>

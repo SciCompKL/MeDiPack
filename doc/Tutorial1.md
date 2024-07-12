@@ -4,7 +4,7 @@ Tutorial 1: Basic use {#Tutorial1}
 MeDiPack is a Message Differentiation Package.
 The goal is to provide a complete wrapper implementation for MPI such that an Algorithmic Differentiation (AD) tool can be used
 in all communication routines.
-For an introduction to an AD tool see e.g. [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/).
+For an introduction to an AD tool see e.g. [CoDiPack](http://scicomp.rptu.de/software/codi/).
 
 MeDiPack is designed such that the integration into an existing application should pose no major problems.
 It is assumed here, that the application is already able to use an AD tool for the generation of derivative results.
@@ -16,7 +16,7 @@ The general steps for the interation of MeDiPack are:
  - Include <medi/medi.cpp> file in a translation unit of you program
  - Initialize the specific implementation of your AD tool
  
-The download of MeDiPack is available from the github web page of [MeDiPack](http://www.scicomp.uni-kl.de/software/medi/)
+The download of MeDiPack is available from the github web page of [MeDiPack](http://scicomp.rptu.de/software/medi/)
 or it can be directly cloned from github:
 ~~~
 git clone https://github.com/SciCompKL/MeDiPack.git

@@ -6,7 +6,7 @@ project(
   ${MEDIPACK_NAME}
   VERSION ${MEDIPACK_VERSION}
   DESCRIPTION "MeDiPack - Message Differentiation Package"
-  HOMEPAGE_URL "http://www.scicomp.uni-kl.de/software/medi")
+  HOMEPAGE_URL "http://scicomp.rptu.de/software/medi")
 
 set(DEFAULT_BUILD_TYPE "Release")
 

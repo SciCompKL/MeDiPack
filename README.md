@@ -1,7 +1,7 @@
 # MeDiPack
 
-[MeDiPack](http://www.scicomp.uni-kl.de/software/medi/) (Message Differentiation Package) is a tool that handles the MPI communication of Algorithmic Differentiation (AD) tools like
-[CoDiPack](http://www.scicomp.uni-kl.de/software/codi/).
+[MeDiPack](http://scicomp.rptu.de/software/medi/) (Message Differentiation Package) is a tool that handles the MPI communication of Algorithmic Differentiation (AD) tools like
+[CoDiPack](http://scicomp.rptu.de/software/codi/).
 
 The features of the initial release are:
   - Full forward of the MPI 3.1 specification
@@ -14,7 +14,7 @@ The features of the initial release are:
       - One-Sided communication
       - IO functions
 
-The [Scientific Computing Group](http://www.scicomp.uni-kl.de) at the TU Kaiserslautern develops MeDiPack and
+The [Scientific Computing Group](http://scicomp.rptu.de) at the TU Kaiserslautern develops MeDiPack and
 will enhance and extend MeDiPack in the future. There is a newsletter available at [codi-info@uni-kl.de](https://lists.uni-kl.de/uni-kl/subscribe/codi-info)
 (The newsletter for MeDiPack and CoDiPack is the same.)
 
@@ -78,7 +78,7 @@ In order to use MeDiPack in your application the following steps have to be take
 
 ## Hello World Example
 
-The example uses [CoDiPack](http://www.scicomp.uni-kl.de/software/codi/) as an AD tool.
+The example uses [CoDiPack](http://scicomp.rptu.de/software/codi/) as an AD tool.
 
 ~~~
 #include <medi/medi.hpp>
@@ -161,4 +161,4 @@ find_package(MeDiPack CONFIG REQUIRED)
 target_link_libraries(<target> MeDiPack)
 ~~~~
 
-Please visit the [tutorial page](http://www.scicomp.uni-kl.de/medi/db/d3c/tutorialPage.html) for further information.
+Please visit the [tutorial page](http://scicomp.rptu.de/medi/db/d3c/tutorialPage.html) for further information.
