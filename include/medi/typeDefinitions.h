@@ -29,6 +29,7 @@
 #pragma once
 
 #include "adjointInterface.hpp"
+#include "debugInformation.hpp"
 
 /**
  * @brief Global namespace for MeDiPack - Message Differentiation Package
@@ -51,12 +52,19 @@ namespace medi {
   typedef void (*CustomFunction)(void* data);
 
   struct HandleBase {
+#if MEDI_DebugInformation
+    std::string debugInformation;
+#endif
+
     ReverseFunction funcReverse;
     ForwardFunction funcForward;
     PrimalFunction funcPrimal;
     ManualDeleteType deleteType;
 
     HandleBase() :
+#if MEDI_DebugInformation
+      debugInformation(getDebugInformation()),
+#endif
       funcReverse(NULL),
       funcForward(NULL),
       funcPrimal(NULL),

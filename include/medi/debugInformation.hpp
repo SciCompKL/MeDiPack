@@ -26,5 +26,26 @@
  * Authors: Max Sagebaum, Tim Albring (SciComp, University of Kaiserslautern-Landau)
  */
 
-#include "ampi/ampi.cpp"
-#include "debugInformation.cpp"
+#pragma once
+
+#include <string>
+
+/**
+ * @brief Global namespace for MeDiPack - Message Differentiation Package
+ */
+namespace medi {
+
+#ifndef MEDI_DebugInformation
+#define MEDI_DebugInformation 0
+#endif
+
+#ifndef MEDI_DebugInformation_Warning
+#define MEDI_DebugInformation_Warning 1
+#endif
+
+
+void setDebugInformation(std::string const& info);
+std::string getDebugInformation();
+void clearDebugInformation();
+
+}
