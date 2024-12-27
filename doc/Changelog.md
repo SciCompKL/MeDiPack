@@ -1,6 +1,9 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.3.1 - 2024-12-27
+ - Possibility to attach debug information to MeDiPack handles.
+
 ### v 1.3.0 - 2024-07-16
  - Recv, Mrecv, Irecv and Mirecv have now an optional parameter for the definition of the adjoint send.
  - Use optimized operator for add reduce.
