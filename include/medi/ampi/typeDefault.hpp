@@ -64,18 +64,20 @@ namespace medi {
 
       typedef ADTool Tool;
 
+      using Base = MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>;
+
       bool isClone;
 
       Tool* adTool;
 
       MpiTypeDefault(Tool* adTool, MPI_Datatype type, MPI_Datatype modType) :
-        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
+        Base(type, modType),
         isClone(false),
         adTool(adTool) {}
 
     private:
       MpiTypeDefault(Tool* adTool, MPI_Datatype type, MPI_Datatype modType, bool isClone) :
-        MpiTypeBase<MpiTypeDefault<ADTool>, Type, ModifiedType, Tool>(type, modType),
+        Base(type, modType),
         isClone(isClone),
         adTool(adTool) {}
 
@@ -169,6 +171,7 @@ namespace medi {
         }
       }
 
+      using Base::copy;
       void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
         for(int i = 0; i < count; ++i) {
           to[toOffset + i] = from[fromOffset + i];

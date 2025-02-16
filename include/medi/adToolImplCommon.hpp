@@ -40,8 +40,10 @@ namespace medi {
   class ADToolImplCommon : public ADToolBase<Impl, AdjointType, PrimalType, IndexType> {
     public:
 
+      using Base = ADToolBase<Impl, AdjointType, PrimalType, IndexType>;
+
       ADToolImplCommon(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
-        ADToolBase<Impl, AdjointType, PrimalType, IndexType>(primalMpiType, adjointMpiType) {}
+        Base(primalMpiType, adjointMpiType) {}
 
       inline bool isActiveType() const {
         return true;
@@ -59,17 +61,19 @@ namespace medi {
         buf = new PrimalType[size];
       }
 
+      using Base::createIndexTypeBuffer;
       inline void createIndexTypeBuffer(IndexType* &buf, size_t size) const {
         buf = new IndexType[size];
       }
 
-        inline void deletePrimalTypeBuffer(PrimalType* &buf) const {
-          if(NULL != buf) {
-            delete [] buf;
-            buf = NULL;
-          }
+      inline void deletePrimalTypeBuffer(PrimalType* &buf) const {
+        if(NULL != buf) {
+          delete [] buf;
+          buf = NULL;
         }
+      }
 
+      using Base::deleteIndexTypeBuffer;
       inline void deleteIndexTypeBuffer(IndexType* &buf) const {
         if(NULL != buf) {
           delete [] buf;

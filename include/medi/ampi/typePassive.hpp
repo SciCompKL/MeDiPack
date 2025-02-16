@@ -60,18 +60,20 @@ namespace medi {
 
       typedef ADToolPassive Tool;
 
+      using Base = MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>;
+
       bool isClone;
 
       Tool adTool;
 
       MpiTypePassive(MPI_Datatype type) :
-        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        Base(type, type),
         isClone(false),
         adTool(type, type) {}
 
     private:
       MpiTypePassive(MPI_Datatype type, bool clone) :
-        MpiTypeBase<MpiTypePassive<T>, Type, ModifiedType, ADToolPassive>(type, type),
+        Base(type, type),
         isClone(clone),
         adTool(type, type) {}
 
@@ -156,6 +158,7 @@ namespace medi {
         MEDI_UNUSED(ranks);
       }
 
+      using Base::copy;
       inline void copy(Type* from, size_t fromOffset, Type* to, size_t toOffset, int count) const {
         for(int i = 0; i < count; ++i) {
           to[toOffset + i] = from[fromOffset + i];
