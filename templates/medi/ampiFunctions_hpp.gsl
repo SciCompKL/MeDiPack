@@ -305,9 +305,12 @@ for functions.function as curFunction
  endfor
 
  # special definitions for the type
+ curFunction.adTypes = ""
+ curFunction.adTypesHandle = ""
  for curFunction.type as type
    # define the ad type that is used in this function
-   curFunction.adType = "$(type.name)->getADTool()"
+   curFunction.adTypes += "$(type.name)->getADTool()" + (last()?? "" ? ", ")
+   curFunction.adTypesHandle += "h->$(type.name)->getADTool()" + (last()?? "" ? ", ")
 
    # define the main type that is used in this function
    curFunction.mainType = "$(type.name)"
@@ -505,7 +508,7 @@ endfunction
 # define function for primal extraction
 function createPrimalExtraction(buffer, curFunction, elementName)
   startRoot(my.buffer)
->   $(my.curFunction.adType).createPrimalTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
+>   $(my.buffer.type)->getADTool().createPrimalTypeBuffer(h->$(my.Buffer.name)$(my.elementName), h->$(my.buffer.name)TotalSize);
     createBufferAccessLogic(my.buffer, 0, "$type$->getValues($name$, $pos$, h->$(my.buffer.name)$(my.elementName), $startLinPos$, $curCount$);")
   endRoot(my.buffer)
 endfunction
@@ -618,7 +621,7 @@ function addPrimalSplit(curFunction, splitPos)
 >      // create adjoint wait
 >      if(nullptr != h) {
 >        WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_$(my.curFunction.revName)_b_finish<$(my.curFunction.tplArg)>, (ForwardFunction)AMPI_$(my.curFunction.revName)_d<$(my.curFunction.tplArg)>, h);
->        $(my.curFunction.adType).addToolAction(waitH);
+>        adType->addToolAction(waitH);
 >      }
   endif
 >    }
@@ -636,6 +639,7 @@ function addPrimalSplit(curFunction, splitPos)
 >      $(item.type) $(item.name) = asyncHandle->$(item.name);
      endfor
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(asyncHandle->toolHandle);
+>    ADToolInterface const* adType = selectADTool($(my.curFunction.adTypes));
 >    MEDI_UNUSED(h); // Unused generated to ignore warnings
      for my.curFunction->primalHandle. as item
 >      MEDI_UNUSED($(item.name)); // Unused generated to ignore warnings
@@ -645,10 +649,10 @@ function addPrimalSplit(curFunction, splitPos)
 >      delete asyncHandle;
      endif
 >
->    if($(my.curFunction.adType).isActiveType()) {
+>    if(adType->isActiveType()) {
 >
        for my.curFunction.operator
->        AMPI_Op convOp = $(my.curFunction.adType).convertOperator($(operator.name));
+>        AMPI_Op convOp = adType->convertOperator($(operator.name));
 >        (void)convOp;
        endfor
        if(SPLIT_POS_PRE_START = my.splitPos)
@@ -673,10 +677,12 @@ function addForwardAsyncSplit(curFunction, suffix)
 >  void AMPI_$(my.curFunction.name)_$(my.suffix)_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 >
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
+>    ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+>    (void)adType;
 >    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
 >
      for my.curFunction.operator
->      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      AMPI_Op convOp = adType->convertOperator(h->$(operator.name));
 >      (void)convOp;
      endfor
   endif
@@ -690,10 +696,12 @@ function addReverseAsyncSplit(curFunction)
 >  void AMPI_$(my.curFunction.name)_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 >
 >    $(my.curFunction.handleName)<$(my.curFunction.tplArg)>* h = static_cast<$(my.curFunction.handleName)<$(my.curFunction.tplArg)>*>(handle);
+>    ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+>    (void)adType;
 >    MPI_Wait(&h->$(my.curFunction.async)Reverse.request, MPI_STATUS_IGNORE);
 >
      for my.curFunction.operator
->      AMPI_Op convOp = h->$(my.curFunction.adType).convertOperator(h->$(operator.name));
+>      AMPI_Op convOp = adType->convertOperator(h->$(operator.name));
 >      (void)convOp;
      endfor
   endif
@@ -759,13 +767,15 @@ namespace medi {
     template<$(curFunction.tplDef)>
     void AMPI_$(curFunction.name)_p(HandleBase* handle, AdjointInterface* adjointInterface) {
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+      ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+      (void)adType;
 
 .     for curFunction.status
         $(status.type) $(status.name);
 .     endfor
 .
 .     if(defined(curFunction->operator))
-        AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+        AMPI_Op convOp = adType->convertOperator(h->$(curFunction->operator.name));
         (void)convOp;
 .     endif
 .     for curFunction.recv
@@ -784,7 +794,7 @@ namespace medi {
 .     endfor
 .
 .     for curFunction.recv
-        if(h->$(curFunction.adType).isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
 .         createPrimalStore(recv, curFunction, "OldPrimals")
         }
 .       createBufferCleanup(recv, curFunction, 1, PRIMAL_BUFFER)
@@ -795,13 +805,15 @@ namespace medi {
     template<$(curFunction.tplDef)>
     void AMPI_$(curFunction.name)_d(HandleBase* handle, AdjointInterface* adjointInterface) {
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+      ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+      (void)adType;
 
 .     for curFunction.status
         $(status.type) $(status.name);
 .     endfor
 .
 .     if(defined(curFunction->operator))
-        AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+        AMPI_Op convOp = adType->convertOperator(h->$(curFunction->operator.name));
         (void)convOp;
 .     endif
 .     for curFunction.recv
@@ -828,18 +840,20 @@ namespace medi {
     template<$(curFunction.tplDef)>
     void AMPI_$(curFunction.name)_b(HandleBase* handle, AdjointInterface* adjointInterface) {
       $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+      ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+      (void)adType;
 
 .     for curFunction.status
         $(status.type) $(status.name);
 .     endfor
 .
 .     if(defined(curFunction->operator))
-        AMPI_Op convOp = h->$(curFunction.adType).convertOperator(h->$(curFunction->operator.name));
+        AMPI_Op convOp = adType->convertOperator(h->$(curFunction->operator.name));
         (void)convOp;
 .     endif
 .     for curFunction.recv
 .       createBufferSetup(recv, curFunction, 1, REVERSE_BUFFER)
-        if(h->$(curFunction.adType).isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
 .         createPrimalRestore(recv, curFunction, "OldPrimals")
         }
 .     endfor
@@ -881,12 +895,13 @@ namespace medi {
   template<$(curFunction.tplDef)>
   int AMPI_$(curFunction.name)($(curFunction.argDef)) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool($(curFunction.adTypes));
 .     if(defined(curFunction->operator))
-        AMPI_Op convOp = $(curFunction.adType).convertOperator($(curFunction->operator.name));
+        AMPI_Op convOp = adType->convertOperator($(curFunction->operator.name));
         (void)convOp;
 .     endif
 
-    if(!$(curFunction.adType).isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = $(curFunction.mpiName)($(curFunction.argReg));
     } else {
@@ -936,10 +951,10 @@ namespace medi {
 .     addPrimalSplit(curFunction, SPLIT_POS_PRE_START)
 .
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if($(curFunction.adType).isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new $(curFunction.handleName)<$(curFunction.tplArg)>();
       }
-      $(curFunction.adType).startAssembly(h);
+      adType->startAssembly(h);
 .
 .-    copy the data into the modified buffers
 .     for curFunction. as item where defined(item.arg)
@@ -978,7 +993,7 @@ namespace medi {
                 }
 .             endif
               h->$(item.name)TotalSize = $(item.type)->computeActiveElements($(item.name)Elements);
-              $(curFunction.adType).createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
+              $(item.type)->getADTool().createIndexTypeBuffer(h->$(item.name)Indices, h->$(item.name)TotalSize);
 .           endRoot(item)
 .         endif
 .       endfor
@@ -996,7 +1011,7 @@ namespace medi {
 .       for curFunction.recv
           // extract the old primal values from the recv buffer if the AD tool
           // needs the primal values reset
-          if($(curFunction.adType).isOldPrimalsRequired()) {
+          if(adType->isOldPrimalsRequired()) {
 .           createPrimalExtraction(recv, curFunction, "OldPrimals")
           }
 .       endfor
@@ -1041,7 +1056,7 @@ namespace medi {
 .
 .     addPrimalSplit(curFunction, SPLIT_POS_FINISH)
 .
-      $(curFunction.adType).addToolAction(h);
+      adType->addToolAction(h);
 
 .-    copy the data from the modified buffers
 .     for curFunction. as item where defined(item.arg)
@@ -1069,7 +1084,7 @@ namespace medi {
         }
 .     endif
 
-      $(curFunction.adType).stopAssembly(h);
+      adType->stopAssembly(h);
 .
 .
 .     addPrimalSplit(curFunction, SPLIT_POS_POST_END)

@@ -338,4 +338,12 @@ namespace medi {
         return reinterpret_cast<const T*&>(buf);
       }
   };
+
+  inline ADToolInterface const* selectADTool(ADToolInterface const& tool) {
+    return &tool;
+  }
+
+  inline ADToolInterface const* selectADTool(ADToolInterface const& toolA, ADToolInterface const& toolB) {
+    return toolA.isActiveType() ? &toolA : &toolB;
+  }
 }

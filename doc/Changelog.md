@@ -1,6 +1,10 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.3.2 - 2025-02-17
+ - Select active AD tool from all buffer types.
+ - Remove compiler warnings.
+
 ### v 1.3.1 - 2024-12-27
  - Possibility to attach debug information to MeDiPack handles.
 

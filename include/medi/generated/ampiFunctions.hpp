@@ -71,6 +71,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bsend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -87,6 +89,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -103,6 +107,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -119,8 +125,9 @@ namespace medi {
   int AMPI_Bsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Bsend(buf, count, datatype->getMpiType(), dest, tag, comm);
     } else {
@@ -140,10 +147,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Bsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -175,14 +182,14 @@ namespace medi {
 
 
       rStatus = MPI_Bsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -237,6 +244,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibsend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -254,6 +263,8 @@ namespace medi {
   void AMPI_Ibsend_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->bufPrimals);
@@ -262,6 +273,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -279,6 +292,8 @@ namespace medi {
   void AMPI_Ibsend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -287,6 +302,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -301,6 +318,8 @@ namespace medi {
   void AMPI_Ibsend_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -314,8 +333,9 @@ namespace medi {
   int AMPI_Ibsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ibsend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -335,10 +355,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ibsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -387,7 +407,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibsend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Ibsend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -408,6 +428,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -420,16 +441,16 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -467,8 +488,9 @@ namespace medi {
   int AMPI_Bsend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Bsend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -521,6 +543,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -532,17 +555,17 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
       int bufElements = 0;
 
       // recompute the total size of the buffer
       bufElements = count;
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ibsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -579,7 +602,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibsend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Ibsend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -600,6 +623,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -611,16 +635,16 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
     }
 
     return rStatus;
@@ -640,6 +664,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -652,7 +677,7 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
 
       if(datatype->isModifiedBufferRequired() ) {
@@ -711,6 +736,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Imrecv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -725,9 +752,11 @@ namespace medi {
   void AMPI_Imrecv_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -738,6 +767,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Imrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -752,6 +783,8 @@ namespace medi {
   void AMPI_Imrecv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -762,6 +795,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Imrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -769,7 +804,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
@@ -782,6 +817,8 @@ namespace medi {
   void AMPI_Imrecv_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -793,8 +830,9 @@ namespace medi {
   int AMPI_Imrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
                   AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Imrecv(buf, count, datatype->getMpiType(), &message->message, &request->request);
     } else {
@@ -814,10 +852,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Imrecv_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
@@ -830,7 +868,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
           datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
         }
@@ -870,7 +908,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Imrecv_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Imrecv_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -890,6 +928,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -901,9 +940,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
@@ -914,7 +953,7 @@ namespace medi {
         datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -976,6 +1015,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irecv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -990,9 +1031,11 @@ namespace medi {
   void AMPI_Irecv_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -1003,6 +1046,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1017,6 +1062,8 @@ namespace medi {
   void AMPI_Irecv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -1027,6 +1074,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1034,7 +1083,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
@@ -1047,6 +1096,8 @@ namespace medi {
   void AMPI_Irecv_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -1058,8 +1109,9 @@ namespace medi {
   int AMPI_Irecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                  AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Irecv(buf, count, datatype->getMpiType(), source, tag, comm, &request->request);
     } else {
@@ -1079,10 +1131,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Irecv_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
@@ -1095,7 +1147,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
           datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
         }
@@ -1139,7 +1191,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irecv_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Irecv_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -1161,6 +1213,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -1174,9 +1227,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
@@ -1187,7 +1240,7 @@ namespace medi {
         datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -1242,6 +1295,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irsend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1259,6 +1314,8 @@ namespace medi {
   void AMPI_Irsend_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->bufPrimals);
@@ -1267,6 +1324,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1284,6 +1343,8 @@ namespace medi {
   void AMPI_Irsend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -1292,6 +1353,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Irsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1306,6 +1369,8 @@ namespace medi {
   void AMPI_Irsend_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -1319,8 +1384,9 @@ namespace medi {
   int AMPI_Irsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Irsend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -1340,10 +1406,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Irsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -1392,7 +1458,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irsend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Irsend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -1413,6 +1479,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -1425,16 +1492,16 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -1489,6 +1556,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Isend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1506,6 +1575,8 @@ namespace medi {
   void AMPI_Isend_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->bufPrimals);
@@ -1514,6 +1585,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Isend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1531,6 +1604,8 @@ namespace medi {
   void AMPI_Isend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -1539,6 +1614,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Isend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1553,6 +1630,8 @@ namespace medi {
   void AMPI_Isend_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -1566,8 +1645,9 @@ namespace medi {
   int AMPI_Isend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Isend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -1587,10 +1667,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Isend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -1639,7 +1719,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Isend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Isend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -1660,6 +1740,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -1672,16 +1753,16 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -1736,6 +1817,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Issend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1753,6 +1836,8 @@ namespace medi {
   void AMPI_Issend_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->bufPrimals);
@@ -1761,6 +1846,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Issend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1778,6 +1865,8 @@ namespace medi {
   void AMPI_Issend_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->bufAdjoints);
@@ -1786,6 +1875,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Issend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1800,6 +1891,8 @@ namespace medi {
   void AMPI_Issend_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -1813,8 +1906,9 @@ namespace medi {
   int AMPI_Issend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                   AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Issend(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -1834,10 +1928,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Issend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -1886,7 +1980,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Issend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Issend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -1907,6 +2001,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -1919,16 +2014,16 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -1977,6 +2072,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Mrecv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -1984,7 +2081,7 @@ namespace medi {
 
     AMPI_Mrecv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, &h->message, h->status, h->reverse_send);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -1995,6 +2092,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Mrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2011,6 +2110,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Mrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2018,7 +2119,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
@@ -2032,8 +2133,9 @@ namespace medi {
   int AMPI_Mrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status,
                  RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Mrecv(buf, count, datatype->getMpiType(), &message->message, status);
     } else {
@@ -2053,10 +2155,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Mrecv_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
@@ -2069,7 +2171,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
           datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
         }
@@ -2094,7 +2196,7 @@ namespace medi {
       }
 
       rStatus = MPI_Mrecv(bufMod, count, datatype->getModifiedMpiType(), &message->message, status);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
@@ -2105,7 +2207,7 @@ namespace medi {
         datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -2155,6 +2257,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Recv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->bufAdjoints = nullptr;
@@ -2164,7 +2268,7 @@ namespace medi {
     AMPI_Recv_pri<DATATYPE>(h->bufPrimals, h->bufCountVec, h->count, h->datatype, h->source, h->tag, h->comm, &status,
                             h->reverse_send);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -2175,6 +2279,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Recv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->bufAdjoints = nullptr;
@@ -2192,6 +2298,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Recv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->bufAdjoints = nullptr;
@@ -2200,7 +2308,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufIndices, h->bufAdjoints, h->bufTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufIndices, h->bufOldPrimals, h->bufTotalSize);
     }
 
@@ -2214,8 +2322,9 @@ namespace medi {
   int AMPI_Recv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                 AMPI_Status* status, RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Recv(buf, count, datatype->getMpiType(), source, tag, comm, status);
     } else {
@@ -2235,10 +2344,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Recv_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
@@ -2251,7 +2360,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
           datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
         }
@@ -2277,7 +2386,7 @@ namespace medi {
       }
 
       rStatus = MPI_Recv(bufMod, count, datatype->getModifiedMpiType(), source, tag, comm, status);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
@@ -2288,7 +2397,7 @@ namespace medi {
         datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -2327,8 +2436,9 @@ namespace medi {
   int AMPI_Recv_init(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                      AMPI_Request* request, IrecvAdjCall reverse_send = IrecvAdjCall::Isend) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Recv_init(buf, count, datatype->getMpiType(), source, tag, comm, &request->request);
     } else {
@@ -2383,6 +2493,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2395,17 +2506,17 @@ namespace medi {
     MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
       int bufElements = 0;
 
       // recompute the total size of the buffer
       bufElements = count;
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Irecv_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
 
       if(nullptr != h) {
         // gather the information for the reverse sweep
@@ -2418,7 +2529,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufOldPrimals, h->bufTotalSize);
           datatype->getValues(buf, 0, h->bufOldPrimals, 0, count);
         }
@@ -2449,7 +2560,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irecv_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Irecv_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -2471,6 +2582,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2483,9 +2595,9 @@ namespace medi {
     MEDI_UNUSED(reverse_send); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(buf, 0, bufMod, 0, count);
@@ -2496,7 +2608,7 @@ namespace medi {
         datatype->registerValue(buf, 0, h->bufIndices, h->bufOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
     }
 
     return rStatus;
@@ -2517,6 +2629,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     IrecvAdjCall reverse_send = asyncHandle->reverse_send;
     AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2530,7 +2643,7 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
 
       if(datatype->isModifiedBufferRequired() ) {
@@ -2575,6 +2688,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Rsend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2591,6 +2706,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Rsend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2607,6 +2724,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Rsend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2623,8 +2742,9 @@ namespace medi {
   int AMPI_Rsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Rsend(buf, count, datatype->getMpiType(), dest, tag, comm);
     } else {
@@ -2644,10 +2764,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Rsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -2679,14 +2799,14 @@ namespace medi {
 
 
       rStatus = MPI_Rsend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -2724,8 +2844,9 @@ namespace medi {
   int AMPI_Rsend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Rsend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -2778,6 +2899,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2789,17 +2911,17 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
       int bufElements = 0;
 
       // recompute the total size of the buffer
       bufElements = count;
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Irsend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -2836,7 +2958,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Irsend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Irsend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -2857,6 +2979,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2868,16 +2991,16 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
     }
 
     return rStatus;
@@ -2897,6 +3020,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -2909,7 +3033,7 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
 
       if(datatype->isModifiedBufferRequired() ) {
@@ -2954,6 +3078,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Send_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2970,6 +3096,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Send_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -2986,6 +3114,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Send_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -3002,8 +3132,9 @@ namespace medi {
   int AMPI_Send(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                 AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Send(buf, count, datatype->getMpiType(), dest, tag, comm);
     } else {
@@ -3023,10 +3154,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Send_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -3058,14 +3189,14 @@ namespace medi {
 
 
       rStatus = MPI_Send(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -3103,8 +3234,9 @@ namespace medi {
   int AMPI_Send_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                      AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Send_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -3157,6 +3289,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3168,17 +3301,17 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
       int bufElements = 0;
 
       // recompute the total size of the buffer
       bufElements = count;
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Isend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -3215,7 +3348,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Isend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Isend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -3236,6 +3369,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3247,16 +3381,16 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
     }
 
     return rStatus;
@@ -3276,6 +3410,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3288,7 +3423,7 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
 
       if(datatype->isModifiedBufferRequired() ) {
@@ -3356,7 +3491,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Sendrecv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->recvbufAdjoints = nullptr;
@@ -3373,7 +3510,7 @@ namespace medi {
                                           h->sendtag, h->recvbufPrimals, h->recvbufCountVec, h->recvcount, h->recvtype, h->source, h->recvtag, h->comm, &status);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -3384,7 +3521,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Sendrecv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->recvbufAdjoints = nullptr;
@@ -3409,7 +3548,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Sendrecv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     MPI_Status status;
     h->recvbufAdjoints = nullptr;
@@ -3418,7 +3559,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -3439,8 +3580,9 @@ namespace medi {
                     int sendtag, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag,
                     AMPI_Comm comm, AMPI_Status* status) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Sendrecv(sendbuf, sendcount, sendtype->getMpiType(), dest, sendtag, recvbuf, recvcount,
                              recvtype->getMpiType(), source, recvtag, comm, status);
@@ -3472,10 +3614,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
       }
@@ -3486,7 +3628,7 @@ namespace medi {
         // create the index buffers
         h->sendbufCount = sendtype->computeActiveElements(sendcount);
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         h->recvbufCount = recvtype->computeActiveElements(recvcount);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -3494,7 +3636,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount);
         }
@@ -3525,7 +3667,7 @@ namespace medi {
 
       rStatus = MPI_Sendrecv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), dest, sendtag, recvbufMod, recvcount,
                              recvtype->getModifiedMpiType(), source, recvtag, comm, status);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount);
@@ -3536,7 +3678,7 @@ namespace medi {
         recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount);
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired() ) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -3583,6 +3725,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ssend_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -3599,6 +3743,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ssend_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -3615,6 +3761,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ssend_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufAdjoints = nullptr;
     h->bufCountVec = adjointInterface->getVectorSize() * h->bufCount;
@@ -3631,8 +3779,9 @@ namespace medi {
   int AMPI_Ssend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ssend(buf, count, datatype->getMpiType(), dest, tag, comm);
     } else {
@@ -3652,10 +3801,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ssend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -3687,14 +3836,14 @@ namespace medi {
 
 
       rStatus = MPI_Ssend(bufMod, count, datatype->getModifiedMpiType(), dest, tag, comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired() ) {
         datatype->deleteModifiedTypeBuffer(bufMod);
@@ -3732,8 +3881,9 @@ namespace medi {
   int AMPI_Ssend_init(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ssend_init(buf, count, datatype->getMpiType(), dest, tag, comm, &request->request);
     } else {
@@ -3786,6 +3936,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3797,17 +3948,17 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
       int bufElements = 0;
 
       // recompute the total size of the buffer
       bufElements = count;
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Issend_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyIntoModifiedBuffer(buf, 0, bufMod, 0, count);
       }
@@ -3844,7 +3995,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Issend_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Issend_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -3865,6 +4016,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3876,16 +4028,16 @@ namespace medi {
     MEDI_UNUSED(request); // Unused generated to ignore warnings
 
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
 
       if(nullptr != h) {
         // handle the recv buffers
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
     }
 
     return rStatus;
@@ -3905,6 +4057,7 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(buf); // Unused generated to ignore warnings
     MEDI_UNUSED(bufMod); // Unused generated to ignore warnings
@@ -3917,7 +4070,7 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
 
       if(datatype->isModifiedBufferRequired() ) {
@@ -3981,7 +4134,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgather_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -3997,7 +4152,7 @@ namespace medi {
                                            h->recvbufPrimals, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -4008,7 +4163,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4032,7 +4189,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4040,7 +4199,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -4061,8 +4220,9 @@ namespace medi {
   int AMPI_Allgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Allgather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm);
     } else {
@@ -4097,10 +4257,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -4120,7 +4280,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         h->recvbufCount = recvtype->computeActiveElements(recvcount);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -4128,7 +4288,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
         }
@@ -4159,7 +4319,7 @@ namespace medi {
 
       rStatus = MPI_Allgather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
                               recvtype->getModifiedMpiType(), comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount * getCommSize(comm));
@@ -4170,7 +4330,7 @@ namespace medi {
         recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -4242,7 +4402,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgatherv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -4259,7 +4421,7 @@ namespace medi {
                                             h->recvbufPrimals, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -4272,7 +4434,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -4299,7 +4463,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Allgatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -4308,7 +4474,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -4332,8 +4498,9 @@ namespace medi {
                       typename RECVTYPE::Type* recvbuf, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs,
                       RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Allgatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs,
                                recvtype->getMpiType(), comm);
@@ -4377,10 +4544,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -4403,7 +4570,7 @@ namespace medi {
                               comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         createLinearIndexCounts(h->recvbufCount, recvcounts, displs, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -4411,7 +4578,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           for(int i = 0; i < getCommSize(comm); ++i) {
             recvtype->getValues(recvbuf, displs[i], h->recvbufOldPrimals, displsMod[i], recvcounts[i]);
@@ -4452,7 +4619,7 @@ namespace medi {
 
       rStatus = MPI_Allgatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
                                recvtype->getModifiedMpiType(), comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         for(int i = 0; i < getCommSize(comm); ++i) {
@@ -4467,7 +4634,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
@@ -4535,8 +4702,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Allreduce_global_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4552,7 +4721,7 @@ namespace medi {
                                         h->count, h->datatype, h->op, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -4563,8 +4732,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Allreduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4588,8 +4759,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Allreduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4598,7 +4771,7 @@ namespace medi {
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount, adjointInterface->getVectorSize());
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -4623,10 +4796,11 @@ namespace medi {
   int AMPI_Allreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                             int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
-    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
+    AMPI_Op convOp = adType->convertOperator(op);
     (void)convOp;
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Allreduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm);
     } else {
@@ -4661,10 +4835,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Allreduce_global_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           datatype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, count);
@@ -4700,7 +4874,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           datatype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, count);
         }
@@ -4730,7 +4904,7 @@ namespace medi {
 
       rStatus = MPI_Allreduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction,
                               comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, count);
@@ -4746,7 +4920,7 @@ namespace medi {
         datatype->getValues(recvbuf, 0, h->recvbufPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         datatype->deleteModifiedTypeBuffer(sendbufMod);
@@ -4812,7 +4986,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoall_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4828,7 +5004,7 @@ namespace medi {
                                           h->recvbufPrimals, h->recvbufCountVec, h->recvcount, h->recvtype, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -4839,7 +5015,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoall_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4863,7 +5041,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoall_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -4871,7 +5051,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -4891,8 +5071,9 @@ namespace medi {
   int AMPI_Alltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Alltoall(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm);
     } else {
@@ -4927,10 +5108,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount * getCommSize(comm));
@@ -4949,7 +5130,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         h->recvbufCount = recvtype->computeActiveElements(recvcount);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -4957,7 +5138,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
         }
@@ -4988,7 +5169,7 @@ namespace medi {
 
       rStatus = MPI_Alltoall(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
                              recvtype->getModifiedMpiType(), comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount * getCommSize(comm));
@@ -4999,7 +5180,7 @@ namespace medi {
         recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -5077,7 +5258,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoallv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -5098,7 +5281,7 @@ namespace medi {
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     delete [] h->sendbufCountVec;
     delete [] h->sendbufDisplsVec;
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -5111,7 +5294,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoallv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -5142,7 +5327,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Alltoallv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -5151,7 +5338,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -5178,8 +5365,9 @@ namespace medi {
                      MEDI_OPTIONAL_CONST int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
                      MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Alltoallv(sendbuf, sendcounts, sdispls, sendtype->getMpiType(), recvbuf, recvcounts, rdispls,
                               recvtype->getMpiType(), comm);
@@ -5231,10 +5419,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           for(int i = 0; i < getCommSize(comm); ++i) {
@@ -5257,7 +5445,7 @@ namespace medi {
           createLinearIndexCounts(h->sendbufCount, recvcounts, rdispls, getCommSize(comm), recvtype);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         createLinearIndexCounts(h->recvbufCount, recvcounts, rdispls, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -5265,7 +5453,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           for(int i = 0; i < getCommSize(comm); ++i) {
             recvtype->getValues(recvbuf, rdispls[i], h->recvbufOldPrimals, rdisplsMod[i], recvcounts[i]);
@@ -5308,7 +5496,7 @@ namespace medi {
 
       rStatus = MPI_Alltoallv(sendbufMod, sendcounts, sdisplsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcounts,
                               rdisplsMod, recvtype->getModifiedMpiType(), comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         for(int i = 0; i < getCommSize(comm); ++i) {
@@ -5323,7 +5511,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] sdisplsMod;
       }
@@ -5394,6 +5582,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bcast_wrap_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -5413,7 +5603,7 @@ namespace medi {
     if(h->root == getCommRank(h->comm)) {
       adjointInterface->deletePrimalTypeBuffer((void*&)h->bufferSendPrimals);
     }
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufferRecvIndices, h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -5424,6 +5614,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bcast_wrap_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -5451,6 +5643,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Bcast_wrap_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -5458,7 +5652,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufferRecvIndices, h->bufferRecvAdjoints, h->bufferRecvTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufferRecvIndices, h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
     }
     h->bufferSendAdjoints = nullptr;
@@ -5483,8 +5677,9 @@ namespace medi {
   int AMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
                       DATATYPE* datatype, int root, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Bcast_wrap(bufferSend, bufferRecv, count, datatype->getMpiType(), root, comm);
     } else {
@@ -5521,10 +5716,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Bcast_wrap_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()) {
           if(AMPI_IN_PLACE != bufferSend) {
@@ -5555,7 +5750,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
           datatype->getValues(bufferRecv, 0, h->bufferRecvOldPrimals, 0, count);
         }
@@ -5586,7 +5781,7 @@ namespace medi {
       }
 
       rStatus = MPI_Bcast_wrap(bufferSendMod, bufferRecvMod, count, datatype->getModifiedMpiType(), root, comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(bufferRecv, 0, bufferRecvMod, 0, count);
@@ -5597,7 +5792,7 @@ namespace medi {
         datatype->registerValue(bufferRecv, 0, h->bufferRecvIndices, h->bufferRecvOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == bufferSend)) {
@@ -5666,6 +5861,8 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gather_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -5683,7 +5880,7 @@ namespace medi {
                                         h->recvbufCountVec, h->recvcount, h->recvtype, h->root, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -5698,6 +5895,8 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -5725,6 +5924,8 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -5734,7 +5935,7 @@ namespace medi {
       adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -5758,8 +5959,9 @@ namespace medi {
   int AMPI_Gather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Gather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
                            comm);
@@ -5797,10 +5999,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -5820,7 +6022,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
@@ -5830,7 +6032,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -5870,7 +6072,7 @@ namespace medi {
 
       rStatus = MPI_Gather(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
                            recvtype->getModifiedMpiType(), root, comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(recvtype->isModifiedBufferRequired()) {
@@ -5885,7 +6087,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -5960,7 +6162,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gatherv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -5979,7 +6183,7 @@ namespace medi {
                                          h->recvbufPrimals, h->recvbufCountVec, h->recvbufDisplsVec, h->recvcounts, h->displs, h->recvtype, h->root, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -5996,7 +6200,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -6027,7 +6233,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Gatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -6038,7 +6246,7 @@ namespace medi {
       adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -6065,8 +6273,9 @@ namespace medi {
                    typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                    AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Gatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs, recvtype->getMpiType(),
                             root, comm);
@@ -6112,10 +6321,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -6138,7 +6347,7 @@ namespace medi {
                               comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
           createLinearIndexCounts(h->recvbufCount, recvcounts, displs, getCommSize(comm), recvtype);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
@@ -6148,7 +6357,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -6198,7 +6407,7 @@ namespace medi {
 
       rStatus = MPI_Gatherv(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcounts, displsMod,
                             recvtype->getModifiedMpiType(), root, comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(recvtype->isModifiedBufferRequired()) {
@@ -6217,7 +6426,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
@@ -6301,7 +6510,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgather_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -6322,11 +6533,13 @@ namespace medi {
   void AMPI_Iallgather_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -6337,7 +6550,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -6358,7 +6573,9 @@ namespace medi {
   void AMPI_Iallgather_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -6370,7 +6587,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iallgather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -6378,7 +6597,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -6394,7 +6613,9 @@ namespace medi {
   void AMPI_Iallgather_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
@@ -6410,8 +6631,9 @@ namespace medi {
   int AMPI_Iallgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iallgather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm,
                                &request->request);
@@ -6447,10 +6669,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -6470,7 +6692,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         h->recvbufCount = recvtype->computeActiveElements(recvcount);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -6478,7 +6700,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
         }
@@ -6528,7 +6750,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgather_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Iallgather_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -6552,7 +6774,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -6567,9 +6790,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount * getCommSize(comm));
@@ -6580,7 +6803,7 @@ namespace medi {
         recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -6668,6 +6891,8 @@ namespace medi {
   void AMPI_Iallgatherv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -6691,10 +6916,12 @@ namespace medi {
 
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -6708,6 +6935,8 @@ namespace medi {
   void AMPI_Iallgatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -6731,6 +6960,8 @@ namespace medi {
 
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -6745,6 +6976,8 @@ namespace medi {
   void AMPI_Iallgatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -6753,7 +6986,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -6771,6 +7004,8 @@ namespace medi {
 
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
@@ -6789,8 +7024,9 @@ namespace medi {
                        typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, AMPI_Comm comm,
                        AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iallgatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs,
                                 recvtype->getMpiType(), comm, &request->request);
@@ -6834,10 +7070,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -6860,7 +7096,7 @@ namespace medi {
                               comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         createLinearIndexCounts(h->recvbufCount, recvcounts, displs, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -6868,7 +7104,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           for(int i = 0; i < getCommSize(comm); ++i) {
             recvtype->getValues(recvbuf, displs[i], h->recvbufOldPrimals, displsMod[i], recvcounts[i]);
@@ -6930,7 +7166,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallgatherv_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Iallgatherv_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -6957,6 +7193,7 @@ namespace medi {
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
       static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -6973,9 +7210,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         for(int i = 0; i < getCommSize(comm); ++i) {
@@ -6990,7 +7227,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
@@ -7070,9 +7307,11 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Iallreduce_global_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7093,13 +7332,15 @@ namespace medi {
   void AMPI_Iallreduce_global_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -7110,9 +7351,11 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Iallreduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7133,10 +7376,12 @@ namespace medi {
   void AMPI_Iallreduce_global_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -7147,9 +7392,11 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Iallreduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7158,7 +7405,7 @@ namespace medi {
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount, adjointInterface->getVectorSize());
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -7174,10 +7421,12 @@ namespace medi {
   void AMPI_Iallreduce_global_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     adjointInterface->combineAdjoints(h->sendbufAdjoints, h->sendbufTotalSize, getCommSize(h->comm));
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
@@ -7196,10 +7445,11 @@ namespace medi {
   int AMPI_Iallreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                              int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
-    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
+    AMPI_Op convOp = adType->convertOperator(op);
     (void)convOp;
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iallreduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, comm,
                                &request->request);
@@ -7235,10 +7485,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Iallreduce_global_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           datatype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, count);
@@ -7274,7 +7524,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           datatype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, count);
         }
@@ -7322,7 +7572,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iallreduce_global_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Iallreduce_global_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -7334,7 +7584,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Iallreduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Iallreduce_global_AsyncHandle<DATATYPE>*>
-        (handle);
+      (handle);
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
@@ -7345,7 +7595,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -7359,11 +7610,11 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+      AMPI_Op convOp = adType->convertOperator(op);
       (void)convOp;
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, count);
@@ -7379,7 +7630,7 @@ namespace medi {
         datatype->getValues(recvbuf, 0, h->recvbufPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         datatype->deleteModifiedTypeBuffer(sendbufMod);
@@ -7458,7 +7709,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoall_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7479,11 +7732,13 @@ namespace medi {
   void AMPI_Ialltoall_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -7494,7 +7749,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoall_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7515,7 +7772,9 @@ namespace medi {
   void AMPI_Ialltoall_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -7527,7 +7786,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoall_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -7535,7 +7796,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -7551,7 +7812,9 @@ namespace medi {
   void AMPI_Ialltoall_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -7566,8 +7829,9 @@ namespace medi {
   int AMPI_Ialltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ialltoall(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), comm,
                               &request->request);
@@ -7603,10 +7867,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount * getCommSize(comm));
@@ -7625,7 +7889,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         h->recvbufCount = recvtype->computeActiveElements(recvcount);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -7633,7 +7897,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
         }
@@ -7683,7 +7947,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoall_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Ialltoall_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -7707,7 +7971,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -7722,9 +7987,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         recvtype->copyFromModifiedBuffer(recvbuf, 0, recvbufMod, 0, recvcount * getCommSize(comm));
@@ -7735,7 +8000,7 @@ namespace medi {
         recvtype->registerValue(recvbuf, 0, h->recvbufIndices, h->recvbufOldPrimals, 0, recvcount * getCommSize(comm));
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -7830,7 +8095,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoallv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -7854,13 +8121,15 @@ namespace medi {
   void AMPI_Ialltoallv_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     delete [] h->sendbufCountVec;
     delete [] h->sendbufDisplsVec;
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -7873,7 +8142,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoallv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -7897,7 +8168,9 @@ namespace medi {
   void AMPI_Ialltoallv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -7913,7 +8186,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Ialltoallv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     createLinearDisplacementsAndCount(h->recvbufCountVec, h->recvbufDisplsVec, h->recvbufCount, getCommSize(h->comm),
@@ -7922,7 +8197,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -7940,7 +8215,9 @@ namespace medi {
   void AMPI_Ialltoallv_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -7960,8 +8237,9 @@ namespace medi {
                       SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* rdispls, RECVTYPE* recvtype,
                       AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ialltoallv(sendbuf, sendcounts, sdispls, sendtype->getMpiType(), recvbuf, recvcounts, rdispls,
                                recvtype->getMpiType(), comm, &request->request);
@@ -8013,10 +8291,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           for(int i = 0; i < getCommSize(comm); ++i) {
@@ -8039,7 +8317,7 @@ namespace medi {
           createLinearIndexCounts(h->sendbufCount, recvcounts, rdispls, getCommSize(comm), recvtype);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         createLinearIndexCounts(h->recvbufCount, recvcounts, rdispls, getCommSize(comm), recvtype);
         h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
         recvtype->getADTool().createIndexTypeBuffer(h->recvbufIndices, h->recvbufTotalSize);
@@ -8047,7 +8325,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           for(int i = 0; i < getCommSize(comm); ++i) {
             recvtype->getValues(recvbuf, rdispls[i], h->recvbufOldPrimals, rdisplsMod[i], recvcounts[i]);
@@ -8113,7 +8391,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ialltoallv_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Ialltoallv_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -8141,7 +8419,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -8160,9 +8439,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         for(int i = 0; i < getCommSize(comm); ++i) {
@@ -8177,7 +8456,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] sdisplsMod;
       }
@@ -8260,6 +8539,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibcast_wrap_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -8282,12 +8563,14 @@ namespace medi {
   void AMPI_Ibcast_wrap_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
       adjointInterface->deletePrimalTypeBuffer((void*&)h->bufferSendPrimals);
     }
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->bufferRecvIndices, h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -8298,6 +8581,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibcast_wrap_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -8320,6 +8605,8 @@ namespace medi {
   void AMPI_Ibcast_wrap_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -8333,6 +8620,8 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ibcast_wrap_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
     h->bufferRecvAdjoints = nullptr;
     h->bufferRecvCountVec = adjointInterface->getVectorSize() * h->bufferRecvCount;
@@ -8340,7 +8629,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->bufferRecvIndices, h->bufferRecvAdjoints, h->bufferRecvTotalSize);
 
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->bufferRecvIndices, h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
     }
     h->bufferSendAdjoints = nullptr;
@@ -8358,6 +8647,8 @@ namespace medi {
   void AMPI_Ibcast_wrap_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -8375,8 +8666,9 @@ namespace medi {
   int AMPI_Ibcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
                        DATATYPE* datatype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ibcast_wrap(bufferSend, bufferRecv, count, datatype->getMpiType(), root, comm, &request->request);
     } else {
@@ -8413,10 +8705,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()) {
           if(AMPI_IN_PLACE != bufferSend) {
@@ -8447,7 +8739,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           datatype->getADTool().createPrimalTypeBuffer(h->bufferRecvOldPrimals, h->bufferRecvTotalSize);
           datatype->getValues(bufferRecv, 0, h->bufferRecvOldPrimals, 0, count);
         }
@@ -8497,7 +8789,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ibcast_wrap_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Ibcast_wrap_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -8519,7 +8811,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferSend); // Unused generated to ignore warnings
     MEDI_UNUSED(bufferSendMod); // Unused generated to ignore warnings
@@ -8533,9 +8826,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(datatype->isModifiedBufferRequired()) {
         datatype->copyFromModifiedBuffer(bufferRecv, 0, bufferRecvMod, 0, count);
@@ -8546,7 +8839,7 @@ namespace medi {
         datatype->registerValue(bufferRecv, 0, h->bufferRecvIndices, h->bufferRecvOldPrimals, 0, count);
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == bufferSend)) {
@@ -8629,7 +8922,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igather_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -8652,11 +8947,13 @@ namespace medi {
   void AMPI_Igather_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -8671,7 +8968,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igather_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -8694,7 +8993,9 @@ namespace medi {
   void AMPI_Igather_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -8708,7 +9009,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igather_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -8718,7 +9021,7 @@ namespace medi {
       adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -8736,7 +9039,9 @@ namespace medi {
   void AMPI_Igather_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -8753,8 +9058,9 @@ namespace medi {
   int AMPI_Igather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Igather(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
                             comm, &request->request);
@@ -8792,10 +9098,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -8815,7 +9121,7 @@ namespace medi {
           h->sendbufCount = recvtype->computeActiveElements(recvcount);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
@@ -8825,7 +9131,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -8885,7 +9191,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igather_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Igather_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -8897,7 +9203,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>* asyncHandle = static_cast<AMPI_Igather_AsyncHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
     MEDI_OPTIONAL_CONST  typename SENDTYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename SENDTYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     int sendcount = asyncHandle->sendcount;
@@ -8910,7 +9216,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -8926,9 +9233,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(recvtype->isModifiedBufferRequired()) {
@@ -8943,7 +9250,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(sendtype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         sendtype->deleteModifiedTypeBuffer(sendbufMod);
@@ -9034,7 +9341,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igatherv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9059,11 +9368,13 @@ namespace medi {
   void AMPI_Igatherv_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -9080,7 +9391,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igatherv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9105,7 +9418,9 @@ namespace medi {
   void AMPI_Igatherv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
@@ -9121,7 +9436,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Igatherv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9132,7 +9449,7 @@ namespace medi {
       adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -9151,7 +9468,9 @@ namespace medi {
   void AMPI_Igatherv_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
@@ -9171,8 +9490,9 @@ namespace medi {
                     typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                     AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Igatherv(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcounts, displs, recvtype->getMpiType(),
                              root, comm, &request->request);
@@ -9218,10 +9538,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(sendtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount);
@@ -9244,7 +9564,7 @@ namespace medi {
                               comm)]) - recvtype->computeActiveElements(displs[getCommRank(comm)]);
         }
         h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-        recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+        sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         if(root == getCommRank(comm)) {
           createLinearIndexCounts(h->recvbufCount, recvcounts, displs, getCommSize(comm), recvtype);
           h->recvbufTotalSize = recvtype->computeActiveElements(recvbufElements);
@@ -9254,7 +9574,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -9326,7 +9646,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Igatherv_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Igatherv_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -9353,7 +9673,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -9371,9 +9692,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(recvtype->isModifiedBufferRequired()) {
@@ -9392,7 +9713,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
@@ -9476,8 +9797,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ireduce_global_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9500,12 +9823,14 @@ namespace medi {
   void AMPI_Ireduce_global_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -9520,8 +9845,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ireduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9544,9 +9871,11 @@ namespace medi {
   void AMPI_Ireduce_global_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     adjointInterface->deleteAdjointTypeBuffer(h->sendbufAdjoints);
     if(h->root == getCommRank(h->comm)) {
@@ -9559,8 +9888,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Ireduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -9571,7 +9902,7 @@ namespace medi {
 
       convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount, adjointInterface->getVectorSize());
     }
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -9589,9 +9920,11 @@ namespace medi {
   void AMPI_Ireduce_global_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     // the primals of the recive buffer are always given to the function. The operator should ignore them if not needed.
     // The wrapper functions make sure that for operators that need the primals an all* action is perfomed (e.g. Allreduce instead of Reduce)
@@ -9611,10 +9944,11 @@ namespace medi {
   int AMPI_Ireduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                           int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
-    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
+    AMPI_Op convOp = adType->convertOperator(op);
     (void)convOp;
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Ireduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, root, comm,
                             &request->request);
@@ -9652,10 +9986,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Ireduce_global_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           datatype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, count);
@@ -9693,7 +10027,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             datatype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -9751,7 +10085,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Ireduce_global_b_finish<DATATYPE>,
                                            (ForwardFunction)AMPI_Ireduce_global_d<DATATYPE>, h);
-        datatype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -9763,7 +10097,7 @@ namespace medi {
     int rStatus = 0;
 
     AMPI_Ireduce_global_AsyncHandle<DATATYPE>* asyncHandle = static_cast<AMPI_Ireduce_global_AsyncHandle<DATATYPE>*>
-        (handle);
+      (handle);
     MEDI_OPTIONAL_CONST  typename DATATYPE::Type* sendbuf = asyncHandle->sendbuf;
     typename DATATYPE::ModifiedType* sendbufMod = asyncHandle->sendbufMod;
     typename DATATYPE::Type* recvbuf = asyncHandle->recvbuf;
@@ -9775,7 +10109,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -9790,11 +10125,11 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(datatype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+      AMPI_Op convOp = adType->convertOperator(op);
       (void)convOp;
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()) {
@@ -9818,7 +10153,7 @@ namespace medi {
         }
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         datatype->deleteModifiedTypeBuffer(sendbufMod);
@@ -9901,7 +10236,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatter_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9924,13 +10261,15 @@ namespace medi {
   void AMPI_Iscatter_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
       adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -9941,7 +10280,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatter_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9964,7 +10305,9 @@ namespace medi {
   void AMPI_Iscatter_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -9978,7 +10321,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatter_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -9986,7 +10331,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -10004,7 +10349,9 @@ namespace medi {
   void AMPI_Iscatter_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -10021,8 +10368,9 @@ namespace medi {
   int AMPI_Iscatter(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iscatter(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
                              comm, &request->request);
@@ -10060,10 +10408,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired()) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount * getCommSize(comm));
@@ -10077,7 +10425,7 @@ namespace medi {
         if(root == getCommRank(comm)) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-          recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+          sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
@@ -10090,7 +10438,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           if(AMPI_IN_PLACE != recvbuf) {
             recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount);
@@ -10153,7 +10501,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatter_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Iscatter_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -10178,7 +10526,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -10194,9 +10543,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != recvbuf) {
@@ -10217,7 +10566,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired() ) {
@@ -10308,7 +10657,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatterv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -10333,7 +10684,9 @@ namespace medi {
   void AMPI_Iscatterv_p_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -10341,7 +10694,7 @@ namespace medi {
       delete [] h->sendbufCountVec;
       delete [] h->sendbufDisplsVec;
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -10352,7 +10705,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatterv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -10377,7 +10732,9 @@ namespace medi {
   void AMPI_Iscatterv_d_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -10393,7 +10750,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Iscatterv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -10401,7 +10760,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -10421,7 +10780,9 @@ namespace medi {
   void AMPI_Iscatterv_b_finish(HandleBase* handle, AdjointInterface* adjointInterface) {
 
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
     MPI_Wait(&h->requestReverse.request, MPI_STATUS_IGNORE);
 
     if(h->root == getCommRank(h->comm)) {
@@ -10440,8 +10801,9 @@ namespace medi {
   int AMPI_Iscatterv(const typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm, AMPI_Request* request) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Iscatterv(sendbuf, sendcounts, displs, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(),
                               root, comm, &request->request);
@@ -10487,10 +10849,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired()) {
           for(int i = 0; i < getCommSize(comm); ++i) {
@@ -10506,7 +10868,7 @@ namespace medi {
         if(root == getCommRank(comm)) {
           createLinearIndexCounts(h->sendbufCount, sendcounts, displs, getCommSize(comm), sendtype);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-          recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+          sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
@@ -10520,7 +10882,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           if(AMPI_IN_PLACE != recvbuf) {
             recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount);
@@ -10597,7 +10959,7 @@ namespace medi {
       if(nullptr != h) {
         WaitHandle* waitH = new WaitHandle((ReverseFunction)AMPI_Iscatterv_b_finish<SENDTYPE, RECVTYPE>,
                                            (ForwardFunction)AMPI_Iscatterv_d<SENDTYPE, RECVTYPE>, h);
-        recvtype->getADTool().addToolAction(waitH);
+        adType->addToolAction(waitH);
       }
     }
 
@@ -10624,7 +10986,8 @@ namespace medi {
     AMPI_Comm comm = asyncHandle->comm;
     AMPI_Request* request = asyncHandle->request;
     AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (asyncHandle->toolHandle);
+      (asyncHandle->toolHandle);
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
     MEDI_UNUSED(h); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbuf); // Unused generated to ignore warnings
     MEDI_UNUSED(sendbufMod); // Unused generated to ignore warnings
@@ -10642,9 +11005,9 @@ namespace medi {
 
     delete asyncHandle;
 
-    if(recvtype->getADTool().isActiveType()) {
+    if(adType->isActiveType()) {
 
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != recvbuf) {
@@ -10671,7 +11034,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
@@ -10742,8 +11105,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Reduce_global_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -10761,7 +11126,7 @@ namespace medi {
                                      h->datatype, h->op, h->root, h->comm);
 
     adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -10776,8 +11141,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Reduce_global_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -10805,8 +11172,10 @@ namespace medi {
   template<typename DATATYPE>
   void AMPI_Reduce_global_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
 
-    AMPI_Op convOp = h->datatype->getADTool().convertOperator(h->op);
+    AMPI_Op convOp = adType->convertOperator(h->op);
     (void)convOp;
     h->recvbufAdjoints = nullptr;
     if(h->root == getCommRank(h->comm)) {
@@ -10817,7 +11186,7 @@ namespace medi {
 
       convOp.preAdjointOperation(h->recvbufAdjoints, h->recvbufPrimals, h->recvbufCount, adjointInterface->getVectorSize());
     }
-    if(h->datatype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       if(h->root == getCommRank(h->comm)) {
         adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
       }
@@ -10845,10 +11214,11 @@ namespace medi {
   int AMPI_Reduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                          int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
-    AMPI_Op convOp = datatype->getADTool().convertOperator(op);
+    ADToolInterface const* adType = selectADTool(datatype->getADTool());
+    AMPI_Op convOp = adType->convertOperator(op);
     (void)convOp;
 
-    if(!datatype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Reduce(sendbuf, recvbuf, count, datatype->getMpiType(), convOp.primalFunction, root, comm);
     } else {
@@ -10885,10 +11255,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(datatype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Reduce_global_AdjointHandle<DATATYPE>();
       }
-      datatype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(datatype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != sendbuf) {
           datatype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, count);
@@ -10926,7 +11296,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(datatype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           if(root == getCommRank(comm)) {
             datatype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
             if(root == getCommRank(comm)) {
@@ -10965,7 +11335,7 @@ namespace medi {
 
       rStatus = MPI_Reduce(sendbufMod, recvbufMod, count, datatype->getModifiedMpiType(), convOp.modifiedPrimalFunction, root,
                            comm);
-      datatype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(root == getCommRank(comm)) {
         if(datatype->isModifiedBufferRequired()) {
@@ -10989,7 +11359,7 @@ namespace medi {
         }
       }
 
-      datatype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(datatype->isModifiedBufferRequired()  && !(AMPI_IN_PLACE == sendbuf)) {
         datatype->deleteModifiedTypeBuffer(sendbufMod);
@@ -11058,7 +11428,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11078,7 +11450,7 @@ namespace medi {
     if(h->root == getCommRank(h->comm)) {
       adjointInterface->deletePrimalTypeBuffer((void*&)h->sendbufPrimals);
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -11089,7 +11461,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11117,7 +11491,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatter_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11125,7 +11501,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -11149,8 +11525,9 @@ namespace medi {
   int AMPI_Scatter(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Scatter(sendbuf, sendcount, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(), root,
                             comm);
@@ -11188,10 +11565,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired()) {
           sendtype->copyIntoModifiedBuffer(sendbuf, 0, sendbufMod, 0, sendcount * getCommSize(comm));
@@ -11205,7 +11582,7 @@ namespace medi {
         if(root == getCommRank(comm)) {
           h->sendbufCount = sendtype->computeActiveElements(sendcount);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-          recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+          sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
@@ -11218,7 +11595,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           if(AMPI_IN_PLACE != recvbuf) {
             recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount);
@@ -11261,7 +11638,7 @@ namespace medi {
 
       rStatus = MPI_Scatter(sendbufMod, sendcount, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
                             recvtype->getModifiedMpiType(), root, comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != recvbuf) {
@@ -11282,7 +11659,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
 
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired() ) {
@@ -11357,7 +11734,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatterv_p(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11380,7 +11759,7 @@ namespace medi {
       delete [] h->sendbufCountVec;
       delete [] h->sendbufDisplsVec;
     }
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->getPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     // Primal buffers are always linear in space so we can accesses them in one sweep
@@ -11391,7 +11770,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatterv_d(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11422,7 +11803,9 @@ namespace medi {
   template<typename SENDTYPE, typename RECVTYPE>
   void AMPI_Scatterv_b(HandleBase* handle, AdjointInterface* adjointInterface) {
     AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
-        (handle);
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
 
     h->recvbufAdjoints = nullptr;
     h->recvbufCountVec = adjointInterface->getVectorSize() * h->recvbufCount;
@@ -11430,7 +11813,7 @@ namespace medi {
     // Adjoint buffers are always linear in space so we can accesses them in one sweep
     adjointInterface->getAdjoints(h->recvbufIndices, h->recvbufAdjoints, h->recvbufTotalSize);
 
-    if(h->recvtype->getADTool().isOldPrimalsRequired()) {
+    if(adType->isOldPrimalsRequired()) {
       adjointInterface->setPrimals(h->recvbufIndices, h->recvbufOldPrimals, h->recvbufTotalSize);
     }
     h->sendbufAdjoints = nullptr;
@@ -11457,8 +11840,9 @@ namespace medi {
   int AMPI_Scatterv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs,
                     SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
+    ADToolInterface const* adType = selectADTool(sendtype->getADTool(), recvtype->getADTool());
 
-    if(!recvtype->getADTool().isActiveType()) {
+    if(!adType->isActiveType()) {
       // call the regular function if the type is not active
       rStatus = MPI_Scatterv(sendbuf, sendcounts, displs, sendtype->getMpiType(), recvbuf, recvcount, recvtype->getMpiType(),
                              root, comm);
@@ -11504,10 +11888,10 @@ namespace medi {
       }
 
       // the handle is created if a reverse action should be recorded, h != nullptr => tape is active
-      if(recvtype->getADTool().isHandleRequired()) {
+      if(adType->isHandleRequired()) {
         h = new AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>();
       }
-      recvtype->getADTool().startAssembly(h);
+      adType->startAssembly(h);
       if(root == getCommRank(comm)) {
         if(sendtype->isModifiedBufferRequired()) {
           for(int i = 0; i < getCommSize(comm); ++i) {
@@ -11523,7 +11907,7 @@ namespace medi {
         if(root == getCommRank(comm)) {
           createLinearIndexCounts(h->sendbufCount, sendcounts, displs, getCommSize(comm), sendtype);
           h->sendbufTotalSize = sendtype->computeActiveElements(sendbufElements);
-          recvtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
+          sendtype->getADTool().createIndexTypeBuffer(h->sendbufIndices, h->sendbufTotalSize);
         }
         if(AMPI_IN_PLACE != recvbuf) {
           h->recvbufCount = recvtype->computeActiveElements(recvcount);
@@ -11537,7 +11921,7 @@ namespace medi {
 
         // extract the old primal values from the recv buffer if the AD tool
         // needs the primal values reset
-        if(recvtype->getADTool().isOldPrimalsRequired()) {
+        if(adType->isOldPrimalsRequired()) {
           recvtype->getADTool().createPrimalTypeBuffer(h->recvbufOldPrimals, h->recvbufTotalSize);
           if(AMPI_IN_PLACE != recvbuf) {
             recvtype->getValues(recvbuf, 0, h->recvbufOldPrimals, 0, recvcount);
@@ -11592,7 +11976,7 @@ namespace medi {
 
       rStatus = MPI_Scatterv(sendbufMod, sendcounts, displsMod, sendtype->getModifiedMpiType(), recvbufMod, recvcount,
                              recvtype->getModifiedMpiType(), root, comm);
-      recvtype->getADTool().addToolAction(h);
+      adType->addToolAction(h);
 
       if(recvtype->isModifiedBufferRequired()) {
         if(AMPI_IN_PLACE != recvbuf) {
@@ -11619,7 +12003,7 @@ namespace medi {
         }
       }
 
-      recvtype->getADTool().stopAssembly(h);
+      adType->stopAssembly(h);
       if(recvtype->isModifiedBufferRequired()) {
         delete [] displsMod;
       }
