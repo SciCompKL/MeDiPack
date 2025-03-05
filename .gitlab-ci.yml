@@ -1,0 +1,16 @@
+default:
+  timeout: 2h
+  tags:
+    - docker
+
+medi:
+  image: ubuntu:24.04
+  script:
+    - apt update && apt install -y diffutils binutils git build-essential openmpi-bin libopenmpi-dev
+    - git clone --depth 1 --branch develop https://github.com/SciCompKL/CoDiPack.git
+    - export CODI_DIR=$(pwd)/CoDiPack
+    - cd tests
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - make all -j6
+    - make all
