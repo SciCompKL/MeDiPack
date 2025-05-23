@@ -43,7 +43,7 @@ DEP_FILES   = $(wildcard $(BUILD_DIR)/Test**.d)
 DEP_FILES  += $(wildcard $(BUILD_DIR)/**/Test**.d)
 DEP_FILES  += $(wildcard $(BUILD_DIR)/**/**/Test**.d)
 
-FLAGS = -Wall -pedantic -std=c++11 -I../include -I../src
+FLAGS = -Wall -pedantic -std=c++17 -I../include -I../src
 
 # The default is to run all drives
 DRIVERS?=ALL
