@@ -42,6 +42,8 @@ namespace medi {
 
       using Base = ADToolBase<Impl, AdjointType, PrimalType, IndexType>;
 
+      using CallbackFuncTyped = typename Base::CallbackFuncTyped;
+
       ADToolImplCommon(MPI_Datatype primalMpiType, MPI_Datatype adjointMpiType) :
         Base(primalMpiType, adjointMpiType) {}
 
@@ -78,6 +80,13 @@ namespace medi {
         if(NULL != buf) {
           delete [] buf;
           buf = NULL;
+        }
+      }
+
+      using Base::iterateIdentifiers;
+      void iterateIdentifiers(IndexType* indices, int elements, CallbackFuncTyped func, void* userData) const {
+        for(int i = 0; i < elements; i += 1) {
+          func(&indices[i], userData);
         }
       }
   };

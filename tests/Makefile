@@ -59,7 +59,7 @@ COMPILER ?= gnu
 ifeq ($(COMPILER), gnu)
   MPICXX ?= mpic++
   MPIRUN ?= mpiexec
-  MPIOUT ?= --output-filename $@.dir
+  MPIOUT ?= --output-directory $@.dir
 endif
 ifeq ($(COMPILER), intel)
   MPICXX ?= mpiicpc -wd3802
@@ -80,6 +80,9 @@ all:
 BASIC_TESTS = $(wildcard $(TEST_DIR)/misc/Test**.cpp) $(wildcard $(TEST_DIR)/datatypes/Test**.cpp) $(wildcard $(TEST_DIR)/collective/Test**.cpp) $(wildcard $(TEST_DIR)/collective/inplace/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/Test**.cpp) $(wildcard $(TEST_DIR)/pointToPoint/init/Test**.cpp) $(wildcard $(TEST_DIR)/wait_test/Test**.cpp)
 FORWARD_TESTS = $(wildcard $(TEST_DIR)/forward/Test**.cpp)
 PRIMAL_TESTS = $(wildcard $(TEST_DIR)/primal/Test**.cpp)
+CODI_TESTS = $(TEST_DIR)/codi/TestIndexIter.cpp
+
+CODI_INCLUDES = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(CODI_DIR)/tests
 
 # The build rules for all drivers.
 define DRIVER_RULE
@@ -120,44 +123,44 @@ endef
 
 # Driver for RealReverse
 DRIVER_NAME  := CoDi
-DRIVER_TESTS := $(BASIC_TESTS)
+DRIVER_TESTS := $(BASIC_TESTS) $(CODI_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse
 DRIVER_NAME  := CoDiVec
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseVec<2>" -DVECTOR
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseVec<2>" -DVECTOR
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverseIndex
 DRIVER_NAME  := CoDiIndex
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverseIndex
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverseIndex
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReversePrimal
 DRIVER_NAME  := CoDiPrimal
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReversePrimalIndex
 DRIVER_NAME  := CoDiPrimalIndex
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimalIndex
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimalIndex
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with untyped interface
 DRIVER_NAME  := CoDiUntyped
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DUNTYPED -DCODI_TYPE=codi::RealReverse
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DUNTYPED -DCODI_TYPE=codi::RealReverse
 
 $(eval $(value DRIVER_INST))
 
@@ -165,28 +168,28 @@ $(eval $(value DRIVER_INST))
 DRIVER_NAME  := CoDiForward
 DRIVER_TESTS := $(FORWARD_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiForwardDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealForward
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealForward
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with a forward tape evaluation
 DRIVER_NAME  := CoDiTapeForward
 DRIVER_TESTS := $(FORWARD_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse -DFORWARD_TAPE
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReverse -DFORWARD_TAPE
 $(eval $(value DRIVER_INST))
 
 # Driver for RealReverse with a primal tape evaluation
 DRIVER_NAME  := CoDiTapePrimal
 DRIVER_TESTS := $(PRIMAL_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal -DPRIMAL_TAPE
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE=codi::RealReversePrimal -DPRIMAL_TAPE
 $(eval $(value DRIVER_INST))
 
 # Driver for 2nd order
 DRIVER_NAME  := CoDi2nd
 DRIVER_TESTS := $(BASIC_TESTS)
 DRIVER_SRC = $(DRIVER_DIR)/codi/codiDriver.cpp
-$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = -I$(CODI_DIR)/include -I$(CODI_DIR)/source -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseGen<codi::RealForward>"
+$(BUILD_DIR)/%_$(DRIVER_NAME)_bin : DRIVER_INC = $(CODI_INCLUDES) -I$(DRIVER_DIR)/codi -DCODI_TYPE="codi::RealReverseGen<codi::RealForward>"
 $(eval $(value DRIVER_INST))
 
 ## Driver for ADOL-c

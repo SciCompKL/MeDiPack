@@ -191,6 +191,20 @@ namespace medi {
        * @param[in,out] buf  The pointer for the buffer.
        */
       virtual void deleteIndexTypeBuffer(void* &buf) const = 0;
+
+      /**
+       * @brief Iterate of the identifiers of the AD tool. That is the AD tool should perform the
+       * operation:
+       *
+       * func(&indices[i], userData)
+       *
+       * @param[in,out]   indices  The indices from the AD tool for the variables in the buffer.
+       * @param[in]      elements  The number of elements in the vectors.
+       * @param[in]          func  The callback function for each index.
+       * @param[in]      userData  The user data for the callback function.
+       */
+      virtual void iterateIdentifiers(void* indices, int elements, CallbackFunc func, void* userData) const = 0;
+
   };
 
   /**
@@ -294,6 +308,8 @@ namespace medi {
   class ADToolBase : public ADToolInterface {
     public:
 
+      using CallbackFuncTyped = void (*)(IndexTypeB* id, void* userData);
+
       /**
        * @brief Construct the type safe wrapper.
        * @param[in]  primalMpiType  The mpi data type for the primal type.
@@ -317,6 +333,11 @@ namespace medi {
       void deleteIndexTypeBuffer(void* &buf) const {
         cast().deleteIndexTypeBuffer(castBuffer<IndexTypeB>(buf));
       }
+
+      void iterateIdentifiers(void* indices, int elements, CallbackFunc func, void* userData) const {
+        cast().iterateIdentifiers(castBuffer<IndexTypeB>(indices), elements, (CallbackFuncTyped)func, userData);
+      }
+
 
     private:
 

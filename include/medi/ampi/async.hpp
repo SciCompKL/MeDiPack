@@ -108,18 +108,31 @@ namespace medi {
 
   inline void AMPI_Wait_b(HandleBase* handle, AdjointInterface* adjointInterface);
   inline void AMPI_Wait_d(HandleBase* handle, AdjointInterface* adjointInterface);
+  inline void AMPI_Wait_iter_empty(HandleBase* handle, CallbackFunc func, void* userData);
+  inline void AMPI_Wait_iterIn(HandleBase* handle, CallbackFunc func, void* userData);
+  inline void AMPI_Wait_iterOut(HandleBase* handle, CallbackFunc func, void* userData);
   struct WaitHandle : public HandleBase {
       ReverseFunction finishFuncReverse;
       ForwardFunction finishFuncForward;
       AsyncAdjointHandle* adjointHandle;
 
+      IterateIdsFunction original_funcIterateInputIds;
+
       WaitHandle(ReverseFunction finishFuncReverse, ForwardFunction finishFuncForward, AsyncAdjointHandle* handle) :
         finishFuncReverse(finishFuncReverse),
         finishFuncForward(finishFuncForward),
         adjointHandle(handle) {
-         this->funcReverse = (ReverseFunction)AMPI_Wait_b;
+        this->funcReverse = (ReverseFunction)AMPI_Wait_b;
         this->funcForward = (ForwardFunction)AMPI_Wait_d;
         this->deleteType = ManualDeleteType::Wait;
+
+        // Disable input iteration on the end handle (The wait handle is registered first.
+        this->original_funcIterateInputIds = handle->funcIterateInputIds;
+        handle->funcIterateInputIds = (IterateIdsFunction)AMPI_Wait_iter_empty;
+
+        // Only do input iteration on this start handle
+        this->funcIterateOutputIds = (IterateIdsFunction)AMPI_Wait_iter_empty;
+        this->funcIterateInputIds = (IterateIdsFunction)AMPI_Wait_iterIn;
 
 
         handle->deleteType = ManualDeleteType::Async;
@@ -137,6 +150,18 @@ namespace medi {
     WaitHandle* h = static_cast<WaitHandle*>(handle);
 
     h->finishFuncForward(h->adjointHandle, adjointInterface);
+  }
+
+  inline void AMPI_Wait_iter_empty(HandleBase* handle, CallbackFunc func, void* userData) {
+    (void)handle;
+    (void)func;
+    (void)userData;
+  }
+
+  inline void AMPI_Wait_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    WaitHandle* h = static_cast<WaitHandle*>(handle);
+
+    h->original_funcIterateInputIds(h->adjointHandle, func, userData);
   }
 
   inline void performStartAction(AMPI_Request *request) {

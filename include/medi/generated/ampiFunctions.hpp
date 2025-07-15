@@ -122,6 +122,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Bsend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Bsend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Bsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Bsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
@@ -173,6 +190,8 @@ namespace medi {
         h->funcReverse = AMPI_Bsend_b<DATATYPE>;
         h->funcForward = AMPI_Bsend_d<DATATYPE>;
         h->funcPrimal = AMPI_Bsend_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Bsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Bsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -328,6 +347,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Ibsend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ibsend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Ibsend_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Ibsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
@@ -381,6 +417,8 @@ namespace medi {
         h->funcReverse = AMPI_Ibsend_b<DATATYPE>;
         h->funcForward = AMPI_Ibsend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Ibsend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Ibsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Ibsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -477,6 +515,23 @@ namespace medi {
     AMPI_Request* request;
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Bsend_init_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Bsend_init_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
 
   template<typename DATATYPE>
   int AMPI_Bsend_init_preStart(HandleBase* handle);
@@ -588,6 +643,8 @@ namespace medi {
         h->funcReverse = AMPI_Ibsend_b<DATATYPE>;
         h->funcForward = AMPI_Ibsend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Ibsend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Ibsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Ibsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -825,6 +882,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Imrecv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Imrecv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Imrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Imrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Imrecv_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Imrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message,
@@ -881,6 +955,8 @@ namespace medi {
         h->funcReverse = AMPI_Imrecv_b<DATATYPE>;
         h->funcForward = AMPI_Imrecv_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Imrecv_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Imrecv_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Imrecv_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
@@ -1104,6 +1180,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Irecv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Irecv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Irecv_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Irecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
@@ -1160,6 +1253,8 @@ namespace medi {
         h->funcReverse = AMPI_Irecv_b<DATATYPE>;
         h->funcForward = AMPI_Irecv_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Irecv_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Irecv_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Irecv_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->source = source;
@@ -1379,6 +1474,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Irsend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Irsend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Irsend_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Irsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
@@ -1432,6 +1544,8 @@ namespace medi {
         h->funcReverse = AMPI_Irsend_b<DATATYPE>;
         h->funcForward = AMPI_Irsend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Irsend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Irsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Irsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1640,6 +1754,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Isend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Isend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Isend_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Isend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
@@ -1693,6 +1824,8 @@ namespace medi {
         h->funcReverse = AMPI_Isend_b<DATATYPE>;
         h->funcForward = AMPI_Isend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Isend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Isend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Isend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -1901,6 +2034,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Issend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Issend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Issend_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Issend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
@@ -1954,6 +2104,8 @@ namespace medi {
         h->funcReverse = AMPI_Issend_b<DATATYPE>;
         h->funcForward = AMPI_Issend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Issend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Issend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Issend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -2130,6 +2282,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Mrecv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Mrecv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Mrecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Mrecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Mrecv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, AMPI_Message* message, AMPI_Status* status,
                  RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
@@ -2184,6 +2353,8 @@ namespace medi {
         h->funcReverse = AMPI_Mrecv_b<DATATYPE>;
         h->funcForward = AMPI_Mrecv_d<DATATYPE>;
         h->funcPrimal = AMPI_Mrecv_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Mrecv_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Mrecv_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->message = *message;
@@ -2319,6 +2490,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Recv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Recv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Recv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Recv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Recv(typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int source, int tag, AMPI_Comm comm,
                 AMPI_Status* status, RecvAdjCall reverse_send = RecvAdjCall::Send) {
     int rStatus;
@@ -2373,6 +2561,8 @@ namespace medi {
         h->funcReverse = AMPI_Recv_b<DATATYPE>;
         h->funcForward = AMPI_Recv_d<DATATYPE>;
         h->funcPrimal = AMPI_Recv_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Recv_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Recv_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->source = source;
@@ -2425,6 +2615,23 @@ namespace medi {
     IrecvAdjCall reverse_send;
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Recv_init_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Recv_init_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irecv_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irecv_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
 
   template<typename DATATYPE>
   int AMPI_Recv_init_preStart(HandleBase* handle);
@@ -2542,6 +2749,8 @@ namespace medi {
         h->funcReverse = AMPI_Irecv_b<DATATYPE>;
         h->funcForward = AMPI_Irecv_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Irecv_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Irecv_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Irecv_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->source = source;
@@ -2739,6 +2948,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Rsend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Rsend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Rsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Rsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Rsend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
@@ -2790,6 +3016,8 @@ namespace medi {
         h->funcReverse = AMPI_Rsend_b<DATATYPE>;
         h->funcForward = AMPI_Rsend_d<DATATYPE>;
         h->funcPrimal = AMPI_Rsend_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Rsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Rsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -2833,6 +3061,23 @@ namespace medi {
     AMPI_Request* request;
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Rsend_init_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Rsend_init_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Irsend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Irsend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
 
   template<typename DATATYPE>
   int AMPI_Rsend_init_preStart(HandleBase* handle);
@@ -2944,6 +3189,8 @@ namespace medi {
         h->funcReverse = AMPI_Irsend_b<DATATYPE>;
         h->funcForward = AMPI_Irsend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Irsend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Irsend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Irsend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -3129,6 +3376,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Send_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Send_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Send_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Send_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Send(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                 AMPI_Comm comm) {
     int rStatus;
@@ -3180,6 +3444,8 @@ namespace medi {
         h->funcReverse = AMPI_Send_b<DATATYPE>;
         h->funcForward = AMPI_Send_d<DATATYPE>;
         h->funcPrimal = AMPI_Send_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Send_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Send_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -3223,6 +3489,23 @@ namespace medi {
     AMPI_Request* request;
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Send_init_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Send_init_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Isend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Isend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
 
   template<typename DATATYPE>
   int AMPI_Send_init_preStart(HandleBase* handle);
@@ -3334,6 +3617,8 @@ namespace medi {
         h->funcReverse = AMPI_Isend_b<DATATYPE>;
         h->funcForward = AMPI_Isend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Isend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Isend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Isend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -3576,6 +3861,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Sendrecv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Sendrecv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Sendrecv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Sendrecv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype, int dest,
                     int sendtag, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int source, int recvtag,
                     AMPI_Comm comm, AMPI_Status* status) {
@@ -3650,6 +3955,8 @@ namespace medi {
         h->funcReverse = AMPI_Sendrecv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Sendrecv_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Sendrecv_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Sendrecv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Sendrecv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->dest = dest;
@@ -3776,6 +4083,23 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Ssend_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ssend_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ssend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ssend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
+
+  template<typename DATATYPE>
   int AMPI_Ssend(MEDI_OPTIONAL_CONST typename DATATYPE::Type* buf, int count, DATATYPE* datatype, int dest, int tag,
                  AMPI_Comm comm) {
     int rStatus;
@@ -3827,6 +4151,8 @@ namespace medi {
         h->funcReverse = AMPI_Ssend_b<DATATYPE>;
         h->funcForward = AMPI_Ssend_d<DATATYPE>;
         h->funcPrimal = AMPI_Ssend_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Ssend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Ssend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -3870,6 +4196,23 @@ namespace medi {
     AMPI_Request* request;
   };
 
+
+  template<typename DATATYPE>
+  void AMPI_Ssend_init_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufIndices, h->bufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ssend_init_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Issend_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Issend_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+  }
 
   template<typename DATATYPE>
   int AMPI_Ssend_init_preStart(HandleBase* handle);
@@ -3981,6 +4324,8 @@ namespace medi {
         h->funcReverse = AMPI_Issend_b<DATATYPE>;
         h->funcForward = AMPI_Issend_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Issend_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Issend_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Issend_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->dest = dest;
@@ -4217,6 +4562,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgather_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgather_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Allgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                      typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
@@ -4306,6 +4671,8 @@ namespace medi {
         h->funcReverse = AMPI_Allgather_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Allgather_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Allgather_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Allgather_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Allgather_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -4494,6 +4861,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgatherv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Allgatherv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Allgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Allgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                       typename RECVTYPE::Type* recvbuf, MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* displs,
                       RECVTYPE* recvtype, AMPI_Comm comm) {
@@ -4603,6 +4990,8 @@ namespace medi {
         h->funcReverse = AMPI_Allgatherv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Allgatherv_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Allgatherv_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Allgatherv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Allgatherv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -4793,6 +5182,24 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Allreduce_global_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Allreduce_global_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Allreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Allreduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Allreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                             int count, DATATYPE* datatype, AMPI_Op op, AMPI_Comm comm) {
     int rStatus;
@@ -4892,6 +5299,8 @@ namespace medi {
         h->funcReverse = AMPI_Allreduce_global_b<DATATYPE>;
         h->funcForward = AMPI_Allreduce_global_d<DATATYPE>;
         h->funcPrimal = AMPI_Allreduce_global_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Allreduce_global_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Allreduce_global_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -5068,6 +5477,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoall_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoall_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Alltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                     typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, AMPI_Comm comm) {
     int rStatus;
@@ -5156,6 +5585,8 @@ namespace medi {
         h->funcReverse = AMPI_Alltoall_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Alltoall_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Alltoall_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Alltoall_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Alltoall_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -5361,6 +5792,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoallv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Alltoallv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Alltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Alltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, MEDI_OPTIONAL_CONST int* sendcounts,
                      MEDI_OPTIONAL_CONST int* sdispls, SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf,
                      MEDI_OPTIONAL_CONST int* recvcounts, MEDI_OPTIONAL_CONST int* rdispls, RECVTYPE* recvtype, AMPI_Comm comm) {
@@ -5479,6 +5930,8 @@ namespace medi {
         h->funcReverse = AMPI_Alltoallv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Alltoallv_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Alltoallv_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Alltoallv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Alltoallv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->sdispls = sdispls;
         h->sendtype = sendtype;
@@ -5674,6 +6127,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Bcast_wrap_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->bufferSendIndices, h->bufferSendTotalSize, func, userData);
+    }
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Bcast_wrap_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Bcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Bcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufferRecvIndices, h->bufferRecvTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Bcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
                       DATATYPE* datatype, int root, AMPI_Comm comm) {
     int rStatus;
@@ -5770,6 +6243,8 @@ namespace medi {
         h->funcReverse = AMPI_Bcast_wrap_b<DATATYPE>;
         h->funcForward = AMPI_Bcast_wrap_d<DATATYPE>;
         h->funcPrimal = AMPI_Bcast_wrap_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Bcast_wrap_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Bcast_wrap_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
@@ -5956,6 +6431,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gather_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gather_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gather_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Gather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                   typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
@@ -6056,6 +6551,8 @@ namespace medi {
         h->funcReverse = AMPI_Gather_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Gather_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Gather_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Gather_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Gather_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -6269,6 +6766,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gatherv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Gatherv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Gatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Gatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, const int* recvcounts, const int* displs, RECVTYPE* recvtype, int root,
                    AMPI_Comm comm) {
@@ -6388,6 +6907,8 @@ namespace medi {
         h->funcReverse = AMPI_Gatherv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Gatherv_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Gatherv_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Gatherv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Gatherv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -6626,6 +7147,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgather_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgather_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iallgather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -6718,6 +7259,8 @@ namespace medi {
         h->funcReverse = AMPI_Iallgather_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Iallgather_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Iallgather_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Iallgather_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Iallgather_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -7018,6 +7561,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgatherv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
+      static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iallgatherv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h =
+      static_cast<AMPI_Iallgatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iallgatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -7129,6 +7692,8 @@ namespace medi {
         h->funcReverse = AMPI_Iallgatherv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Iallgatherv_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Iallgatherv_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Iallgatherv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Iallgatherv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -7440,6 +8005,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Iallreduce_global_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Iallreduce_global_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iallreduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Iallreduce_global_AdjointHandle<DATATYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Iallreduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Iallreduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
@@ -7542,6 +8127,8 @@ namespace medi {
         h->funcReverse = AMPI_Iallreduce_global_b<DATATYPE>;
         h->funcForward = AMPI_Iallreduce_global_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Iallreduce_global_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Iallreduce_global_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Iallreduce_global_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -7824,6 +8411,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoall_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoall_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoall_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoall_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoall(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -7915,6 +8522,8 @@ namespace medi {
         h->funcReverse = AMPI_Ialltoall_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Ialltoall_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Ialltoall_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Ialltoall_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Ialltoall_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -8231,6 +8840,26 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoallv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Ialltoallv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Ialltoallv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoallv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Ialltoallv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* sdispls,
@@ -8351,6 +8980,8 @@ namespace medi {
         h->funcReverse = AMPI_Ialltoallv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Ialltoallv_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Ialltoallv_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Ialltoallv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Ialltoallv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->sdispls = sdispls;
         h->sendtype = sendtype;
@@ -8661,6 +9292,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Ibcast_wrap_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->bufferSendIndices, h->bufferSendTotalSize, func, userData);
+    }
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ibcast_wrap_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ibcast_wrap_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->bufferRecvIndices, h->bufferRecvTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
   int AMPI_Ibcast_wrap_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Ibcast_wrap(typename DATATYPE::Type* bufferSend, typename DATATYPE::Type* bufferRecv, int count,
@@ -8759,6 +9410,8 @@ namespace medi {
         h->funcReverse = AMPI_Ibcast_wrap_b<DATATYPE>;
         h->funcForward = AMPI_Ibcast_wrap_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Ibcast_wrap_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Ibcast_wrap_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Ibcast_wrap_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->root = root;
@@ -9053,6 +9706,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igather_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igather_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igather_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igather_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igather(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -9155,6 +9830,8 @@ namespace medi {
         h->funcReverse = AMPI_Igather_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Igather_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Igather_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Igather_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Igather_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -9484,6 +10161,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igatherv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Igatherv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Igatherv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igatherv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Igatherv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -9605,6 +10304,8 @@ namespace medi {
         h->funcReverse = AMPI_Igatherv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Igatherv_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Igatherv_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Igatherv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Igatherv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcounts = recvcounts;
@@ -9939,6 +10640,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Ireduce_global_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Ireduce_global_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Ireduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Ireduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename DATATYPE>
   int AMPI_Ireduce_global_finish(HandleBase* handle);
   template<typename DATATYPE>
   int AMPI_Ireduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
@@ -10051,6 +10772,8 @@ namespace medi {
         h->funcReverse = AMPI_Ireduce_global_b<DATATYPE>;
         h->funcForward = AMPI_Ireduce_global_d_finish<DATATYPE>;
         h->funcPrimal = AMPI_Ireduce_global_p_finish<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Ireduce_global_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Ireduce_global_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -10363,6 +11086,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatter_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatter_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatter_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatter(const typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
@@ -10463,6 +11208,8 @@ namespace medi {
         h->funcReverse = AMPI_Iscatter_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Iscatter_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Iscatter_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Iscatter_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Iscatter_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -10796,6 +11543,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatterv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Iscatterv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Iscatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatterv_finish(HandleBase* handle);
   template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Iscatterv(const typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs, SENDTYPE* sendtype,
@@ -10915,6 +11684,8 @@ namespace medi {
         h->funcReverse = AMPI_Iscatterv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Iscatterv_d_finish<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Iscatterv_p_finish<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Iscatterv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Iscatterv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->displs = displs;
         h->sendtype = sendtype;
@@ -11211,6 +11982,26 @@ namespace medi {
   }
 
   template<typename DATATYPE>
+  void AMPI_Reduce_global_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+  }
+
+  template<typename DATATYPE>
+  void AMPI_Reduce_global_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Reduce_global_AdjointHandle<DATATYPE>* h = static_cast<AMPI_Reduce_global_AdjointHandle<DATATYPE>*>(handle);
+    ADToolInterface const* adType = selectADTool(h->datatype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename DATATYPE>
   int AMPI_Reduce_global(MEDI_OPTIONAL_CONST typename DATATYPE::Type* sendbuf, typename DATATYPE::Type* recvbuf,
                          int count, DATATYPE* datatype, AMPI_Op op, int root, AMPI_Comm comm) {
     int rStatus;
@@ -11320,6 +12111,8 @@ namespace medi {
         h->funcReverse = AMPI_Reduce_global_b<DATATYPE>;
         h->funcForward = AMPI_Reduce_global_d<DATATYPE>;
         h->funcPrimal = AMPI_Reduce_global_p<DATATYPE>;
+        h->funcIterateInputIds = AMPI_Reduce_global_iterIn<DATATYPE>;
+        h->funcIterateOutputIds = AMPI_Reduce_global_iterOut<DATATYPE>;
         h->count = count;
         h->datatype = datatype;
         h->op = op;
@@ -11522,6 +12315,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatter_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatter_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatter_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Scatter(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, int sendcount, SENDTYPE* sendtype,
                    typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
@@ -11620,6 +12435,8 @@ namespace medi {
         h->funcReverse = AMPI_Scatter_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Scatter_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Scatter_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Scatter_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Scatter_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcount = sendcount;
         h->sendtype = sendtype;
         h->recvcount = recvcount;
@@ -11837,6 +12654,28 @@ namespace medi {
   }
 
   template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatterv_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    if(h->root == getCommRank(h->comm)) {
+      adType->iterateIdentifiers(h->sendbufIndices, h->sendbufTotalSize, func, userData);
+    }
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
+  void AMPI_Scatterv_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+    AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>* h = static_cast<AMPI_Scatterv_AdjointHandle<SENDTYPE, RECVTYPE>*>
+      (handle);
+    ADToolInterface const* adType = selectADTool(h->sendtype->getADTool(), h->recvtype->getADTool());
+    (void)adType;
+
+    adType->iterateIdentifiers(h->recvbufIndices, h->recvbufTotalSize, func, userData);
+  }
+
+  template<typename SENDTYPE, typename RECVTYPE>
   int AMPI_Scatterv(MEDI_OPTIONAL_CONST typename SENDTYPE::Type* sendbuf, const int* sendcounts, const int* displs,
                     SENDTYPE* sendtype, typename RECVTYPE::Type* recvbuf, int recvcount, RECVTYPE* recvtype, int root, AMPI_Comm comm) {
     int rStatus;
@@ -11954,6 +12793,8 @@ namespace medi {
         h->funcReverse = AMPI_Scatterv_b<SENDTYPE, RECVTYPE>;
         h->funcForward = AMPI_Scatterv_d<SENDTYPE, RECVTYPE>;
         h->funcPrimal = AMPI_Scatterv_p<SENDTYPE, RECVTYPE>;
+        h->funcIterateInputIds = AMPI_Scatterv_iterIn<SENDTYPE, RECVTYPE>;
+        h->funcIterateOutputIds = AMPI_Scatterv_iterOut<SENDTYPE, RECVTYPE>;
         h->sendcounts = sendcounts;
         h->displs = displs;
         h->sendtype = sendtype;

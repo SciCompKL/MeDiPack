@@ -42,10 +42,13 @@ namespace medi {
     Wait
   };
 
+  using CallbackFunc = void (*)(void* id, void* userData);
+
   struct HandleBase;
   typedef void (*ReverseFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*ForwardFunction)(HandleBase* h, AdjointInterface* a);
   typedef void (*PrimalFunction)(HandleBase* h, AdjointInterface* a);
+  typedef void (*IterateIdsFunction)(HandleBase* h, CallbackFunc func, void* userData);
   typedef int (*ContinueFunction)(HandleBase* h);
   typedef void (*PreAdjointOperation)(void* adjoints, void* primals, int count, int dim);
   typedef void (*PostAdjointOperation)(void* adjoints, void* primals, void* rootPrimals, int count, int dim);
@@ -60,6 +63,8 @@ namespace medi {
     ForwardFunction funcForward;
     PrimalFunction funcPrimal;
     ManualDeleteType deleteType;
+    IterateIdsFunction funcIterateInputIds;
+    IterateIdsFunction funcIterateOutputIds;
 
     HandleBase() :
 #if MEDI_DebugInformation
@@ -68,7 +73,10 @@ namespace medi {
       funcReverse(NULL),
       funcForward(NULL),
       funcPrimal(NULL),
-      deleteType(ManualDeleteType::Normal) {}
+      deleteType(ManualDeleteType::Normal),
+      funcIterateInputIds(NULL),
+      funcIterateOutputIds(NULL)
+    {}
 
 
     virtual ~HandleBase() {}

@@ -491,6 +491,12 @@ function createBufferCleanup(buffer, curFunction, setValues, type)
   endRootReverse(my.buffer)
 endfunction
 
+function createBufferIterator(buffer)
+  startRootReverse(my.buffer)
+>   adType->iterateIdentifiers(h->$(my.buffer.name)Indices, h->$(my.buffer.name)TotalSize, func, userData);
+  endRootReverse(my.buffer)
+endfunction
+
 # define function for primal store
 function createPrimalStore(buffer, curFunction, elementName)
   startRootReverse(my.buffer)
@@ -875,6 +881,30 @@ namespace medi {
     }
 . endif
 
+.- create the iterIn function
+    template<$(curFunction.tplDef)>
+    void AMPI_$(curFunction.name)_iterIn(HandleBase* handle, CallbackFunc func, void* userData) {
+      $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+      ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+      (void)adType;
+
+.     for curFunction.send
+.       createBufferIterator(send)
+.     endfor
+    }
+
+.- create the iterOut function
+    template<$(curFunction.tplDef)>
+    void AMPI_$(curFunction.name)_iterOut(HandleBase* handle, CallbackFunc func, void* userData) {
+      $(curFunction.handleName)<$(curFunction.tplArg)>* h = static_cast<$(curFunction.handleName)<$(curFunction.tplArg)>*>(handle);
+      ADToolInterface const* adType = selectADTool($(curFunction.adTypesHandle));
+      (void)adType;
+
+.     for curFunction.recv
+.       createBufferIterator(recv)
+.     endfor
+    }
+
 .--- predefine the async function
 . if(defined(curFunction.init))
     template<$(curFunction.tplDef)>
@@ -1040,6 +1070,8 @@ namespace medi {
           h->funcForward = AMPI_$(curFunction.revName)_d<$(curFunction.tplArg)>;
           h->funcPrimal = AMPI_$(curFunction.revName)_p<$(curFunction.tplArg)>;
 .       endif
+        h->funcIterateInputIds = AMPI_$(curFunction.revName)_iterIn<$(curFunction.tplArg)>;
+        h->funcIterateOutputIds = AMPI_$(curFunction.revName)_iterOut<$(curFunction.tplArg)>;
 .-- pack the arguments (buffers are packed in buffer methods)
 .       packHandle(curFunction->reverseHandle, "h")
       }
