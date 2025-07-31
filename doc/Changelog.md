@@ -1,6 +1,10 @@
 Changelog      {#Changelog}
 ============
 
+### v 1.3.3 - 2025-07-31
+ - Update for CoDiPack C++ change.
+ - Missing version increase in file.
+
 ### v 1.3.2 - 2025-02-17
  - Select active AD tool from all buffer types.
  - Remove compiler warnings.
