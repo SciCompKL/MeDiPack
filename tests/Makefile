@@ -59,7 +59,11 @@ COMPILER ?= gnu
 ifeq ($(COMPILER), gnu)
   MPICXX ?= mpic++
   MPIRUN ?= mpiexec
-  MPIOUT ?= --output-directory $@.dir
+  ifeq ($(MPI_MODERN), yes)
+    MPIOUT ?= --output-directory $@.dir
+  else
+    MPIOUT ?= --output-filename $@.dir
+  endif
 endif
 ifeq ($(COMPILER), intel)
   MPICXX ?= mpiicpc -wd3802
